@@ -1,6 +1,6 @@
 ---
-source: src/parse.rs
-assertion_line: 159
+source: src/tests.rs
+assertion_line: 33
 expression: struct_type
 ---
 Struct(
