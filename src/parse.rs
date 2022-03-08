@@ -35,6 +35,27 @@ fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
     }
 }
 
+fn consume_vis_marker(tokens: &mut TokenIter) -> Vec<TokenTree> {
+    match tokens.peek() {
+        Some(TokenTree::Ident(ident)) if ident == "pub" => {
+            let pub_token = tokens.next().unwrap();
+            match tokens.peek() {
+                Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Parenthesis => {
+                    vec![pub_token, tokens.next().unwrap()]
+                }
+                _ => vec![pub_token],
+            }
+        }
+        Some(TokenTree::Ident(ident)) if ident == "crate" => {
+            vec![tokens.next().unwrap()]
+        }
+        _ => Vec::new(),
+    }
+}
+
+// TODO - consume_generic_params
+// TODO - consume_where_clauses
+
 fn consume_until_period(tokens: &mut TokenIter) -> Vec<TokenTree> {
     let mut tokens_before_period = Vec::new();
 
@@ -62,6 +83,7 @@ pub fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
         }
 
         consume_attributes(&mut tokens);
+        consume_vis_marker(&mut tokens);
 
         fields.push(TupleField {
             ty: TyExpr {
@@ -85,6 +107,7 @@ pub fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
         }
 
         consume_attributes(&mut tokens);
+        consume_vis_marker(&mut tokens);
 
         let ident = parse_ident(tokens.next().unwrap()).unwrap();
 
@@ -147,14 +170,14 @@ pub fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
 }
 
 pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
-    let mut tokens = tokens.into_iter();
+    let mut tokens = tokens.into_iter().peekable();
 
-    let next_token = tokens.next().unwrap();
+    consume_attributes(&mut tokens);
+    consume_vis_marker(&mut tokens);
 
-    if let Some(ident) = parse_ident(next_token) {
+    if let Some(ident) = parse_ident(tokens.next().unwrap()) {
         if ident == "struct" {
-            let next_token = tokens.next().unwrap();
-            let struct_name = parse_ident(next_token).unwrap();
+            let struct_name = parse_ident(tokens.next().unwrap()).unwrap();
 
             let next_token = tokens.next().unwrap();
             let struct_fields = match next_token {

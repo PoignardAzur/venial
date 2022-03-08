@@ -3,6 +3,8 @@ use crate::parse_type;
 use insta::assert_debug_snapshot;
 use quote::quote;
 
+// TODO - seperate out tests
+
 #[test]
 fn parse_unit_struct() {
     let struct_type = parse_type(quote!(
@@ -25,9 +27,9 @@ fn parse_tuple_struct() {
 fn parse_normal_struct() {
     let struct_type = parse_type(quote!(
         struct Hello {
-            a: A,
+            pub a: A,
             #[abc]
-            b: B,
+            pub(crate) b: B,
         }
     ));
 
