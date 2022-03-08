@@ -1,3 +1,6 @@
+pub mod parse;
+pub mod types;
+
 use proc_macro2::{TokenStream, TokenTree};
 
 #[derive(Clone, Copy, Debug, PartialEq, Eq)]
@@ -32,7 +35,7 @@ mod tests {
     #[test]
     fn get_struct_type() {
         let struct_type = get_declaration_type(quote!(
-            !struct Hello;
+            struct Hello;
         ));
 
         assert_eq!(struct_type, DeclType::Struct);

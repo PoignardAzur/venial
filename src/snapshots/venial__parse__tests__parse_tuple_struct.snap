@@ -1,0 +1,32 @@
+---
+source: src/parse.rs
+assertion_line: 147
+expression: struct_type
+---
+Struct(
+    Struct {
+        name: "Hello",
+        contents: Tuple(
+            [
+                TupleField {
+                    ty: TyExpr {
+                        tokens: [
+                            Ident {
+                                sym: A,
+                            },
+                        ],
+                    },
+                },
+                TupleField {
+                    ty: TyExpr {
+                        tokens: [
+                            Ident {
+                                sym: B,
+                            },
+                        ],
+                    },
+                },
+            ],
+        ),
+    },
+)

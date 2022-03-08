@@ -1,0 +1,11 @@
+---
+source: src/parse.rs
+assertion_line: 138
+expression: struct_type
+---
+Struct(
+    Struct {
+        name: "Hello",
+        contents: Unit,
+    },
+)
