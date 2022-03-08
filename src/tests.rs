@@ -15,7 +15,7 @@ fn parse_unit_struct() {
 #[test]
 fn parse_tuple_struct() {
     let struct_type = parse_type(quote!(
-        struct Hello(A, B);
+        struct Hello(#[abc] A, B);
     ));
 
     assert_debug_snapshot!(struct_type);
@@ -26,6 +26,7 @@ fn parse_normal_struct() {
     let struct_type = parse_type(quote!(
         struct Hello {
             a: A,
+            #[abc]
             b: B,
         }
     ));
@@ -37,9 +38,14 @@ fn parse_normal_struct() {
 fn parse_enum() {
     let enum_type = parse_type(quote!(
         enum Hello {
+            #[abc]
             A,
             B(Foo, Bar),
-            C { foo: Foo, bar: Bar },
+            C {
+                #[abc]
+                foo: Foo,
+                bar: Bar,
+            },
         }
     ));
 

@@ -1,5 +1,8 @@
 use crate::types::*;
-use proc_macro2::{token_stream, Delimiter, Ident, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Ident, TokenStream, TokenTree};
+use std::iter::Peekable;
+
+type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
 
 fn parse_ident(token: TokenTree) -> Option<Ident> {
     match token {
@@ -10,17 +13,32 @@ fn parse_ident(token: TokenTree) -> Option<Ident> {
     }
 }
 
-fn consume_until_period(
-    first_token: Option<TokenTree>,
-    tokens: &mut token_stream::IntoIter,
-) -> Vec<TokenTree> {
+fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
+    let mut attributes = Vec::new();
+
+    loop {
+        match tokens.peek() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '#' => (),
+            _ => return attributes,
+        };
+        let hashbang = tokens.next().unwrap();
+
+        match tokens.peek() {
+            Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Bracket => {}
+            _ => panic!("cannot parse type"),
+        };
+        let group = tokens.next().unwrap();
+
+        attributes.push(Attribute {
+            tokens: vec![hashbang, group],
+        })
+    }
+}
+
+fn consume_until_period(tokens: &mut TokenIter) -> Vec<TokenTree> {
     let mut tokens_before_period = Vec::new();
 
-    if let Some(token) = first_token {
-        tokens_before_period.push(token)
-    }
-
-    for token in tokens.into_iter() {
+    for token in tokens {
         match token {
             TokenTree::Punct(punct) if punct.as_char() == ',' => break,
             _ => {
@@ -37,17 +55,17 @@ pub fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
     // TODO - skip generic params
     let mut fields = Vec::new();
 
-    let mut tokens = tokens.into_iter();
+    let mut tokens = tokens.into_iter().peekable();
     loop {
-        let next_token = if let Some(next_token) = tokens.next() {
-            next_token
-        } else {
+        if tokens.peek().is_none() {
             break;
-        };
+        }
+
+        consume_attributes(&mut tokens);
 
         fields.push(TupleField {
             ty: TyExpr {
-                tokens: consume_until_period(Some(next_token), &mut tokens),
+                tokens: consume_until_period(&mut tokens),
             },
         });
     }
@@ -60,26 +78,26 @@ pub fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
     // TODO - skip generic params
     let mut fields = Vec::new();
 
-    let mut tokens = tokens.into_iter();
+    let mut tokens = tokens.into_iter().peekable();
     loop {
-        let next_token = if let Some(next_token) = tokens.next() {
-            next_token
-        } else {
+        if tokens.peek().is_none() {
             break;
-        };
+        }
 
-        let ident = parse_ident(next_token).unwrap();
+        consume_attributes(&mut tokens);
+
+        let ident = parse_ident(tokens.next().unwrap()).unwrap();
 
         match tokens.next() {
             Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => (),
             _ => panic!("cannot parse type"),
         };
 
-        let next_token = tokens.next().unwrap();
+        tokens.peek().unwrap();
         fields.push(NamedField {
             name: ident.to_string(),
             ty: TyExpr {
-                tokens: consume_until_period(Some(next_token), &mut tokens),
+                tokens: consume_until_period(&mut tokens),
             },
         });
     }
@@ -92,15 +110,15 @@ pub fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
     // TODO - skip generic params
     let mut variants = Vec::new();
 
-    let mut tokens = tokens.into_iter();
+    let mut tokens = tokens.into_iter().peekable();
     loop {
-        let next_token = if let Some(next_token) = tokens.next() {
-            next_token
-        } else {
+        if tokens.peek().is_none() {
             break;
-        };
+        }
 
-        let ident = parse_ident(next_token).unwrap();
+        consume_attributes(&mut tokens);
+
+        let ident = parse_ident(tokens.next().unwrap()).unwrap();
 
         let next_token = tokens.next();
         let contents = match next_token {

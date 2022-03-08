@@ -52,3 +52,8 @@ pub struct NamedField {
 pub struct TyExpr {
     pub tokens: Vec<TokenTree>,
 }
+
+#[derive(Clone, Debug)]
+pub struct Attribute {
+    pub tokens: Vec<TokenTree>,
+}
