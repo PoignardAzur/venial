@@ -6,7 +6,7 @@ expression: struct_type
 Struct(
     Struct {
         name: "Hello",
-        contents: Tuple(
+        fields: Tuple(
             [
                 TupleField {
                     ty: TyExpr {

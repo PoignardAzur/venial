@@ -32,3 +32,16 @@ fn parse_normal_struct() {
 
     assert_debug_snapshot!(struct_type);
 }
+
+#[test]
+fn parse_enum() {
+    let enum_type = parse_type(quote!(
+        enum Hello {
+            A,
+            B(Foo, Bar),
+            C { foo: Foo, bar: Bar },
+        }
+    ));
+
+    assert_debug_snapshot!(enum_type);
+}

@@ -87,6 +87,47 @@ pub fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
     fields
 }
 
+pub fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
+    // TODO - attributes
+    // TODO - skip generic params
+    let mut variants = Vec::new();
+
+    let mut tokens = tokens.into_iter();
+    loop {
+        let next_token = if let Some(next_token) = tokens.next() {
+            next_token
+        } else {
+            break;
+        };
+
+        let ident = parse_ident(next_token).unwrap();
+
+        let next_token = tokens.next();
+        let contents = match next_token {
+            None => StructFields::Unit,
+            Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => StructFields::Unit,
+            Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Parenthesis => {
+                // Consume period, if any
+                tokens.next();
+                StructFields::Tuple(parse_tuple_fields(group.stream()))
+            }
+            Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Brace => {
+                // Consume period, if any
+                tokens.next();
+                StructFields::Named(parse_named_fields(group.stream()))
+            }
+            _ => panic!("cannot parse type"),
+        };
+
+        variants.push(EnumVariant {
+            name: ident.to_string(),
+            contents,
+        });
+    }
+
+    variants
+}
+
 pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
     let mut tokens = tokens.into_iter();
 
@@ -111,10 +152,24 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
 
             return TypeDeclaration::Struct(Struct {
                 name: struct_name.to_string(),
-                contents: struct_fields,
+                fields: struct_fields,
             });
         } else if ident == "enum" {
-            todo!()
+            let next_token = tokens.next().unwrap();
+            let enum_name = parse_ident(next_token).unwrap();
+
+            let next_token = tokens.next().unwrap();
+            let enum_variants = match next_token {
+                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
+                    parse_enum_variants(group.stream())
+                }
+                _ => panic!("cannot parse type"),
+            };
+
+            return TypeDeclaration::Enum(Enum {
+                name: enum_name.to_string(),
+                variants: enum_variants,
+            });
         } else {
             panic!("cannot parse type")
         }

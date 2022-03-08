@@ -25,7 +25,7 @@ pub struct EnumVariant {
 #[derive(Clone, Debug)]
 pub struct Struct {
     pub name: String,
-    pub contents: StructFields,
+    pub fields: StructFields,
 }
 
 #[derive(Clone, Debug)]

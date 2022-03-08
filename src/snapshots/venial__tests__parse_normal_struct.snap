@@ -6,7 +6,7 @@ expression: struct_type
 Struct(
     Struct {
         name: "Hello",
-        contents: Named(
+        fields: Named(
             [
                 NamedField {
                     name: "a",
