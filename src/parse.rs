@@ -53,8 +53,65 @@ fn consume_vis_marker(tokens: &mut TokenIter) -> Vec<TokenTree> {
     }
 }
 
-// TODO - consume_generic_params
-// TODO - consume_where_clauses
+fn consume_generic_params(tokens: &mut TokenIter) -> Vec<TokenTree> {
+    match tokens.peek() {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => (),
+        _ => return Vec::new(),
+    };
+
+    let mut param_tokens = Vec::new();
+    let mut bracket_count = 0;
+    loop {
+        let token = tokens.next().unwrap();
+        match &token {
+            TokenTree::Punct(punct) if punct.as_char() == '<' => {
+                bracket_count += 1;
+            }
+            TokenTree::Punct(punct) if punct.as_char() == '>' => {
+                bracket_count -= 1;
+            }
+            _ => {}
+        };
+
+        param_tokens.push(token);
+
+        if bracket_count == 0 {
+            return param_tokens;
+        }
+    }
+}
+
+fn consume_where_clauses(tokens: &mut TokenIter) -> Vec<TokenTree> {
+    match tokens.peek() {
+        Some(TokenTree::Ident(ident)) if ident == "where" => (),
+        _ => return Vec::new(),
+    }
+
+    let mut where_clause_tokens = Vec::new();
+    let mut bracket_count = 0;
+    loop {
+        dbg!(tokens.peek());
+        match tokens.peek().unwrap() {
+            TokenTree::Punct(punct) if punct.as_char() == '<' => {
+                bracket_count += 1;
+            }
+            TokenTree::Punct(punct) if punct.as_char() == '>' => {
+                bracket_count -= 1;
+            }
+            TokenTree::Group(group)
+                if group.delimiter() == Delimiter::Brace && bracket_count == 0 =>
+            {
+                return where_clause_tokens;
+            }
+            TokenTree::Punct(punct) if punct.as_char() == ';' && bracket_count == 0 => {
+                return where_clause_tokens;
+            }
+            _ => {}
+        };
+
+        where_clause_tokens.push(tokens.next().unwrap());
+    }
+}
 
 fn consume_until_period(tokens: &mut TokenIter) -> Vec<TokenTree> {
     let mut tokens_before_period = Vec::new();
@@ -179,11 +236,15 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
         if ident == "struct" {
             let struct_name = parse_ident(tokens.next().unwrap()).unwrap();
 
+            consume_generic_params(&mut tokens);
+            consume_where_clauses(&mut tokens);
+
             let next_token = tokens.next().unwrap();
             let struct_fields = match next_token {
                 TokenTree::Punct(punct) if punct.as_char() == ';' => StructFields::Unit,
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
                     StructFields::Tuple(parse_tuple_fields(group.stream()))
+                    //consume_where_clauses(&mut tokens);
                 }
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
                     StructFields::Named(parse_named_fields(group.stream()))
@@ -198,6 +259,9 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
         } else if ident == "enum" {
             let next_token = tokens.next().unwrap();
             let enum_name = parse_ident(next_token).unwrap();
+
+            consume_generic_params(&mut tokens);
+            consume_where_clauses(&mut tokens);
 
             let next_token = tokens.next().unwrap();
             let enum_variants = match next_token {

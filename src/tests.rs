@@ -26,7 +26,10 @@ fn parse_tuple_struct() {
 #[test]
 fn parse_normal_struct() {
     let struct_type = parse_type(quote!(
-        struct Hello {
+        struct Hello<X, Y: Z<A>, Z>
+        where
+            A: B,
+        {
             pub a: A,
             #[abc]
             pub(crate) b: B,
