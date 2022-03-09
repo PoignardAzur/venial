@@ -22,7 +22,7 @@ fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
     loop {
         match tokens.peek() {
             Some(TokenTree::Punct(punct)) if punct.as_char() == '#' => (),
-            _ => return attributes,
+            _ => break,
         };
         let hashbang = tokens.next().unwrap();
 
@@ -36,6 +36,8 @@ fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
             child_tokens: child_tokens.into_iter().collect(),
         })
     }
+
+    return attributes;
 }
 
 fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {
@@ -112,21 +114,20 @@ fn consume_where_clauses(tokens: &mut TokenIter) -> Option<WhereClauses> {
             TokenTree::Group(group)
                 if group.delimiter() == Delimiter::Brace && bracket_count == 0 =>
             {
-                // TODO - break
-                return Some(WhereClauses {
-                    tokens: where_clause_tokens,
-                });
+                break;
             }
             TokenTree::Punct(punct) if punct.as_char() == ';' && bracket_count == 0 => {
-                return Some(WhereClauses {
-                    tokens: where_clause_tokens,
-                });
+                break;
             }
             _ => {}
         };
 
         where_clause_tokens.push(tokens.next().unwrap());
     }
+
+    return Some(WhereClauses {
+        tokens: where_clause_tokens,
+    });
 }
 
 fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
@@ -174,20 +175,20 @@ fn consume_enum_discriminant(tokens: &mut TokenIter) -> Option<EnumDiscriminant>
             Some(TokenTree::Punct(punct)) if punct.as_char() == ',' && bracket_count == 0 => {
                 // consume period
                 tokens.next();
-                return Some(EnumDiscriminant {
-                    tokens: enum_discriminant_tokens,
-                });
+                break;
             }
             None => {
-                return Some(EnumDiscriminant {
-                    tokens: enum_discriminant_tokens,
-                });
+                break;
             }
             _ => {}
         };
 
         enum_discriminant_tokens.push(tokens.next().unwrap());
     }
+
+    return Some(EnumDiscriminant {
+        tokens: enum_discriminant_tokens,
+    });
 }
 
 pub fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
