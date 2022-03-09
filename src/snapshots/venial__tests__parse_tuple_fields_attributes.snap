@@ -1,0 +1,50 @@
+---
+source: src/tests.rs
+assertion_line: 264
+expression: struct_type
+---
+Struct(
+    Struct {
+        name: "Hello",
+        fields: Tuple(
+            [
+                TupleField {
+                    ty: TyExpr {
+                        tokens: [
+                            Ident {
+                                sym: A,
+                            },
+                        ],
+                    },
+                },
+                TupleField {
+                    ty: TyExpr {
+                        tokens: [
+                            Ident {
+                                sym: B,
+                            },
+                        ],
+                    },
+                },
+                TupleField {
+                    ty: TyExpr {
+                        tokens: [
+                            Ident {
+                                sym: C,
+                            },
+                        ],
+                    },
+                },
+                TupleField {
+                    ty: TyExpr {
+                        tokens: [
+                            Ident {
+                                sym: D,
+                            },
+                        ],
+                    },
+                },
+            ],
+        ),
+    },
+)

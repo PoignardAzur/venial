@@ -1,0 +1,68 @@
+---
+source: src/tests.rs
+assertion_line: 156
+expression: enum_type_pub_crate
+---
+Enum(
+    Enum {
+        name: "Hello",
+        variants: [
+            EnumVariant {
+                name: "A",
+                contents: Unit,
+            },
+            EnumVariant {
+                name: "B",
+                contents: Tuple(
+                    [
+                        TupleField {
+                            ty: TyExpr {
+                                tokens: [
+                                    Ident {
+                                        sym: Foo,
+                                    },
+                                ],
+                            },
+                        },
+                        TupleField {
+                            ty: TyExpr {
+                                tokens: [
+                                    Ident {
+                                        sym: Bar,
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                ),
+            },
+            EnumVariant {
+                name: "C",
+                contents: Named(
+                    [
+                        NamedField {
+                            name: "foo",
+                            ty: TyExpr {
+                                tokens: [
+                                    Ident {
+                                        sym: Foo,
+                                    },
+                                ],
+                            },
+                        },
+                        NamedField {
+                            name: "bar",
+                            ty: TyExpr {
+                                tokens: [
+                                    Ident {
+                                        sym: Bar,
+                                    },
+                                ],
+                            },
+                        },
+                    ],
+                ),
+            },
+        ],
+    },
+)

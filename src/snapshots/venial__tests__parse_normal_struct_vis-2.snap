@@ -1,0 +1,34 @@
+---
+source: src/tests.rs
+assertion_line: 120
+expression: struct_type_pub_crate
+---
+Struct(
+    Struct {
+        name: "Hello",
+        fields: Named(
+            [
+                NamedField {
+                    name: "a",
+                    ty: TyExpr {
+                        tokens: [
+                            Ident {
+                                sym: A,
+                            },
+                        ],
+                    },
+                },
+                NamedField {
+                    name: "b",
+                    ty: TyExpr {
+                        tokens: [
+                            Ident {
+                                sym: B,
+                            },
+                        ],
+                    },
+                },
+            ],
+        ),
+    },
+)

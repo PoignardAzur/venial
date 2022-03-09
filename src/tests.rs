@@ -3,7 +3,18 @@ use crate::parse_type;
 use insta::assert_debug_snapshot;
 use quote::quote;
 
+// TODO
+// - where clauses
+// - generic params
+// - no trailing period
+// - empty enum
+// - empty struct
+// - empty tuple
+// - empty generic params
+
 // TODO - seperate out tests
+
+// BASIC PARSING
 
 #[test]
 fn parse_unit_struct() {
@@ -17,7 +28,7 @@ fn parse_unit_struct() {
 #[test]
 fn parse_tuple_struct() {
     let struct_type = parse_type(quote!(
-        struct Hello(#[abc] A, B);
+        struct Hello(A, B);
     ));
 
     assert_debug_snapshot!(struct_type);
@@ -30,9 +41,8 @@ fn parse_normal_struct() {
         where
             A: B,
         {
-            pub a: A,
-            #[abc]
-            pub(crate) b: B,
+            a: A,
+            b: B,
         }
     ));
 
@@ -43,16 +53,209 @@ fn parse_normal_struct() {
 fn parse_enum() {
     let enum_type = parse_type(quote!(
         enum Hello {
-            #[abc]
             A,
             B(Foo, Bar),
-            C {
-                #[abc]
-                foo: Foo,
-                bar: Bar,
-            },
+            C { foo: Foo, bar: Bar },
         }
     ));
 
     assert_debug_snapshot!(enum_type);
+}
+
+// VISIBILITY
+
+#[test]
+fn parse_unit_struct_vis() {
+    let struct_type_pub = parse_type(quote!(
+        pub struct Hello;
+    ));
+    let struct_type_pub_crate = parse_type(quote!(
+        pub(crate) struct Hello;
+    ));
+    let struct_type_crate = parse_type(quote!(
+        crate struct Hello;
+    ));
+
+    assert_debug_snapshot!(struct_type_pub);
+    assert_debug_snapshot!(struct_type_pub_crate);
+    assert_debug_snapshot!(struct_type_crate);
+}
+
+#[test]
+fn parse_tuple_struct_vis() {
+    let struct_type_pub = parse_type(quote!(
+        pub struct Hello(A, B);
+    ));
+    let struct_type_pub_crate = parse_type(quote!(
+        pub(crate) struct Hello(A, B);
+    ));
+    let struct_type_crate = parse_type(quote!(
+        crate struct Hello(A, B);
+    ));
+
+    assert_debug_snapshot!(struct_type_pub);
+    assert_debug_snapshot!(struct_type_pub_crate);
+    assert_debug_snapshot!(struct_type_crate);
+}
+
+#[test]
+fn parse_normal_struct_vis() {
+    let struct_type_pub = parse_type(quote!(
+        pub struct Hello {
+            a: A,
+            b: B,
+        }
+    ));
+    let struct_type_pub_crate = parse_type(quote!(
+        pub(crate) struct Hello {
+            a: A,
+            b: B,
+        }
+    ));
+    let struct_type_crate = parse_type(quote!(
+        crate struct Hello {
+            a: A,
+            b: B,
+        }
+    ));
+
+    assert_debug_snapshot!(struct_type_pub);
+    assert_debug_snapshot!(struct_type_pub_crate);
+    assert_debug_snapshot!(struct_type_crate);
+}
+
+#[test]
+fn parse_enum_vis() {
+    let enum_type_pub = parse_type(quote!(
+        pub enum Hello {
+            A,
+            B(Foo, Bar),
+            C { foo: Foo, bar: Bar },
+        }
+    ));
+    let enum_type_pub_crate = parse_type(quote!(
+        pub(crate) enum Hello {
+            A,
+            B(Foo, Bar),
+            C { foo: Foo, bar: Bar },
+        }
+    ));
+    let enum_type_crate = parse_type(quote!(
+        crate enum Hello {
+            A,
+            B(Foo, Bar),
+            C { foo: Foo, bar: Bar },
+        }
+    ));
+
+    assert_debug_snapshot!(enum_type_pub);
+    assert_debug_snapshot!(enum_type_pub_crate);
+    assert_debug_snapshot!(enum_type_crate);
+}
+
+#[test]
+fn parse_struct_fields_vis() {
+    let struct_type = parse_type(quote!(
+        pub struct Hello {
+            pub a: A,
+            pub(super) b: B,
+            crate c: C,
+            d: D,
+        }
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[test]
+fn parse_tuple_fields_vis() {
+    let struct_type = parse_type(quote!(
+        pub struct Hello(pub A, pub(super) B, crate C, D);
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+// ATTRIBUTES
+
+#[test]
+fn parse_unit_struct_attributes() {
+    let struct_type = parse_type(quote!(
+        #[hello]
+        pub struct Hello;
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[test]
+fn parse_tuple_struct_attributes() {
+    let struct_type = parse_type(quote!(
+        #[hello]
+        pub struct Hello(A, B);
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[test]
+fn parse_normal_struct_attributes() {
+    let struct_type = parse_type(quote!(
+        #[hello]
+        pub struct Hello {
+            a: A,
+            b: B,
+        }
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[test]
+fn parse_enum_attributes() {
+    let enum_type = parse_type(quote!(
+        #[hello]
+        pub enum Hello {
+            A,
+            B(Foo, Bar),
+            C { foo: Foo, bar: Bar },
+        }
+    ));
+
+    assert_debug_snapshot!(enum_type);
+}
+
+#[test]
+fn parse_struct_fields_attributes() {
+    let struct_type = parse_type(quote!(
+        pub struct Hello {
+            #[hello]
+            a: A,
+            b: B,
+            #[hello]
+            #[hello]
+            #[hello]
+            c: C,
+            d: D,
+        }
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[test]
+fn parse_tuple_fields_attributes() {
+    let struct_type = parse_type(quote!(
+        pub struct Hello(
+            #[hello] A,
+            B,
+            #[hello]
+            #[hello]
+            #[hello]
+            C,
+            D,
+        );
+    ));
+
+    assert_debug_snapshot!(struct_type);
 }

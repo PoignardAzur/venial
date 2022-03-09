@@ -1,0 +1,11 @@
+---
+source: src/tests.rs
+assertion_line: 77
+expression: struct_type_pub_crate
+---
+Struct(
+    Struct {
+        name: "Hello",
+        fields: Unit,
+    },
+)
