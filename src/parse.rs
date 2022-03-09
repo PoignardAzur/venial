@@ -110,6 +110,7 @@ fn consume_where_clauses(tokens: &mut TokenIter) -> Option<WhereClauses> {
             TokenTree::Group(group)
                 if group.delimiter() == Delimiter::Brace && bracket_count == 0 =>
             {
+                // TODO - break
                 return Some(WhereClauses {
                     tokens: where_clause_tokens,
                 });
@@ -149,6 +150,41 @@ fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
         };
 
         field_type_tokens.push(tokens.next().unwrap());
+    }
+}
+
+fn consume_enum_discriminant(tokens: &mut TokenIter) -> Option<EnumDiscriminant> {
+    match tokens.peek() {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => (),
+        _ => return None,
+    };
+
+    let mut enum_discriminant_tokens = Vec::new();
+    let mut bracket_count = 0;
+    loop {
+        match tokens.peek() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => {
+                bracket_count += 1;
+            }
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '>' => {
+                bracket_count -= 1;
+            }
+            Some(TokenTree::Punct(punct)) if punct.as_char() == ',' && bracket_count == 0 => {
+                // consume period
+                tokens.next();
+                return Some(EnumDiscriminant {
+                    tokens: enum_discriminant_tokens,
+                });
+            }
+            None => {
+                return Some(EnumDiscriminant {
+                    tokens: enum_discriminant_tokens,
+                });
+            }
+            _ => {}
+        };
+
+        enum_discriminant_tokens.push(tokens.next().unwrap());
     }
 }
 
@@ -219,6 +255,7 @@ pub fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
         }
 
         let attributes = consume_attributes(&mut tokens);
+        let vis_marker = consume_vis_marker(&mut tokens);
 
         let ident = parse_ident(tokens.next().unwrap()).unwrap();
 
@@ -239,10 +276,14 @@ pub fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
             _ => panic!("cannot parse type"),
         };
 
+        let enum_discriminant = consume_enum_discriminant(&mut tokens);
+
         variants.push(EnumVariant {
             attributes,
+            vis_marker,
             name: ident.to_string(),
             contents,
+            discriminant: enum_discriminant,
         });
     }
 

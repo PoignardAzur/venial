@@ -406,3 +406,5 @@ fn parse_enum_empty_generic_params() {
 
     assert_debug_snapshot!(enum_type);
 }
+
+// TODO - test enum discriminant

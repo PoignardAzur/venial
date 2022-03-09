@@ -13,11 +13,14 @@ Enum(
         variants: [
             EnumVariant {
                 attributes: [],
+                vis_marker: None,
                 name: "A",
                 contents: Unit,
+                discriminant: None,
             },
             EnumVariant {
                 attributes: [],
+                vis_marker: None,
                 name: "B",
                 contents: Tuple(
                     [
@@ -37,9 +40,11 @@ Enum(
                         },
                     ],
                 ),
+                discriminant: None,
             },
             EnumVariant {
                 attributes: [],
+                vis_marker: None,
                 name: "C",
                 contents: Named(
                     [
@@ -61,6 +66,7 @@ Enum(
                         },
                     ],
                 ),
+                discriminant: None,
             },
         ],
     },

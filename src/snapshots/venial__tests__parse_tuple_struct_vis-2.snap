@@ -13,6 +13,7 @@ Struct(
         ),
         name: "Hello",
         generic_params: None,
+        where_clauses: None,
         fields: Tuple(
             [
                 TupleField {

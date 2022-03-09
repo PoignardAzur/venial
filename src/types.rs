@@ -38,9 +38,10 @@ pub struct Enum {
 #[derive(Clone, Debug)]
 pub struct EnumVariant {
     pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
     pub name: String,
     pub contents: StructFields,
-    // TODO "Variant = xxx"
+    pub discriminant: Option<EnumDiscriminant>,
 }
 
 #[derive(Clone, Debug)]
@@ -84,6 +85,11 @@ pub struct WhereClauses {
 
 #[derive(Clone)]
 pub struct TyExpr {
+    pub tokens: Vec<TokenTree>,
+}
+
+#[derive(Clone)]
+pub struct EnumDiscriminant {
     pub tokens: Vec<TokenTree>,
 }
 
@@ -157,6 +163,21 @@ impl std::fmt::Debug for WhereClauses {
 }
 
 impl std::fmt::Debug for TyExpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut list = f.debug_list();
+        for token in &self.tokens {
+            match token {
+                TokenTree::Group(_group) => list.entry(token),
+                TokenTree::Ident(_ident) => list.entry(&token.to_string()),
+                TokenTree::Punct(_punct) => list.entry(&token.to_string()),
+                TokenTree::Literal(_literal) => list.entry(&token.to_string()),
+            };
+        }
+        list.finish()
+    }
+}
+
+impl std::fmt::Debug for EnumDiscriminant {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut list = f.debug_list();
         for token in &self.tokens {
