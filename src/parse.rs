@@ -1,3 +1,4 @@
+// TODO - remove *
 use crate::types::*;
 use proc_macro2::{Delimiter, Ident, TokenStream, TokenTree};
 use std::iter::Peekable;
@@ -60,10 +61,10 @@ fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {
     }
 }
 
-fn consume_generic_params(tokens: &mut TokenIter) -> Vec<TokenTree> {
+fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
     match tokens.peek() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => (),
-        _ => return Vec::new(),
+        _ => return None,
     };
 
     let mut param_tokens = Vec::new();
@@ -83,15 +84,17 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Vec<TokenTree> {
         param_tokens.push(token);
 
         if bracket_count == 0 {
-            return param_tokens;
+            return Some(GenericParams {
+                tokens: param_tokens,
+            });
         }
     }
 }
 
-fn consume_where_clauses(tokens: &mut TokenIter) -> Vec<TokenTree> {
+fn consume_where_clauses(tokens: &mut TokenIter) -> Option<WhereClauses> {
     match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "where" => (),
-        _ => return Vec::new(),
+        _ => return None,
     }
 
     let mut where_clause_tokens = Vec::new();
@@ -107,10 +110,14 @@ fn consume_where_clauses(tokens: &mut TokenIter) -> Vec<TokenTree> {
             TokenTree::Group(group)
                 if group.delimiter() == Delimiter::Brace && bracket_count == 0 =>
             {
-                return where_clause_tokens;
+                return Some(WhereClauses {
+                    tokens: where_clause_tokens,
+                });
             }
             TokenTree::Punct(punct) if punct.as_char() == ';' && bracket_count == 0 => {
-                return where_clause_tokens;
+                return Some(WhereClauses {
+                    tokens: where_clause_tokens,
+                });
             }
             _ => {}
         };
@@ -146,8 +153,6 @@ fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
 }
 
 pub fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
-    // TODO - attributes
-    // TODO - skip generic params
     let mut fields = Vec::new();
 
     let mut tokens = tokens.into_iter().peekable();
@@ -172,8 +177,6 @@ pub fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
 }
 
 pub fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
-    // TODO - attributes
-    // TODO - skip generic params
     let mut fields = Vec::new();
 
     let mut tokens = tokens.into_iter().peekable();
@@ -207,8 +210,6 @@ pub fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
 }
 
 pub fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
-    // TODO - attributes
-    // TODO - skip generic params
     let mut variants = Vec::new();
 
     let mut tokens = tokens.into_iter().peekable();
@@ -258,15 +259,14 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
         if ident == "struct" {
             let struct_name = parse_ident(tokens.next().unwrap()).unwrap();
 
-            consume_generic_params(&mut tokens);
-            consume_where_clauses(&mut tokens);
+            let generic_params = consume_generic_params(&mut tokens);
+            let mut where_clauses = consume_where_clauses(&mut tokens);
 
             let next_token = tokens.next().unwrap();
             let struct_fields = match next_token {
                 TokenTree::Punct(punct) if punct.as_char() == ';' => StructFields::Unit,
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
                     StructFields::Tuple(parse_tuple_fields(group.stream()))
-                    //consume_where_clauses(&mut tokens);
                 }
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
                     StructFields::Named(parse_named_fields(group.stream()))
@@ -274,18 +274,24 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
                 _ => panic!("cannot parse type"),
             };
 
+            if matches!(struct_fields, StructFields::Unit | StructFields::Tuple(_)) {
+                where_clauses = consume_where_clauses(&mut tokens);
+            }
+
             return TypeDeclaration::Struct(Struct {
                 attributes,
                 vis_marker,
                 name: struct_name.to_string(),
+                generic_params,
+                where_clauses,
                 fields: struct_fields,
             });
         } else if ident == "enum" {
             let next_token = tokens.next().unwrap();
             let enum_name = parse_ident(next_token).unwrap();
 
-            consume_generic_params(&mut tokens);
-            consume_where_clauses(&mut tokens);
+            let generic_params = consume_generic_params(&mut tokens);
+            let where_clauses = consume_where_clauses(&mut tokens);
 
             let next_token = tokens.next().unwrap();
             let enum_variants = match next_token {
@@ -299,6 +305,8 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
                 attributes,
                 vis_marker,
                 name: enum_name.to_string(),
+                generic_params,
+                where_clauses,
                 variants: enum_variants,
             });
         } else {

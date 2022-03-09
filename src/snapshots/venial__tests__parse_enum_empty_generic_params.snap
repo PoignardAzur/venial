@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 404
+assertion_line: 407
 expression: enum_type
 ---
 Enum(
@@ -8,6 +8,25 @@ Enum(
         attributes: [],
         vis_marker: None,
         name: "Hello",
+        generic_params: Some(
+            [
+                "<",
+                ">",
+            ],
+        ),
+        where_clauses: Some(
+            [
+                "where",
+                "A",
+                "<",
+                ">",
+                ":",
+                "B",
+                "<",
+                ">",
+                ",",
+            ],
+        ),
         variants: [
             EnumVariant {
                 attributes: [],

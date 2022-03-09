@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 140
+assertion_line: 143
 expression: struct_type_pub_crate
 ---
 Struct(
@@ -12,6 +12,7 @@ Struct(
             ),
         ),
         name: "Hello",
+        generic_params: None,
         fields: Named(
             [
                 NamedField {

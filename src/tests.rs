@@ -3,6 +3,9 @@ use crate::parse_type;
 use insta::assert_debug_snapshot;
 use quote::quote;
 
+// TODO - test const generics {}
+// TODO - test Fn()
+
 // =============
 // BASIC PARSING
 // =============

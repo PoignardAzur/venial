@@ -9,10 +9,29 @@ pub enum TypeDeclaration {
 // TODO - fn TypeDeclaration::name()
 
 #[derive(Clone, Debug)]
+pub struct Struct {
+    pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
+    pub name: String,
+    pub generic_params: Option<GenericParams>,
+    pub where_clauses: Option<WhereClauses>,
+    pub fields: StructFields,
+}
+
+#[derive(Clone, Debug)]
+pub enum StructFields {
+    Unit,
+    Tuple(Vec<TupleField>),
+    Named(Vec<NamedField>),
+}
+
+#[derive(Clone, Debug)]
 pub struct Enum {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
     pub name: String,
+    pub generic_params: Option<GenericParams>,
+    pub where_clauses: Option<WhereClauses>,
     pub variants: Vec<EnumVariant>,
 }
 
@@ -22,21 +41,6 @@ pub struct EnumVariant {
     pub name: String,
     pub contents: StructFields,
     // TODO "Variant = xxx"
-}
-
-#[derive(Clone, Debug)]
-pub struct Struct {
-    pub attributes: Vec<Attribute>,
-    pub vis_marker: Option<VisMarker>,
-    pub name: String,
-    pub fields: StructFields,
-}
-
-#[derive(Clone, Debug)]
-pub enum StructFields {
-    Unit,
-    Tuple(Vec<TupleField>),
-    Named(Vec<NamedField>),
 }
 
 #[derive(Clone, Debug)]
@@ -66,6 +70,16 @@ pub struct Attribute {
 pub struct VisMarker {
     pub _token1: TokenTree,
     pub _token2: Option<TokenTree>,
+}
+
+#[derive(Clone)]
+pub struct GenericParams {
+    pub tokens: Vec<TokenTree>,
+}
+
+#[derive(Clone)]
+pub struct WhereClauses {
+    pub tokens: Vec<TokenTree>,
 }
 
 #[derive(Clone)]
@@ -109,6 +123,36 @@ impl std::fmt::Debug for VisMarker {
             }
             _ => unreachable!(),
         }
+    }
+}
+
+impl std::fmt::Debug for GenericParams {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut list = f.debug_list();
+        for token in &self.tokens {
+            match token {
+                TokenTree::Group(_group) => list.entry(token),
+                TokenTree::Ident(_ident) => list.entry(&token.to_string()),
+                TokenTree::Punct(_punct) => list.entry(&token.to_string()),
+                TokenTree::Literal(_literal) => list.entry(&token.to_string()),
+            };
+        }
+        list.finish()
+    }
+}
+
+impl std::fmt::Debug for WhereClauses {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut list = f.debug_list();
+        for token in &self.tokens {
+            match token {
+                TokenTree::Group(_group) => list.entry(token),
+                TokenTree::Ident(_ident) => list.entry(&token.to_string()),
+                TokenTree::Punct(_punct) => list.entry(&token.to_string()),
+                TokenTree::Literal(_literal) => list.entry(&token.to_string()),
+            };
+        }
+        list.finish()
     }
 }
 

@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 59
+assertion_line: 62
 expression: struct_type
 ---
 Struct(
@@ -8,6 +8,8 @@ Struct(
         attributes: [],
         vis_marker: None,
         name: "Hello",
+        generic_params: None,
+        where_clauses: None,
         fields: Tuple(
             [],
         ),

@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 362
+assertion_line: 365
 expression: struct_type
 ---
 Struct(
@@ -8,6 +8,23 @@ Struct(
         attributes: [],
         vis_marker: None,
         name: "Hello",
+        generic_params: Some(
+            [
+                "<",
+                "X",
+                ",",
+                "Y",
+                ":",
+                "Z",
+                "<",
+                "A",
+                ">",
+                ",",
+                "Z",
+                ">",
+            ],
+        ),
+        where_clauses: None,
         fields: Tuple(
             [
                 TupleField {

@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 170
+assertion_line: 173
 expression: enum_type_crate
 ---
 Enum(
@@ -10,6 +10,7 @@ Enum(
             crate,
         ),
         name: "Hello",
+        generic_params: None,
         variants: [
             EnumVariant {
                 attributes: [],

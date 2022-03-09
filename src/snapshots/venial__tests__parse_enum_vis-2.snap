@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 169
+assertion_line: 172
 expression: enum_type_pub_crate
 ---
 Enum(
@@ -12,6 +12,7 @@ Enum(
             ),
         ),
         name: "Hello",
+        generic_params: None,
         variants: [
             EnumVariant {
                 attributes: [],
