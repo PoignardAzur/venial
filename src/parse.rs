@@ -1,5 +1,7 @@
-// TODO - remove *
-use crate::types::*;
+use crate::types::{
+    Attribute, Enum, EnumDiscriminant, EnumVariant, GenericParams, NamedField, Struct,
+    StructFields, TupleField, TyExpr, TypeDeclaration, VisMarker, WhereClauses,
+};
 use proc_macro2::{Delimiter, Ident, TokenStream, TokenTree};
 use std::iter::Peekable;
 

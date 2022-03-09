@@ -5,3 +5,8 @@ pub mod types;
 mod tests;
 
 pub use parse::parse_type;
+
+pub use types::{
+    Attribute, Enum, EnumDiscriminant, EnumVariant, GenericParams, NamedField, Struct,
+    StructFields, TupleField, TyExpr, TypeDeclaration, VisMarker, WhereClauses,
+};
