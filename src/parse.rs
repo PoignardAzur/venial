@@ -65,34 +65,57 @@ fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {
     }
 }
 
+// Consumes tokens until a separator is reached *unless* the
+// separator in between angle brackets
+// eg consume_stuff_until(..., ',') will consume all
+// of `Foobar<A, B>,` except for the last comma
+fn consume_stuff_until(
+    tokens: &mut TokenIter,
+    predicate: impl FnMut(&TokenTree) -> bool,
+) -> Vec<TokenTree> {
+    let mut output_tokens = Vec::new();
+    let mut bracket_count = 0;
+    let mut predicate = predicate;
+    let mut prev_token_is_dash = false;
+
+    loop {
+        let token = tokens.peek();
+        prev_token_is_dash = match &token {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => {
+                bracket_count += 1;
+                false
+            }
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '>' && !prev_token_is_dash => {
+                bracket_count -= 1;
+                false
+            }
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '-' => true,
+            Some(token) if predicate(token) && bracket_count == 0 => {
+                break;
+            }
+            None => {
+                break;
+            }
+            _ => false,
+        };
+
+        output_tokens.push(tokens.next().unwrap());
+    }
+
+    output_tokens
+}
+
 fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
     match tokens.peek() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => (),
         _ => return None,
     };
 
-    let mut param_tokens = Vec::new();
-    let mut bracket_count = 0;
-    loop {
-        let token = tokens.next().unwrap();
-        match &token {
-            TokenTree::Punct(punct) if punct.as_char() == '<' => {
-                bracket_count += 1;
-            }
-            TokenTree::Punct(punct) if punct.as_char() == '>' => {
-                bracket_count -= 1;
-            }
-            _ => {}
-        };
+    let param_tokens = consume_stuff_until(tokens, |_| true);
 
-        param_tokens.push(token);
-
-        if bracket_count == 0 {
-            return Some(GenericParams {
-                tokens: param_tokens,
-            });
-        }
-    }
+    Some(GenericParams {
+        tokens: param_tokens,
+    })
 }
 
 fn consume_where_clauses(tokens: &mut TokenIter) -> Option<WhereClauses> {
@@ -101,29 +124,11 @@ fn consume_where_clauses(tokens: &mut TokenIter) -> Option<WhereClauses> {
         _ => return None,
     }
 
-    let mut where_clause_tokens = Vec::new();
-    let mut bracket_count = 0;
-    loop {
-        match tokens.peek().unwrap() {
-            TokenTree::Punct(punct) if punct.as_char() == '<' => {
-                bracket_count += 1;
-            }
-            TokenTree::Punct(punct) if punct.as_char() == '>' => {
-                bracket_count -= 1;
-            }
-            TokenTree::Group(group)
-                if group.delimiter() == Delimiter::Brace && bracket_count == 0 =>
-            {
-                break;
-            }
-            TokenTree::Punct(punct) if punct.as_char() == ';' && bracket_count == 0 => {
-                break;
-            }
-            _ => {}
-        };
-
-        where_clause_tokens.push(tokens.next().unwrap());
-    }
+    let where_clause_tokens = consume_stuff_until(tokens, |token| match token {
+        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
+        TokenTree::Punct(punct) if punct.as_char() == ';' => true,
+        _ => false,
+    });
 
     return Some(WhereClauses {
         tokens: where_clause_tokens,
@@ -131,29 +136,20 @@ fn consume_where_clauses(tokens: &mut TokenIter) -> Option<WhereClauses> {
 }
 
 fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
-    let mut field_type_tokens = Vec::new();
-    let mut bracket_count = 0;
-    loop {
-        match tokens.peek() {
-            Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => {
-                bracket_count += 1;
-            }
-            Some(TokenTree::Punct(punct)) if punct.as_char() == '>' => {
-                bracket_count -= 1;
-            }
-            Some(TokenTree::Punct(punct)) if punct.as_char() == ',' && bracket_count == 0 => {
-                // consume period
-                tokens.next();
-                return field_type_tokens;
-            }
-            None => {
-                return field_type_tokens;
-            }
-            _ => {}
-        };
+    let field_type_tokens = consume_stuff_until(tokens, |token| match token {
+        TokenTree::Punct(punct) if punct.as_char() == ',' => true,
+        _ => false,
+    });
 
-        field_type_tokens.push(tokens.next().unwrap());
-    }
+    // consume period, if any
+    match tokens.peek() {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => {
+            tokens.next();
+        }
+        _ => (),
+    };
+
+    return field_type_tokens;
 }
 
 fn consume_enum_discriminant(tokens: &mut TokenIter) -> Option<EnumDiscriminant> {
@@ -162,27 +158,10 @@ fn consume_enum_discriminant(tokens: &mut TokenIter) -> Option<EnumDiscriminant>
         _ => return None,
     };
 
-    let mut enum_discriminant_tokens = Vec::new();
-    let mut bracket_count = 0;
-    loop {
-        match tokens.peek() {
-            Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => {
-                bracket_count += 1;
-            }
-            Some(TokenTree::Punct(punct)) if punct.as_char() == '>' => {
-                bracket_count -= 1;
-            }
-            Some(TokenTree::Punct(punct)) if punct.as_char() == ',' && bracket_count == 0 => {
-                break;
-            }
-            None => {
-                break;
-            }
-            _ => {}
-        };
-
-        enum_discriminant_tokens.push(tokens.next().unwrap());
-    }
+    let enum_discriminant_tokens = consume_stuff_until(tokens, |token| match token {
+        TokenTree::Punct(punct) if punct.as_char() == ',' => true,
+        _ => false,
+    });
 
     return Some(EnumDiscriminant {
         tokens: enum_discriminant_tokens,

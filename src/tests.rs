@@ -436,3 +436,22 @@ fn parse_const_generics() {
 
     assert_debug_snapshot!(struct_type);
 }
+
+// =========
+// FN TRAITS
+// =========
+
+#[test]
+fn parse_fn_traits() {
+    let struct_type = parse_type(quote!(
+        struct Hello(
+            fn(A, B) -> C,
+            A<FnOnce(A, B, C<D>) -> E,
+        );
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+// TODO - >>
+// TODO - <<

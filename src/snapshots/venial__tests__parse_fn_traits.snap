@@ -1,0 +1,89 @@
+---
+source: src/tests.rs
+assertion_line: 453
+expression: struct_type
+---
+Struct(
+    Struct {
+        attributes: [],
+        vis_marker: None,
+        name: "Hello",
+        generic_params: None,
+        where_clauses: None,
+        fields: Tuple(
+            [
+                TupleField {
+                    attributes: [],
+                    vis_marker: None,
+                    ty: [
+                        "fn",
+                        Group {
+                            delimiter: Parenthesis,
+                            stream: TokenStream [
+                                Ident {
+                                    sym: A,
+                                },
+                                Punct {
+                                    char: ',',
+                                    spacing: Alone,
+                                },
+                                Ident {
+                                    sym: B,
+                                },
+                            ],
+                        },
+                        "-",
+                        ">",
+                        "C",
+                    ],
+                },
+                TupleField {
+                    attributes: [],
+                    vis_marker: None,
+                    ty: [
+                        "A",
+                        "<",
+                        "FnOnce",
+                        Group {
+                            delimiter: Parenthesis,
+                            stream: TokenStream [
+                                Ident {
+                                    sym: A,
+                                },
+                                Punct {
+                                    char: ',',
+                                    spacing: Alone,
+                                },
+                                Ident {
+                                    sym: B,
+                                },
+                                Punct {
+                                    char: ',',
+                                    spacing: Alone,
+                                },
+                                Ident {
+                                    sym: C,
+                                },
+                                Punct {
+                                    char: '<',
+                                    spacing: Alone,
+                                },
+                                Ident {
+                                    sym: D,
+                                },
+                                Punct {
+                                    char: '>',
+                                    spacing: Alone,
+                                },
+                            ],
+                        },
+                        "-",
+                        ">",
+                        "E",
+                        ",",
+                    ],
+                },
+            ],
+        ),
+    },
+)
