@@ -5,6 +5,10 @@ expression: struct_type
 ---
 Struct(
     Struct {
+        attributes: [],
+        vis_marker: Some(
+            pub,
+        ),
         name: "Hello",
         fields: Tuple(
             [
@@ -14,12 +18,14 @@ Struct(
                             "hello",
                         ],
                     ],
+                    vis_marker: None,
                     ty: [
                         "A",
                     ],
                 },
                 TupleField {
                     attributes: [],
+                    vis_marker: None,
                     ty: [
                         "B",
                     ],
@@ -36,12 +42,14 @@ Struct(
                             "hello",
                         ],
                     ],
+                    vis_marker: None,
                     ty: [
                         "C",
                     ],
                 },
                 TupleField {
                     attributes: [],
+                    vis_marker: None,
                     ty: [
                         "D",
                     ],

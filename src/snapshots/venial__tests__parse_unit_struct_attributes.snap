@@ -1,10 +1,18 @@
 ---
 source: src/tests.rs
-assertion_line: 192
+assertion_line: 207
 expression: struct_type
 ---
 Struct(
     Struct {
+        attributes: [
+            #[
+                "hello",
+            ],
+        ],
+        vis_marker: Some(
+            pub,
+        ),
         name: "Hello",
         fields: Unit,
     },

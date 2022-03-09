@@ -1,10 +1,16 @@
 ---
 source: src/tests.rs
-assertion_line: 77
+assertion_line: 97
 expression: struct_type_pub_crate
 ---
 Struct(
     Struct {
+        attributes: [],
+        vis_marker: Some(
+            pub(
+                "crate",
+            ),
+        ),
         name: "Hello",
         fields: Unit,
     },

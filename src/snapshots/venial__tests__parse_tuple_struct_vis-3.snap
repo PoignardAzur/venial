@@ -5,17 +5,23 @@ expression: struct_type_crate
 ---
 Struct(
     Struct {
+        attributes: [],
+        vis_marker: Some(
+            crate,
+        ),
         name: "Hello",
         fields: Tuple(
             [
                 TupleField {
                     attributes: [],
+                    vis_marker: None,
                     ty: [
                         "A",
                     ],
                 },
                 TupleField {
                     attributes: [],
+                    vis_marker: None,
                     ty: [
                         "B",
                     ],

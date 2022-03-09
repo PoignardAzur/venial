@@ -5,6 +5,12 @@ expression: enum_type_pub_crate
 ---
 Enum(
     Enum {
+        attributes: [],
+        vis_marker: Some(
+            pub(
+                "crate",
+            ),
+        ),
         name: "Hello",
         variants: [
             EnumVariant {
@@ -19,12 +25,14 @@ Enum(
                     [
                         TupleField {
                             attributes: [],
+                            vis_marker: None,
                             ty: [
                                 "Foo",
                             ],
                         },
                         TupleField {
                             attributes: [],
+                            vis_marker: None,
                             ty: [
                                 "Bar",
                             ],
@@ -39,6 +47,7 @@ Enum(
                     [
                         NamedField {
                             attributes: [],
+                            vis_marker: None,
                             name: "foo",
                             ty: [
                                 "Foo",
@@ -46,6 +55,7 @@ Enum(
                         },
                         NamedField {
                             attributes: [],
+                            vis_marker: None,
                             name: "bar",
                             ty: [
                                 "Bar",

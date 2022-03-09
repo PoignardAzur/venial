@@ -35,21 +35,28 @@ fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
     }
 }
 
-fn consume_vis_marker(tokens: &mut TokenIter) -> Vec<TokenTree> {
+fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {
     match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "pub" => {
             let pub_token = tokens.next().unwrap();
             match tokens.peek() {
                 Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Parenthesis => {
-                    vec![pub_token, tokens.next().unwrap()]
+                    Some(VisMarker {
+                        _token1: pub_token,
+                        _token2: Some(tokens.next().unwrap()),
+                    })
                 }
-                _ => vec![pub_token],
+                _ => Some(VisMarker {
+                    _token1: pub_token,
+                    _token2: None,
+                }),
             }
         }
-        Some(TokenTree::Ident(ident)) if ident == "crate" => {
-            vec![tokens.next().unwrap()]
-        }
-        _ => Vec::new(),
+        Some(TokenTree::Ident(ident)) if ident == "crate" => Some(VisMarker {
+            _token1: tokens.next().unwrap(),
+            _token2: None,
+        }),
+        _ => None,
     }
 }
 
@@ -150,10 +157,11 @@ pub fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
         }
 
         let attributes = consume_attributes(&mut tokens);
-        consume_vis_marker(&mut tokens);
+        let vis_marker = consume_vis_marker(&mut tokens);
 
         fields.push(TupleField {
             attributes,
+            vis_marker,
             ty: TyExpr {
                 tokens: consume_field_type(&mut tokens),
             },
@@ -175,7 +183,7 @@ pub fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
         }
 
         let attributes = consume_attributes(&mut tokens);
-        consume_vis_marker(&mut tokens);
+        let vis_marker = consume_vis_marker(&mut tokens);
 
         let ident = parse_ident(tokens.next().unwrap()).unwrap();
 
@@ -187,6 +195,7 @@ pub fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
         tokens.peek().unwrap();
         fields.push(NamedField {
             attributes,
+            vis_marker,
             name: ident.to_string(),
             ty: TyExpr {
                 tokens: consume_field_type(&mut tokens),
@@ -242,8 +251,8 @@ pub fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
 pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
     let mut tokens = tokens.into_iter().peekable();
 
-    consume_attributes(&mut tokens);
-    consume_vis_marker(&mut tokens);
+    let attributes = consume_attributes(&mut tokens);
+    let vis_marker = consume_vis_marker(&mut tokens);
 
     if let Some(ident) = parse_ident(tokens.next().unwrap()) {
         if ident == "struct" {
@@ -266,6 +275,8 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
             };
 
             return TypeDeclaration::Struct(Struct {
+                attributes,
+                vis_marker,
                 name: struct_name.to_string(),
                 fields: struct_fields,
             });
@@ -285,6 +296,8 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
             };
 
             return TypeDeclaration::Enum(Enum {
+                attributes,
+                vis_marker,
                 name: enum_name.to_string(),
                 variants: enum_variants,
             });

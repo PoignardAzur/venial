@@ -10,6 +10,8 @@ pub enum TypeDeclaration {
 
 #[derive(Clone, Debug)]
 pub struct Enum {
+    pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
     pub name: String,
     pub variants: Vec<EnumVariant>,
 }
@@ -24,6 +26,8 @@ pub struct EnumVariant {
 
 #[derive(Clone, Debug)]
 pub struct Struct {
+    pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
     pub name: String,
     pub fields: StructFields,
 }
@@ -38,20 +42,19 @@ pub enum StructFields {
 #[derive(Clone, Debug)]
 pub struct TupleField {
     pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
     pub ty: TyExpr,
 }
 
 #[derive(Clone, Debug)]
 pub struct NamedField {
     pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
     pub name: String,
     pub ty: TyExpr,
 }
 
-#[derive(Clone)]
-pub struct TyExpr {
-    pub tokens: Vec<TokenTree>,
-}
+// --- Token groups ---
 
 #[derive(Clone)]
 pub struct Attribute {
@@ -59,12 +62,24 @@ pub struct Attribute {
     pub child_tokens: Vec<TokenTree>,
 }
 
+#[derive(Clone)]
+pub struct VisMarker {
+    pub _token1: TokenTree,
+    pub _token2: Option<TokenTree>,
+}
+
+#[derive(Clone)]
+pub struct TyExpr {
+    pub tokens: Vec<TokenTree>,
+}
+
 // ---
 
-impl std::fmt::Debug for TyExpr {
+impl std::fmt::Debug for Attribute {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("#")?;
         let mut list = f.debug_list();
-        for token in &self.tokens {
+        for token in &self.child_tokens {
             match token {
                 TokenTree::Group(_group) => list.entry(token),
                 TokenTree::Ident(_ident) => list.entry(&token.to_string()),
@@ -76,11 +91,31 @@ impl std::fmt::Debug for TyExpr {
     }
 }
 
-impl std::fmt::Debug for Attribute {
+impl std::fmt::Debug for VisMarker {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("#")?;
+        match &self._token2 {
+            None => f.write_str(&self._token1.to_string()),
+            Some(TokenTree::Group(group)) => {
+                let mut list = f.debug_tuple(&self._token1.to_string());
+                for token in group.stream().into_iter() {
+                    match &token {
+                        TokenTree::Group(_group) => list.field(&token),
+                        TokenTree::Ident(_ident) => list.field(&token.to_string()),
+                        TokenTree::Punct(_punct) => list.field(&token.to_string()),
+                        TokenTree::Literal(_literal) => list.field(&token.to_string()),
+                    };
+                }
+                list.finish()
+            }
+            _ => unreachable!(),
+        }
+    }
+}
+
+impl std::fmt::Debug for TyExpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut list = f.debug_list();
-        for token in &self.child_tokens {
+        for token in &self.tokens {
             match token {
                 TokenTree::Group(_group) => list.entry(token),
                 TokenTree::Ident(_ident) => list.entry(&token.to_string()),

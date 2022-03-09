@@ -5,11 +5,18 @@ expression: struct_type
 ---
 Struct(
     Struct {
+        attributes: [],
+        vis_marker: Some(
+            pub,
+        ),
         name: "Hello",
         fields: Named(
             [
                 NamedField {
                     attributes: [],
+                    vis_marker: Some(
+                        pub,
+                    ),
                     name: "a",
                     ty: [
                         "A",
@@ -17,6 +24,11 @@ Struct(
                 },
                 NamedField {
                     attributes: [],
+                    vis_marker: Some(
+                        pub(
+                            "super",
+                        ),
+                    ),
                     name: "b",
                     ty: [
                         "B",
@@ -24,6 +36,9 @@ Struct(
                 },
                 NamedField {
                     attributes: [],
+                    vis_marker: Some(
+                        crate,
+                    ),
                     name: "c",
                     ty: [
                         "C",
@@ -31,6 +46,7 @@ Struct(
                 },
                 NamedField {
                     attributes: [],
+                    vis_marker: None,
                     name: "d",
                     ty: [
                         "D",

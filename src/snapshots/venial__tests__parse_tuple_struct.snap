@@ -5,17 +5,21 @@ expression: struct_type
 ---
 Struct(
     Struct {
+        attributes: [],
+        vis_marker: None,
         name: "Hello",
         fields: Tuple(
             [
                 TupleField {
                     attributes: [],
+                    vis_marker: None,
                     ty: [
                         "A",
                     ],
                 },
                 TupleField {
                     attributes: [],
+                    vis_marker: None,
                     ty: [
                         "B",
                     ],

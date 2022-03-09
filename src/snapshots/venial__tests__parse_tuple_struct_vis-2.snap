@@ -5,17 +5,25 @@ expression: struct_type_pub_crate
 ---
 Struct(
     Struct {
+        attributes: [],
+        vis_marker: Some(
+            pub(
+                "crate",
+            ),
+        ),
         name: "Hello",
         fields: Tuple(
             [
                 TupleField {
                     attributes: [],
+                    vis_marker: None,
                     ty: [
                         "A",
                     ],
                 },
                 TupleField {
                     attributes: [],
+                    vis_marker: None,
                     ty: [
                         "B",
                     ],
