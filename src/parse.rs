@@ -23,14 +23,14 @@ fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
         };
         let hashbang = tokens.next().unwrap();
 
-        match tokens.peek() {
-            Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Bracket => {}
+        let child_tokens = match tokens.next().unwrap() {
+            TokenTree::Group(group) if group.delimiter() == Delimiter::Bracket => group.stream(),
             _ => panic!("cannot parse type"),
         };
-        let group = tokens.next().unwrap();
 
         attributes.push(Attribute {
-            tokens: vec![hashbang, group],
+            _hashbang: hashbang,
+            child_tokens: child_tokens.into_iter().collect(),
         })
     }
 }
@@ -149,10 +149,11 @@ pub fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
             break;
         }
 
-        consume_attributes(&mut tokens);
+        let attributes = consume_attributes(&mut tokens);
         consume_vis_marker(&mut tokens);
 
         fields.push(TupleField {
+            attributes,
             ty: TyExpr {
                 tokens: consume_field_type(&mut tokens),
             },
@@ -173,7 +174,7 @@ pub fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
             break;
         }
 
-        consume_attributes(&mut tokens);
+        let attributes = consume_attributes(&mut tokens);
         consume_vis_marker(&mut tokens);
 
         let ident = parse_ident(tokens.next().unwrap()).unwrap();
@@ -185,6 +186,7 @@ pub fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
 
         tokens.peek().unwrap();
         fields.push(NamedField {
+            attributes,
             name: ident.to_string(),
             ty: TyExpr {
                 tokens: consume_field_type(&mut tokens),
@@ -206,7 +208,7 @@ pub fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
             break;
         }
 
-        consume_attributes(&mut tokens);
+        let attributes = consume_attributes(&mut tokens);
 
         let ident = parse_ident(tokens.next().unwrap()).unwrap();
 
@@ -228,6 +230,7 @@ pub fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
         };
 
         variants.push(EnumVariant {
+            attributes,
             name: ident.to_string(),
             contents,
         });

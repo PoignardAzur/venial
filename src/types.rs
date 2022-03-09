@@ -16,7 +16,7 @@ pub struct Enum {
 
 #[derive(Clone, Debug)]
 pub struct EnumVariant {
-    // TODO - attributes
+    pub attributes: Vec<Attribute>,
     pub name: String,
     pub contents: StructFields,
     // TODO "Variant = xxx"
@@ -37,13 +37,13 @@ pub enum StructFields {
 
 #[derive(Clone, Debug)]
 pub struct TupleField {
-    // TODO - attributes
+    pub attributes: Vec<Attribute>,
     pub ty: TyExpr,
 }
 
 #[derive(Clone, Debug)]
 pub struct NamedField {
-    // TODO - attributes
+    pub attributes: Vec<Attribute>,
     pub name: String,
     pub ty: TyExpr,
 }
@@ -55,8 +55,11 @@ pub struct TyExpr {
 
 #[derive(Clone)]
 pub struct Attribute {
-    pub tokens: Vec<TokenTree>,
+    pub _hashbang: TokenTree,
+    pub child_tokens: Vec<TokenTree>,
 }
+
+// ---
 
 impl std::fmt::Debug for TyExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -75,9 +78,15 @@ impl std::fmt::Debug for TyExpr {
 
 impl std::fmt::Debug for Attribute {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.write_str("#")?;
         let mut list = f.debug_list();
-        for token in &self.tokens {
-            list.entry(token);
+        for token in &self.child_tokens {
+            match token {
+                TokenTree::Group(_group) => list.entry(token),
+                TokenTree::Ident(_ident) => list.entry(&token.to_string()),
+                TokenTree::Punct(_punct) => list.entry(&token.to_string()),
+                TokenTree::Literal(_literal) => list.entry(&token.to_string()),
+            };
         }
         list.finish()
     }

@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 359
+assertion_line: 387
 expression: enum_type
 ---
 Enum(
@@ -8,19 +8,23 @@ Enum(
         name: "Hello",
         variants: [
             EnumVariant {
+                attributes: [],
                 name: "A",
                 contents: Unit,
             },
             EnumVariant {
+                attributes: [],
                 name: "B",
                 contents: Tuple(
                     [
                         TupleField {
+                            attributes: [],
                             ty: [
                                 "Foo",
                             ],
                         },
                         TupleField {
+                            attributes: [],
                             ty: [
                                 "Bar",
                                 "<",
@@ -36,10 +40,12 @@ Enum(
                 ),
             },
             EnumVariant {
+                attributes: [],
                 name: "C",
                 contents: Named(
                     [
                         NamedField {
+                            attributes: [],
                             name: "foo",
                             ty: [
                                 "Foo",
@@ -53,6 +59,7 @@ Enum(
                             ],
                         },
                         NamedField {
+                            attributes: [],
                             name: "bar",
                             ty: [
                                 "Bar",

@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 260
+assertion_line: 279
 expression: struct_type
 ---
 Struct(
@@ -9,21 +9,39 @@ Struct(
         fields: Tuple(
             [
                 TupleField {
+                    attributes: [
+                        #[
+                            "hello",
+                        ],
+                    ],
                     ty: [
                         "A",
                     ],
                 },
                 TupleField {
+                    attributes: [],
                     ty: [
                         "B",
                     ],
                 },
                 TupleField {
+                    attributes: [
+                        #[
+                            "hello",
+                        ],
+                        #[
+                            "hello",
+                        ],
+                        #[
+                            "hello",
+                        ],
+                    ],
                     ty: [
                         "C",
                     ],
                 },
                 TupleField {
+                    attributes: [],
                     ty: [
                         "D",
                     ],

@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 122
+assertion_line: 139
 expression: struct_type_pub
 ---
 Struct(
@@ -9,12 +9,14 @@ Struct(
         fields: Named(
             [
                 NamedField {
+                    attributes: [],
                     name: "a",
                     ty: [
                         "A",
                     ],
                 },
                 NamedField {
+                    attributes: [],
                     name: "b",
                     ty: [
                         "B",

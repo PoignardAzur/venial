@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 243
+assertion_line: 262
 expression: struct_type
 ---
 Struct(
@@ -9,24 +9,42 @@ Struct(
         fields: Named(
             [
                 NamedField {
+                    attributes: [
+                        #[
+                            "hello",
+                        ],
+                    ],
                     name: "a",
                     ty: [
                         "A",
                     ],
                 },
                 NamedField {
+                    attributes: [],
                     name: "b",
                     ty: [
                         "B",
                     ],
                 },
                 NamedField {
+                    attributes: [
+                        #[
+                            "hello",
+                        ],
+                        #[
+                            "hello",
+                        ],
+                        #[
+                            "hello",
+                        ],
+                    ],
                     name: "c",
                     ty: [
                         "C",
                     ],
                 },
                 NamedField {
+                    attributes: [],
                     name: "d",
                     ty: [
                         "D",
