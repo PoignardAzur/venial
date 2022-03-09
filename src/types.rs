@@ -48,12 +48,37 @@ pub struct NamedField {
     pub ty: TyExpr,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct TyExpr {
     pub tokens: Vec<TokenTree>,
 }
 
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Attribute {
     pub tokens: Vec<TokenTree>,
+}
+
+impl std::fmt::Debug for TyExpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut list = f.debug_list();
+        for token in &self.tokens {
+            match token {
+                TokenTree::Group(_group) => list.entry(token),
+                TokenTree::Ident(_ident) => list.entry(&token.to_string()),
+                TokenTree::Punct(_punct) => list.entry(&token.to_string()),
+                TokenTree::Literal(_literal) => list.entry(&token.to_string()),
+            };
+        }
+        list.finish()
+    }
+}
+
+impl std::fmt::Debug for Attribute {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut list = f.debug_list();
+        for token in &self.tokens {
+            list.entry(token);
+        }
+        list.finish()
+    }
 }

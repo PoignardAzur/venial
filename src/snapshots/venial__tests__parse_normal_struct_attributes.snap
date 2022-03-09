@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 215
+assertion_line: 211
 expression: struct_type
 ---
 Struct(
@@ -10,23 +10,15 @@ Struct(
             [
                 NamedField {
                     name: "a",
-                    ty: TyExpr {
-                        tokens: [
-                            Ident {
-                                sym: A,
-                            },
-                        ],
-                    },
+                    ty: [
+                        "A",
+                    ],
                 },
                 NamedField {
                     name: "b",
-                    ty: TyExpr {
-                        tokens: [
-                            Ident {
-                                sym: B,
-                            },
-                        ],
-                    },
+                    ty: [
+                        "B",
+                    ],
                 },
             ],
         ),

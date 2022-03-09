@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 46
+assertion_line: 62
 expression: enum_type
 ---
 Enum(
@@ -16,22 +16,14 @@ Enum(
                 contents: Tuple(
                     [
                         TupleField {
-                            ty: TyExpr {
-                                tokens: [
-                                    Ident {
-                                        sym: Foo,
-                                    },
-                                ],
-                            },
+                            ty: [
+                                "Foo",
+                            ],
                         },
                         TupleField {
-                            ty: TyExpr {
-                                tokens: [
-                                    Ident {
-                                        sym: Bar,
-                                    },
-                                ],
-                            },
+                            ty: [
+                                "Bar",
+                            ],
                         },
                     ],
                 ),
@@ -42,23 +34,15 @@ Enum(
                     [
                         NamedField {
                             name: "foo",
-                            ty: TyExpr {
-                                tokens: [
-                                    Ident {
-                                        sym: Foo,
-                                    },
-                                ],
-                            },
+                            ty: [
+                                "Foo",
+                            ],
                         },
                         NamedField {
                             name: "bar",
-                            ty: TyExpr {
-                                tokens: [
-                                    Ident {
-                                        sym: Bar,
-                                    },
-                                ],
-                            },
+                            ty: [
+                                "Bar",
+                            ],
                         },
                     ],
                 ),

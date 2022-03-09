@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 264
+assertion_line: 260
 expression: struct_type
 ---
 Struct(
@@ -9,40 +9,24 @@ Struct(
         fields: Tuple(
             [
                 TupleField {
-                    ty: TyExpr {
-                        tokens: [
-                            Ident {
-                                sym: A,
-                            },
-                        ],
-                    },
+                    ty: [
+                        "A",
+                    ],
                 },
                 TupleField {
-                    ty: TyExpr {
-                        tokens: [
-                            Ident {
-                                sym: B,
-                            },
-                        ],
-                    },
+                    ty: [
+                        "B",
+                    ],
                 },
                 TupleField {
-                    ty: TyExpr {
-                        tokens: [
-                            Ident {
-                                sym: C,
-                            },
-                        ],
-                    },
+                    ty: [
+                        "C",
+                    ],
                 },
                 TupleField {
-                    ty: TyExpr {
-                        tokens: [
-                            Ident {
-                                sym: D,
-                            },
-                        ],
-                    },
+                    ty: [
+                        "D",
+                    ],
                 },
             ],
         ),
