@@ -1,5 +1,7 @@
 use proc_macro2::TokenTree;
 
+// TODO - handle unions
+
 #[derive(Clone, Debug)]
 pub enum TypeDeclaration {
     Struct(Struct),

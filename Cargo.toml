@@ -1,9 +1,14 @@
 [package]
 name = "venial"
 version = "0.1.0"
+authors = ["Olivier Faure <olivier.cj.faure@gmail.com>"]
 edition = "2021"
-
-# See more keys and their definitions at https://doc.rust-lang.org/cargo/reference/manifest.html
+description = "A very small syn"
+repository = "https://github.com/PoignardAzur/venial"
+license = "MIT"
+keywords = ["syn", "parsing", "proc-macro", "small", "derive"]
+categories = ["development-tools::procedural-macro-helpers"]
+exclude = ["*.snap"]
 
 [dependencies]
 proc-macro2 = "1.0.36"

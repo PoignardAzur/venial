@@ -1,5 +1,7 @@
-pub mod parse;
-pub mod types;
+// TODO - Add clippy lints
+
+mod parse;
+mod types;
 
 #[cfg(test)]
 mod tests;

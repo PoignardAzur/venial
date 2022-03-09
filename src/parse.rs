@@ -168,7 +168,7 @@ fn consume_enum_discriminant(tokens: &mut TokenIter) -> Option<EnumDiscriminant>
     });
 }
 
-pub fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
+fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
     let mut fields = Vec::new();
 
     let mut tokens = tokens.into_iter().peekable();
@@ -192,7 +192,7 @@ pub fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
     fields
 }
 
-pub fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
+fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
     let mut fields = Vec::new();
 
     let mut tokens = tokens.into_iter().peekable();
@@ -225,7 +225,7 @@ pub fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
     fields
 }
 
-pub fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
+fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
     let mut variants = Vec::new();
 
     let mut tokens = tokens.into_iter().peekable();
@@ -281,6 +281,7 @@ pub fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
     variants
 }
 
+// TODO doc
 pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
     let mut tokens = tokens.into_iter().peekable();
 
