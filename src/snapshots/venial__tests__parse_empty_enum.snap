@@ -1,0 +1,11 @@
+---
+source: src/tests.rs
+assertion_line: 84
+expression: enum_type
+---
+Enum(
+    Enum {
+        name: "Hello",
+        variants: [],
+    },
+)

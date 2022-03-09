@@ -3,16 +3,9 @@ use crate::parse_type;
 use insta::assert_debug_snapshot;
 use quote::quote;
 
-// TODO
-// - no trailing period
-// - empty enum
-// - empty struct
-// - empty tuple
-// - empty generic params
-
-// TODO - seperate out tests
-
+// =============
 // BASIC PARSING
+// =============
 
 #[test]
 fn parse_unit_struct() {
@@ -57,7 +50,36 @@ fn parse_enum() {
     assert_debug_snapshot!(enum_type);
 }
 
+#[test]
+fn parse_empty_tuple() {
+    let struct_type = parse_type(quote!(
+        struct Hello();
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[test]
+fn parse_empty_struct() {
+    let struct_type = parse_type(quote!(
+        struct Hello {}
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[test]
+fn parse_empty_enum() {
+    let enum_type = parse_type(quote!(
+        enum Hello {}
+    ));
+
+    assert_debug_snapshot!(enum_type);
+}
+
+// ==========
 // VISIBILITY
+// ==========
 
 #[test]
 fn parse_unit_struct_vis() {
@@ -171,7 +193,9 @@ fn parse_tuple_fields_vis() {
     assert_debug_snapshot!(struct_type);
 }
 
+// ==========
 // ATTRIBUTES
+// ==========
 
 #[test]
 fn parse_unit_struct_attributes() {
@@ -255,7 +279,9 @@ fn parse_tuple_fields_attributes() {
     assert_debug_snapshot!(struct_type);
 }
 
+// =============
 // WHERE CLAUSES
+// =============
 
 #[test]
 fn parse_unit_struct_where_clause() {
@@ -314,7 +340,9 @@ fn parse_enum_where_clause() {
     assert_debug_snapshot!(enum_type);
 }
 
+// ==============
 // GENERIC PARAMS
+// ==============
 
 #[test]
 fn parse_unit_struct_generic_params() {
@@ -353,6 +381,23 @@ fn parse_enum_generic_params() {
             A,
             B(Foo, Bar<X, Y, Z>),
             C { foo: Foo<X, Y, Z>, bar: Bar },
+        }
+    ));
+
+    assert_debug_snapshot!(enum_type);
+}
+
+#[rustfmt::skip]
+#[test]
+fn parse_enum_empty_generic_params() {
+    let enum_type = parse_type(quote!(
+        enum Hello<>
+        where
+            A<>: B<>,
+        {
+            A,
+            B(Foo, Bar<>),
+            C { foo: Foo<>, bar: Bar },
         }
     ));
 
