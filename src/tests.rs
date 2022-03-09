@@ -3,9 +3,6 @@ use crate::parse_type;
 use insta::assert_debug_snapshot;
 use quote::quote;
 
-// TODO - test const generics {}
-// TODO - test Fn()
-
 // =============
 // BASIC PARSING
 // =============
@@ -424,9 +421,9 @@ fn parse_enum_discriminant() {
     assert_debug_snapshot!(enum_type);
 }
 
-// ==============
-// CONST GENERICS
-// ==============
+// =====================
+// GENERICS CORNER CASES
+// =====================
 
 #[test]
 fn parse_const_generics() {
@@ -436,10 +433,6 @@ fn parse_const_generics() {
 
     assert_debug_snapshot!(struct_type);
 }
-
-// =========
-// FN TRAITS
-// =========
 
 #[test]
 fn parse_fn_traits() {
@@ -453,5 +446,16 @@ fn parse_fn_traits() {
     assert_debug_snapshot!(struct_type);
 }
 
-// TODO - >>
-// TODO - <<
+#[rustfmt::skip]
+#[test]
+fn parse_multiple_brackets() {
+    let struct_type = parse_type(quote!(
+        struct Hello(
+            A<B<C>>,
+            A<B<C, D>>,
+            <<D as Trait>::X as Trait>::Y,
+        );
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}

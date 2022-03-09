@@ -1,0 +1,67 @@
+---
+source: src/tests.rs
+assertion_line: 463
+expression: struct_type
+---
+Struct(
+    Struct {
+        attributes: [],
+        vis_marker: None,
+        name: "Hello",
+        generic_params: None,
+        where_clauses: None,
+        fields: Tuple(
+            [
+                TupleField {
+                    attributes: [],
+                    vis_marker: None,
+                    ty: [
+                        "A",
+                        "<",
+                        "B",
+                        "<",
+                        "C",
+                        ">",
+                        ">",
+                    ],
+                },
+                TupleField {
+                    attributes: [],
+                    vis_marker: None,
+                    ty: [
+                        "A",
+                        "<",
+                        "B",
+                        "<",
+                        "C",
+                        ",",
+                        "D",
+                        ">",
+                        ">",
+                    ],
+                },
+                TupleField {
+                    attributes: [],
+                    vis_marker: None,
+                    ty: [
+                        "<",
+                        "<",
+                        "D",
+                        "as",
+                        "Trait",
+                        ">",
+                        ":",
+                        ":",
+                        "X",
+                        "as",
+                        "Trait",
+                        ">",
+                        ":",
+                        ":",
+                        "Y",
+                    ],
+                },
+            ],
+        ),
+    },
+)
