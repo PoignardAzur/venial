@@ -1,0 +1,141 @@
+---
+source: src/tests.rs
+assertion_line: 424
+expression: enum_type
+---
+Enum(
+    Enum {
+        attributes: [],
+        vis_marker: None,
+        name: "Hello",
+        generic_params: None,
+        where_clauses: None,
+        variants: [
+            EnumVariant {
+                attributes: [],
+                vis_marker: None,
+                name: "A",
+                contents: Unit,
+                discriminant: Some(
+                    [
+                        "=",
+                        "1",
+                    ],
+                ),
+            },
+            EnumVariant {
+                attributes: [],
+                vis_marker: None,
+                name: "B",
+                contents: Tuple(
+                    [
+                        TupleField {
+                            attributes: [],
+                            vis_marker: None,
+                            ty: [
+                                "Foo",
+                            ],
+                        },
+                        TupleField {
+                            attributes: [],
+                            vis_marker: None,
+                            ty: [
+                                "Bar",
+                            ],
+                        },
+                    ],
+                ),
+                discriminant: Some(
+                    [
+                        "=",
+                        "call",
+                        ":",
+                        ":",
+                        "some",
+                        ":",
+                        ":",
+                        "function",
+                        Group {
+                            delimiter: Parenthesis,
+                            stream: TokenStream [
+                                Literal {
+                                    lit: 1,
+                                },
+                                Punct {
+                                    char: ',',
+                                    spacing: Alone,
+                                },
+                                Literal {
+                                    lit: 2,
+                                },
+                                Punct {
+                                    char: ',',
+                                    spacing: Alone,
+                                },
+                                Group {
+                                    delimiter: Brace,
+                                    stream: TokenStream [
+                                        Literal {
+                                            lit: 3,
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                    ],
+                ),
+            },
+            EnumVariant {
+                attributes: [],
+                vis_marker: None,
+                name: "C",
+                contents: Named(
+                    [
+                        NamedField {
+                            attributes: [],
+                            vis_marker: None,
+                            name: "foo",
+                            ty: [
+                                "Foo",
+                            ],
+                        },
+                        NamedField {
+                            attributes: [],
+                            vis_marker: None,
+                            name: "bar",
+                            ty: [
+                                "Bar",
+                            ],
+                        },
+                    ],
+                ),
+                discriminant: Some(
+                    [
+                        "=",
+                        "A",
+                        "<",
+                        "B",
+                        ">",
+                        Group {
+                            delimiter: Parenthesis,
+                            stream: TokenStream [
+                                Ident {
+                                    sym: c,
+                                },
+                            ],
+                        },
+                        "+",
+                        Group {
+                            delimiter: Brace,
+                            stream: TokenStream [
+                                Ident {
+                                    sym: D,
+                                },
+                            ],
+                        },
+                    ],
+                ),
+            },
+        ],
+    },
+)

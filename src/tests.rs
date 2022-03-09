@@ -407,4 +407,19 @@ fn parse_enum_empty_generic_params() {
     assert_debug_snapshot!(enum_type);
 }
 
-// TODO - test enum discriminant
+// =================
+// ENUM DISCRIMINANT
+// =================
+
+#[test]
+fn parse_enum_discriminant() {
+    let enum_type = parse_type(quote!(
+        enum Hello {
+            A = 1,
+            B(Foo, Bar) = call::some::function(1, 2, { 3 }),
+            C { foo: Foo, bar: Bar } = A<B>(c) + { D },
+        }
+    ));
+
+    assert_debug_snapshot!(enum_type);
+}

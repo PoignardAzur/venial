@@ -173,8 +173,6 @@ fn consume_enum_discriminant(tokens: &mut TokenIter) -> Option<EnumDiscriminant>
                 bracket_count -= 1;
             }
             Some(TokenTree::Punct(punct)) if punct.as_char() == ',' && bracket_count == 0 => {
-                // consume period
-                tokens.next();
                 break;
             }
             None => {
@@ -262,24 +260,35 @@ pub fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
 
         let ident = parse_ident(tokens.next().unwrap()).unwrap();
 
-        let next_token = tokens.next();
+        let next_token = tokens.peek();
         let contents = match next_token {
             None => StructFields::Unit,
             Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => StructFields::Unit,
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => StructFields::Unit,
             Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Parenthesis => {
-                // Consume period, if any
+                let fields = group.stream();
+                // Consume group
                 tokens.next();
-                StructFields::Tuple(parse_tuple_fields(group.stream()))
+                StructFields::Tuple(parse_tuple_fields(fields))
             }
             Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Brace => {
-                // Consume period, if any
+                let fields = group.stream();
+                // Consume group
                 tokens.next();
-                StructFields::Named(parse_named_fields(group.stream()))
+                StructFields::Named(parse_named_fields(fields))
             }
             _ => panic!("cannot parse type"),
         };
 
         let enum_discriminant = consume_enum_discriminant(&mut tokens);
+
+        // Consume period, if any
+        match tokens.peek() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => {
+                tokens.next();
+            }
+            _ => (),
+        };
 
         variants.push(EnumVariant {
             attributes,
