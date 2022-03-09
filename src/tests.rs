@@ -4,8 +4,6 @@ use insta::assert_debug_snapshot;
 use quote::quote;
 
 // TODO
-// - where clauses
-// - generic params
 // - no trailing period
 // - empty enum
 // - empty struct
@@ -37,10 +35,7 @@ fn parse_tuple_struct() {
 #[test]
 fn parse_normal_struct() {
     let struct_type = parse_type(quote!(
-        struct Hello<X, Y: Z<A>, Z>
-        where
-            A: B,
-        {
+        struct Hello {
             a: A,
             b: B,
         }
@@ -258,4 +253,108 @@ fn parse_tuple_fields_attributes() {
     ));
 
     assert_debug_snapshot!(struct_type);
+}
+
+// WHERE CLAUSES
+
+#[test]
+fn parse_unit_struct_where_clause() {
+    let struct_type = parse_type(quote!(
+        struct Hello
+        where
+            A: B,
+            C<D>: E<F>;
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[test]
+fn parse_tuple_struct_where_clause() {
+    let struct_type = parse_type(quote!(
+        struct Hello(A, B)
+        where
+            A: B,
+            C<D>: E<F>;
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[test]
+fn parse_normal_struct_where_clause() {
+    let struct_type = parse_type(quote!(
+        struct Hello
+        where
+            A: B,
+            C<D>: E<F>,
+        {
+            a: A,
+            b: B,
+        }
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[test]
+fn parse_enum_where_clause() {
+    let enum_type = parse_type(quote!(
+        enum Hello
+        where
+            A: B,
+            C<D>: E<F>,
+        {
+            A,
+            B(Foo, Bar),
+            C { foo: Foo, bar: Bar },
+        }
+    ));
+
+    assert_debug_snapshot!(enum_type);
+}
+
+// GENERIC PARAMS
+
+#[test]
+fn parse_unit_struct_generic_params() {
+    let struct_type = parse_type(quote!(
+        struct Hello<X, Y: Z<A>, Z>;
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[test]
+fn parse_tuple_struct_generic_params() {
+    let struct_type = parse_type(quote!(
+        struct Hello<X, Y: Z<A>, Z>(A, B);
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[test]
+fn parse_normal_struct_generic_params() {
+    let struct_type = parse_type(quote!(
+        struct Hello<X, Y: Z<A>, Z> {
+            a: A,
+            b: B<X, Y, Z>,
+        }
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[test]
+fn parse_enum_generic_params() {
+    let enum_type = parse_type(quote!(
+        enum Hello<X, Y: Z<A>, Z> {
+            A,
+            B(Foo, Bar<X, Y, Z>),
+            C { foo: Foo<X, Y, Z>, bar: Bar },
+        }
+    ));
+
+    assert_debug_snapshot!(enum_type);
 }

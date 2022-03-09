@@ -1,0 +1,33 @@
+---
+source: src/tests.rs
+assertion_line: 346
+expression: struct_type
+---
+Struct(
+    Struct {
+        name: "Hello",
+        fields: Named(
+            [
+                NamedField {
+                    name: "a",
+                    ty: [
+                        "A",
+                    ],
+                },
+                NamedField {
+                    name: "b",
+                    ty: [
+                        "B",
+                        "<",
+                        "X",
+                        ",",
+                        "Y",
+                        ",",
+                        "Z",
+                        ">",
+                    ],
+                },
+            ],
+        ),
+    },
+)

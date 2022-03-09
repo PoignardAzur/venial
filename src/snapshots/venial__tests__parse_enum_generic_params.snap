@@ -1,0 +1,66 @@
+---
+source: src/tests.rs
+assertion_line: 359
+expression: enum_type
+---
+Enum(
+    Enum {
+        name: "Hello",
+        variants: [
+            EnumVariant {
+                name: "A",
+                contents: Unit,
+            },
+            EnumVariant {
+                name: "B",
+                contents: Tuple(
+                    [
+                        TupleField {
+                            ty: [
+                                "Foo",
+                            ],
+                        },
+                        TupleField {
+                            ty: [
+                                "Bar",
+                                "<",
+                                "X",
+                                ",",
+                                "Y",
+                                ",",
+                                "Z",
+                                ">",
+                            ],
+                        },
+                    ],
+                ),
+            },
+            EnumVariant {
+                name: "C",
+                contents: Named(
+                    [
+                        NamedField {
+                            name: "foo",
+                            ty: [
+                                "Foo",
+                                "<",
+                                "X",
+                                ",",
+                                "Y",
+                                ",",
+                                "Z",
+                                ">",
+                            ],
+                        },
+                        NamedField {
+                            name: "bar",
+                            ty: [
+                                "Bar",
+                            ],
+                        },
+                    ],
+                ),
+            },
+        ],
+    },
+)

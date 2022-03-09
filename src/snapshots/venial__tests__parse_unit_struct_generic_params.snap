@@ -1,0 +1,11 @@
+---
+source: src/tests.rs
+assertion_line: 325
+expression: struct_type
+---
+Struct(
+    Struct {
+        name: "Hello",
+        fields: Unit,
+    },
+)

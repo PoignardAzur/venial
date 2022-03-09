@@ -90,7 +90,6 @@ fn consume_where_clauses(tokens: &mut TokenIter) -> Vec<TokenTree> {
     let mut where_clause_tokens = Vec::new();
     let mut bracket_count = 0;
     loop {
-        dbg!(tokens.peek());
         match tokens.peek().unwrap() {
             TokenTree::Punct(punct) if punct.as_char() == '<' => {
                 bracket_count += 1;
@@ -113,19 +112,30 @@ fn consume_where_clauses(tokens: &mut TokenIter) -> Vec<TokenTree> {
     }
 }
 
-fn consume_until_period(tokens: &mut TokenIter) -> Vec<TokenTree> {
-    let mut tokens_before_period = Vec::new();
-
-    for token in tokens {
-        match token {
-            TokenTree::Punct(punct) if punct.as_char() == ',' => break,
-            _ => {
-                tokens_before_period.push(token);
+fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
+    let mut field_type_tokens = Vec::new();
+    let mut bracket_count = 0;
+    loop {
+        match tokens.peek() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => {
+                bracket_count += 1;
             }
-        }
-    }
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '>' => {
+                bracket_count -= 1;
+            }
+            Some(TokenTree::Punct(punct)) if punct.as_char() == ',' && bracket_count == 0 => {
+                // consume period
+                tokens.next();
+                return field_type_tokens;
+            }
+            None => {
+                return field_type_tokens;
+            }
+            _ => {}
+        };
 
-    tokens_before_period
+        field_type_tokens.push(tokens.next().unwrap());
+    }
 }
 
 pub fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
@@ -144,7 +154,7 @@ pub fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
 
         fields.push(TupleField {
             ty: TyExpr {
-                tokens: consume_until_period(&mut tokens),
+                tokens: consume_field_type(&mut tokens),
             },
         });
     }
@@ -177,7 +187,7 @@ pub fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
         fields.push(NamedField {
             name: ident.to_string(),
             ty: TyExpr {
-                tokens: consume_until_period(&mut tokens),
+                tokens: consume_field_type(&mut tokens),
             },
         });
     }

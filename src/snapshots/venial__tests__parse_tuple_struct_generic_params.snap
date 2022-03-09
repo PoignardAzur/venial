@@ -1,0 +1,24 @@
+---
+source: src/tests.rs
+assertion_line: 334
+expression: struct_type
+---
+Struct(
+    Struct {
+        name: "Hello",
+        fields: Tuple(
+            [
+                TupleField {
+                    ty: [
+                        "A",
+                    ],
+                },
+                TupleField {
+                    ty: [
+                        "B",
+                    ],
+                },
+            ],
+        ),
+    },
+)
