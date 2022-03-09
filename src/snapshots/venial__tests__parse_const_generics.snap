@@ -1,0 +1,89 @@
+---
+source: src/tests.rs
+assertion_line: 437
+expression: struct_type
+---
+Struct(
+    Struct {
+        attributes: [],
+        vis_marker: None,
+        name: "Hello",
+        generic_params: None,
+        where_clauses: None,
+        fields: Tuple(
+            [
+                TupleField {
+                    attributes: [],
+                    vis_marker: None,
+                    ty: [
+                        "Array",
+                        "<",
+                        "A",
+                        ",",
+                        Group {
+                            delimiter: Brace,
+                            stream: TokenStream [
+                                Literal {
+                                    lit: 123,
+                                },
+                                Punct {
+                                    char: '+',
+                                    spacing: Alone,
+                                },
+                                Group {
+                                    delimiter: Parenthesis,
+                                    stream: TokenStream [
+                                        Literal {
+                                            lit: 1,
+                                        },
+                                        Punct {
+                                            char: ',',
+                                            spacing: Alone,
+                                        },
+                                        Literal {
+                                            lit: 2,
+                                        },
+                                        Punct {
+                                            char: ',',
+                                            spacing: Alone,
+                                        },
+                                        Literal {
+                                            lit: 3,
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                        ">",
+                    ],
+                },
+                TupleField {
+                    attributes: [],
+                    vis_marker: None,
+                    ty: [
+                        "B",
+                        "<",
+                        Group {
+                            delimiter: Brace,
+                            stream: TokenStream [
+                                Literal {
+                                    lit: 1,
+                                },
+                            ],
+                        },
+                        ",",
+                        Group {
+                            delimiter: Brace,
+                            stream: TokenStream [
+                                Literal {
+                                    lit: 2,
+                                },
+                            ],
+                        },
+                        ">",
+                    ],
+                },
+            ],
+        ),
+    },
+)

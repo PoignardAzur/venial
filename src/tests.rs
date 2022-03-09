@@ -423,3 +423,16 @@ fn parse_enum_discriminant() {
 
     assert_debug_snapshot!(enum_type);
 }
+
+// ==============
+// CONST GENERICS
+// ==============
+
+#[test]
+fn parse_const_generics() {
+    let struct_type = parse_type(quote!(
+        struct Hello(Array<A, { 123 + (1, 2, 3) }>, B<{ 1 }, { 2 }>);
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
