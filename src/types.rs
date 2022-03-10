@@ -1,7 +1,23 @@
+#![allow(missing_docs)]
+
 use proc_macro2::TokenTree;
 
 // TODO - handle unions
 
+/// The declaration of a Rust type.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// struct MyUnitStruct;
+/// struct MyTupleStruct(i32, f32);
+/// struct MyRegularStruct {
+///     // ...
+/// }
+/// enum MyEnum {
+///     // ...
+/// }
+/// ```
 #[derive(Clone, Debug)]
 pub enum TypeDeclaration {
     Struct(Struct),
@@ -9,17 +25,35 @@ pub enum TypeDeclaration {
 }
 
 // TODO - fn TypeDeclaration::name()
+// TODO - fn TypeDeclaration::as_struct()
+// TODO - fn TypeDeclaration::as_enum()
 
+/// Declaration of a struct.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// struct MyUnitStruct;
+/// struct MyTupleStruct(i32, f32);
+/// struct MyRegularStruct {
+///     // ...
+/// }
+/// ```
 #[derive(Clone, Debug)]
 pub struct Struct {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
+    // TODO - Use token
     pub name: String,
     pub generic_params: Option<GenericParams>,
     pub where_clauses: Option<WhereClauses>,
     pub fields: StructFields,
 }
 
+// TODO - fn Struct::field_names()
+// TODO - fn Struct::field_types()
+
+/// Fields of a [`Struct`] or an [`EnumVariant`].
 #[derive(Clone, Debug)]
 pub enum StructFields {
     Unit,
@@ -27,6 +61,15 @@ pub enum StructFields {
     Named(Vec<NamedField>),
 }
 
+/// Declaration of an enum.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// enum MyEnum {
+///     // ...
+/// }
+/// ```
 #[derive(Clone, Debug)]
 pub struct Enum {
     pub attributes: Vec<Attribute>,
@@ -37,15 +80,29 @@ pub struct Enum {
     pub variants: Vec<EnumVariant>,
 }
 
+// TODO - fn Enum::is_c_enum()
+
+/// The individual variant of an [`Enum`].
+///
+/// The variant can either be a c-like variant, hold one or multiple types,
+/// or hold named fields depending on the value of `contents`.
 #[derive(Clone, Debug)]
 pub struct EnumVariant {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
     pub name: String,
     pub contents: StructFields,
+
+    /// The value of the variant, normally for c-like enums.
     pub discriminant: Option<EnumDiscriminant>,
 }
 
+// TODO - fn EnumVariant::is_empty_variant()
+// TODO - fn EnumVariant::get_single_type()
+
+/// A field of a tuple [`Struct`] or tuple-like [`EnumVariant`].
+///
+/// For instance, in `struct MyTuple(A, B, C);` A, B, C are each a tuple field.
 #[derive(Clone, Debug)]
 pub struct TupleField {
     pub attributes: Vec<Attribute>,
@@ -53,6 +110,16 @@ pub struct TupleField {
     pub ty: TyExpr,
 }
 
+/// A field of a [`Struct`] or struct-like [`EnumVariant`].
+///
+/// For instance, in the following code, `foo` and `bar` are each a struct field:
+///
+/// ```no_run
+/// struct MyStruct {
+///     foo: i32,
+///     bar: f32,
+/// }
+/// ```
 #[derive(Clone, Debug)]
 pub struct NamedField {
     pub attributes: Vec<Attribute>,
@@ -63,33 +130,74 @@ pub struct NamedField {
 
 // --- Token groups ---
 
+/// An outer attribute.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// # #[cfg(FALSE)]
+/// #[hello(world)]
+/// # struct Foo;
+/// ```
 #[derive(Clone)]
 pub struct Attribute {
     pub _hashbang: TokenTree,
     pub child_tokens: Vec<TokenTree>,
 }
 
+/// Visibility marker, eg `pub`, `pub(crate)`, `pub(super)`, etc.
 #[derive(Clone)]
 pub struct VisMarker {
+    /// `pub` token.
     pub _token1: TokenTree,
+    /// `(...)` token, if any.
     pub _token2: Option<TokenTree>,
 }
 
+/// The generic parameters declared right after your type's name.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// struct MyUnitStruct<A, B, C>(A, B, C);
+/// ```
 #[derive(Clone)]
 pub struct GenericParams {
     pub tokens: Vec<TokenTree>,
 }
 
+/// All the stuff that comes after the `where` keyword.
 #[derive(Clone)]
 pub struct WhereClauses {
     pub tokens: Vec<TokenTree>,
 }
 
+/// Type expression in a [`TupleField`] or [`NamedField`].
+///
+/// **Example input:**
+///
+/// ```no_run
+/// # struct MyUnitStruct<'a> {
+///     foo: i32,
+///     bar: &'a mut Vec<(u64, Option<bool>, f64)>,
+/// };
+/// ```
 #[derive(Clone)]
 pub struct TyExpr {
     pub tokens: Vec<TokenTree>,
 }
 
+/// The value of an [`EnumVariant`], normally for c-like enums.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// enum MyEnum {
+///     A = 42,
+///     # #[cfg(FALSE)]
+///     B = (some + arbitrary.expression()),
+/// }
+/// ```
 #[derive(Clone)]
 pub struct EnumDiscriminant {
     pub tokens: Vec<TokenTree>,
@@ -119,7 +227,7 @@ impl std::fmt::Debug for VisMarker {
             None => f.write_str(&self._token1.to_string()),
             Some(TokenTree::Group(group)) => {
                 let mut list = f.debug_tuple(&self._token1.to_string());
-                for token in group.stream().into_iter() {
+                for token in group.stream() {
                     match &token {
                         TokenTree::Group(_group) => list.field(&token),
                         TokenTree::Ident(_ident) => list.field(&token.to_string()),

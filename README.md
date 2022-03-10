@@ -23,15 +23,42 @@ Venial is that parser.
 
 ## Design
 
-Venial is extremely simple. Most of its implementation is in the `parse.rs` file, which is about 350 lines at the time I'm writing this README. This is because the Rust language has a very clean syntax, especially for type declarations, as long as you don't try to do anything fancy like parsing inside generic types.
+Venial is extremely simple. Most of its implementation is in the `parse.rs` file, which is about 350 lines at the time I'm writing this README. This is because the Rust language has a very clean syntax, especially for type declarations.
 
 Venial has no dependency besides proc-macro2 and quote.
+
+To achieve this simplicity, venial makes several trade-offs:
+
+- It doesn't try to parse type expressions. For instance, if your struct includes a field like `foo_bar: &mut Foo<Bar, dyn Foobariser>`, venial will dutifully give you this type as a sequence of tokens and let you interpret it.
+- It doesn't attempt to recover gracefully from errors. Venial assumes you're running inside a derive macro, and thus that your input is statically guaranteed to be a valid type declaration. If it isn't, venial will summarily panic.
+
+Note though that venial will accept any syntactically valid declaration, even if it isn't semantically valid. The rule of thumb is "if it compiles under a `#[cfg(FALSE)]`, venial will parse it without panicking".
+
+(Note: The above sentence is a lie; venial currently panics on unions and all non-type declarations.)
 
 
 ## Example
 
-TODO.
+```rust
+# use venial::{parse_type, TypeDeclaration};
+# use quote::quote;
+let enum_type = parse_type(quote!(
+    enum Shape {
+        Square(Square),
+        Circle(Circle),
+        Triangle(Triangle),
+    }
+));
 
+let enum_type = match enum_type {
+    TypeDeclaration::Enum(enum_type) => enum_type,
+    _ => unreachable!(),
+};
+
+assert_eq!(enum_type.variants[0].name, "Square");
+assert_eq!(enum_type.variants[1].name, "Circle");
+assert_eq!(enum_type.variants[2].name, "Triangle");
+```
 
 ## Benchmarks
 
@@ -44,10 +71,9 @@ Pull requests are welcome.
 
 My current roadmap is:
 
-- Find any bugs there might be and fix it.
-- Finish the README and documentation.
-- Publish on crates.io.
+- Find any bugs there might be and fix them.
 - Port other projects from syn to venial and compare compile times.
+- Add Github Actions
 
 On the long term, I'd also like to add parsing for more use cases, while keeping the crate lightweight:
 

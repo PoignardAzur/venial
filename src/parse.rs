@@ -34,10 +34,10 @@ fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
         attributes.push(Attribute {
             _hashbang: hashbang,
             child_tokens: child_tokens.into_iter().collect(),
-        })
+        });
     }
 
-    return attributes;
+    attributes
 }
 
 fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {
@@ -130,9 +130,9 @@ fn consume_where_clauses(tokens: &mut TokenIter) -> Option<WhereClauses> {
         _ => false,
     });
 
-    return Some(WhereClauses {
+    Some(WhereClauses {
         tokens: where_clause_tokens,
-    });
+    })
 }
 
 fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
@@ -149,7 +149,7 @@ fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
         _ => (),
     };
 
-    return field_type_tokens;
+    field_type_tokens
 }
 
 fn consume_enum_discriminant(tokens: &mut TokenIter) -> Option<EnumDiscriminant> {
@@ -163,9 +163,9 @@ fn consume_enum_discriminant(tokens: &mut TokenIter) -> Option<EnumDiscriminant>
         _ => false,
     });
 
-    return Some(EnumDiscriminant {
+    Some(EnumDiscriminant {
         tokens: enum_discriminant_tokens,
-    });
+    })
 }
 
 fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
@@ -281,7 +281,37 @@ fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
     variants
 }
 
-// TODO doc
+// TODO - Return Result<...>, handle case where TokenStream is valid declaration,
+// but not a type.
+
+/// Parses the token stream of a type declaration.
+///
+/// For instance, if you're implementing a derive macro, you can pass the
+/// token stream as-is.
+///
+/// ## Panics
+///
+/// Panics if given a token stream that doesn't parse as a valid Rust
+/// type declaration. If the token stream is from an attribute or a derive
+/// macro, there should be no way for this to happen, as Rust will emit an
+/// error instead of calling this macro.
+///
+/// Currently panics on unions.
+///
+/// ## Example
+///
+/// ```
+/// # use venial::{parse_type, TypeDeclaration};
+/// # use quote::quote;
+/// let struct_type = parse_type(quote!(
+///     struct Hello {
+///         foo: Foo,
+///         bar: Bar,
+///     }
+/// ));
+/// assert!(matches!(struct_type, TypeDeclaration::Struct(_)));
+/// ```
+///
 pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
     let mut tokens = tokens.into_iter().peekable();
 
@@ -311,14 +341,14 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
                 where_clauses = consume_where_clauses(&mut tokens);
             }
 
-            return TypeDeclaration::Struct(Struct {
+            TypeDeclaration::Struct(Struct {
                 attributes,
                 vis_marker,
                 name: struct_name.to_string(),
                 generic_params,
                 where_clauses,
                 fields: struct_fields,
-            });
+            })
         } else if ident == "enum" {
             let next_token = tokens.next().unwrap();
             let enum_name = parse_ident(next_token).unwrap();
@@ -334,14 +364,16 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
                 _ => panic!("cannot parse type"),
             };
 
-            return TypeDeclaration::Enum(Enum {
+            TypeDeclaration::Enum(Enum {
                 attributes,
                 vis_marker,
                 name: enum_name.to_string(),
                 generic_params,
                 where_clauses,
                 variants: enum_variants,
-            });
+            })
+        } else if ident == "union" {
+            panic!("cannot parse unions")
         } else {
             panic!("cannot parse type")
         }
