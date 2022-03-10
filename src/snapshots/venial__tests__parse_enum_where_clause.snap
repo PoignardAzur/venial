@@ -1,13 +1,15 @@
 ---
 source: src/tests.rs
-assertion_line: 343
+assertion_line: 340
 expression: enum_type
 ---
 Enum(
     Enum {
         attributes: [],
         vis_marker: None,
-        name: "Hello",
+        name: Ident(
+            Hello,
+        ),
         generic_params: None,
         where_clauses: Some(
             [
@@ -32,14 +34,18 @@ Enum(
             EnumVariant {
                 attributes: [],
                 vis_marker: None,
-                name: "A",
+                name: Ident(
+                    A,
+                ),
                 contents: Unit,
                 discriminant: None,
             },
             EnumVariant {
                 attributes: [],
                 vis_marker: None,
-                name: "B",
+                name: Ident(
+                    B,
+                ),
                 contents: Tuple(
                     [
                         TupleField {
@@ -63,13 +69,17 @@ Enum(
             EnumVariant {
                 attributes: [],
                 vis_marker: None,
-                name: "C",
+                name: Ident(
+                    C,
+                ),
                 contents: Named(
                     [
                         NamedField {
                             attributes: [],
                             vis_marker: None,
-                            name: "foo",
+                            name: Ident(
+                                foo,
+                            ),
                             ty: [
                                 "Foo",
                             ],
@@ -77,7 +87,9 @@ Enum(
                         NamedField {
                             attributes: [],
                             vis_marker: None,
-                            name: "bar",
+                            name: Ident(
+                                bar,
+                            ),
                             ty: [
                                 "Bar",
                             ],

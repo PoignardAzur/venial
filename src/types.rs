@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 
-use proc_macro2::TokenTree;
+use proc_macro2::{Ident, TokenTree};
 
 // TODO - handle unions
 
@@ -43,8 +43,7 @@ pub enum TypeDeclaration {
 pub struct Struct {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
-    // TODO - Use token
-    pub name: String,
+    pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub where_clauses: Option<WhereClauses>,
     pub fields: StructFields,
@@ -74,7 +73,7 @@ pub enum StructFields {
 pub struct Enum {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
-    pub name: String,
+    pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub where_clauses: Option<WhereClauses>,
     pub variants: Vec<EnumVariant>,
@@ -90,7 +89,7 @@ pub struct Enum {
 pub struct EnumVariant {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
-    pub name: String,
+    pub name: Ident,
     pub contents: StructFields,
 
     /// The value of the variant, normally for c-like enums.
@@ -124,7 +123,7 @@ pub struct TupleField {
 pub struct NamedField {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
-    pub name: String,
+    pub name: Ident,
     pub ty: TyExpr,
 }
 

@@ -215,7 +215,7 @@ fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
         fields.push(NamedField {
             attributes,
             vis_marker,
-            name: ident.to_string(),
+            name: ident,
             ty: TyExpr {
                 tokens: consume_field_type(&mut tokens),
             },
@@ -272,7 +272,7 @@ fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
         variants.push(EnumVariant {
             attributes,
             vis_marker,
-            name: ident.to_string(),
+            name: ident,
             contents,
             discriminant: enum_discriminant,
         });
@@ -344,7 +344,7 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
             TypeDeclaration::Struct(Struct {
                 attributes,
                 vis_marker,
-                name: struct_name.to_string(),
+                name: struct_name,
                 generic_params,
                 where_clauses,
                 fields: struct_fields,
@@ -367,7 +367,7 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
             TypeDeclaration::Enum(Enum {
                 attributes,
                 vis_marker,
-                name: enum_name.to_string(),
+                name: enum_name,
                 generic_params,
                 where_clauses,
                 variants: enum_variants,

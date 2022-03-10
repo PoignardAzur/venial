@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 142
+assertion_line: 139
 expression: struct_type_pub
 ---
 Struct(
@@ -9,7 +9,9 @@ Struct(
         vis_marker: Some(
             pub,
         ),
-        name: "Hello",
+        name: Ident(
+            Hello,
+        ),
         generic_params: None,
         where_clauses: None,
         fields: Named(
@@ -17,7 +19,9 @@ Struct(
                 NamedField {
                     attributes: [],
                     vis_marker: None,
-                    name: "a",
+                    name: Ident(
+                        a,
+                    ),
                     ty: [
                         "A",
                     ],
@@ -25,7 +29,9 @@ Struct(
                 NamedField {
                     attributes: [],
                     vis_marker: None,
-                    name: "b",
+                    name: Ident(
+                        b,
+                    ),
                     ty: [
                         "B",
                     ],

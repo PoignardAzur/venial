@@ -1,13 +1,15 @@
 ---
 source: src/tests.rs
-assertion_line: 377
+assertion_line: 374
 expression: struct_type
 ---
 Struct(
     Struct {
         attributes: [],
         vis_marker: None,
-        name: "Hello",
+        name: Ident(
+            Hello,
+        ),
         generic_params: Some(
             [
                 "<",
@@ -30,7 +32,9 @@ Struct(
                 NamedField {
                     attributes: [],
                     vis_marker: None,
-                    name: "a",
+                    name: Ident(
+                        a,
+                    ),
                     ty: [
                         "A",
                     ],
@@ -38,7 +42,9 @@ Struct(
                 NamedField {
                     attributes: [],
                     vis_marker: None,
-                    name: "b",
+                    name: Ident(
+                        b,
+                    ),
                     ty: [
                         "B",
                         "<",

@@ -1,13 +1,15 @@
 ---
 source: src/tests.rs
-assertion_line: 310
+assertion_line: 307
 expression: struct_type
 ---
 Struct(
     Struct {
         attributes: [],
         vis_marker: None,
-        name: "Hello",
+        name: Ident(
+            Hello,
+        ),
         generic_params: None,
         where_clauses: Some(
             [

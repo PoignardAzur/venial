@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 196
+assertion_line: 193
 expression: struct_type
 ---
 Struct(
@@ -9,7 +9,9 @@ Struct(
         vis_marker: Some(
             pub,
         ),
-        name: "Hello",
+        name: Ident(
+            Hello,
+        ),
         generic_params: None,
         where_clauses: None,
         fields: Tuple(

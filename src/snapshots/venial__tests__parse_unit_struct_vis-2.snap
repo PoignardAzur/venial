@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 100
+assertion_line: 97
 expression: struct_type_pub_crate
 ---
 Struct(
@@ -11,7 +11,9 @@ Struct(
                 "crate",
             ),
         ),
-        name: "Hello",
+        name: Ident(
+            Hello,
+        ),
         generic_params: None,
         where_clauses: None,
         fields: Unit,
