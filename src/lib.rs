@@ -8,7 +8,7 @@
 //!
 //! Venial is a WIP parser for Rust [proc macros](https://doc.rust-lang.org/reference/procedural-macros.html).
 //!
-//! When writing proc macros that need to parse Rust code (such as attribute and derive macros), the most common solution is to use the [syn](https://docs.rs/syn/latest/syn/index.html) crate. Syn can parse arbitrary valid Rust code, and return data versatile structures that can inspected and mutated in powerful ways.
+//! When writing proc macros that need to parse Rust code (such as attribute and derive macros), the most common solution is to use the [syn](https://docs.rs/syn/latest/syn/index.html) crate. Syn can parse arbitrary valid Rust code, and even Rust-based DSLs, and return versatile data structures that can inspected and mutated in powerful ways.
 //!
 //! **It's also extremely heavy**. In [one analysis](https://hackmd.io/mxdn4U58Su-UQXwzOHpHag?view#round-13-cargo-timing-opt-j8) of [lqd's early 2022 benchmark collection](https://github.com/lqd/rustc-benchmarking-data), the author estimates that syn is reponsible for 8% of compile times of the benchmark, which accounts for Rust's most popular crates. There are subtleties (eg this isn't necessarily critical path time, but syn is often in the critical path anyway), but the overall takeaway is clear: syn is expensive.
 //!
@@ -29,8 +29,9 @@
 //! ## Example
 //!
 //! ```rust
-//! # use venial::{parse_type, TypeDeclaration};
-//! # use quote::quote;
+//! use venial::{parse_type, TypeDeclaration};
+//! use quote::quote;
+//!
 //! let enum_type = parse_type(quote!(
 //!     enum Shape {
 //!         Square(Square),
