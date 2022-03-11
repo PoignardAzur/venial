@@ -1,0 +1,34 @@
+---
+source: src/tests.rs
+expression: func
+---
+Function(
+    Function {
+        attributes: [],
+        vis_marker: None,
+        name: Ident(
+            where_clause,
+        ),
+        generic_params: Some(
+            [
+                "<",
+                "T",
+                ">",
+            ],
+        ),
+        where_clauses: Some(
+            [
+                "where",
+                "T",
+                ":",
+                "Debug",
+            ],
+        ),
+        params: [],
+        returns: Some(
+            [
+                "T",
+            ],
+        ),
+    },
+)

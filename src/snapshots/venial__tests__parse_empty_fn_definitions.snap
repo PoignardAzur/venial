@@ -1,0 +1,17 @@
+---
+source: src/tests.rs
+expression: func
+---
+Function(
+    Function {
+        attributes: [],
+        vis_marker: None,
+        name: Ident(
+            test_me,
+        ),
+        generic_params: None,
+        where_clauses: None,
+        params: [],
+        returns: None,
+    },
+)

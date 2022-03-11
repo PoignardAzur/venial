@@ -459,3 +459,61 @@ fn parse_multiple_brackets() {
 
     assert_debug_snapshot!(struct_type);
 }
+
+#[test]
+fn parse_fn_definitions() {
+    let func = parse_type(quote! {
+        fn hello(a: i32, b: f32) -> String {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_empty_fn_definitions() {
+    let func = parse_type(quote! {
+        fn test_me() {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_generic_fn_definitions() {
+    let func = parse_type(quote! {
+        fn generic<T, B>(a: T) -> B {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_where_fn_definitions() {
+    let func = parse_type(quote! {
+        fn where_clause<T>() -> T
+        where
+            T: Debug
+        {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_attr_fn_definitions() {
+    let func = parse_type(quote! {
+        #[my_attr]
+        fn my_attr_fn(a: i32) {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_visi_fn_definitions() {
+    let func = parse_type(quote! {
+        pub fn visibility(b: f32) {}
+    });
+
+    assert_debug_snapshot!(func);
+}

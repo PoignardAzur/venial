@@ -1,0 +1,30 @@
+---
+source: src/tests.rs
+expression: func
+---
+Function(
+    Function {
+        attributes: [
+            #[
+                "my_attr",
+            ],
+        ],
+        vis_marker: None,
+        name: Ident(
+            my_attr_fn,
+        ),
+        generic_params: None,
+        where_clauses: None,
+        params: [
+            FunctionParameter {
+                name: Ident(
+                    a,
+                ),
+                ty: [
+                    "i32",
+                ],
+            },
+        ],
+        returns: None,
+    },
+)

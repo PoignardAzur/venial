@@ -1,6 +1,6 @@
 use crate::types::{
     Attribute, Enum, EnumDiscriminant, EnumVariant, GenericParams, NamedField, Struct,
-    StructFields, TupleField, TyExpr, TypeDeclaration, VisMarker, WhereClauses,
+    StructFields, TupleField, TyExpr, TypeDeclaration, VisMarker, WhereClauses, Function, FunctionParameter,
 };
 use proc_macro2::{Delimiter, Ident, TokenStream, TokenTree};
 use std::iter::Peekable;
@@ -281,6 +281,34 @@ fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
     variants
 }
 
+fn parse_fn_params(tokens: TokenStream) -> Vec<FunctionParameter> {
+    let mut fields = Vec::new();
+
+    let mut tokens = tokens.into_iter().peekable();
+    loop {
+        if tokens.peek().is_none() {
+            break;
+        }
+
+        let ident = parse_ident(tokens.next().unwrap()).unwrap();
+
+        match tokens.next() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => (),
+            _ => panic!("cannot parse type"),
+        };
+
+        tokens.peek().unwrap();
+        fields.push(FunctionParameter {
+            name: ident,
+            ty: TyExpr {
+                tokens: consume_field_type(&mut tokens),
+            },
+        });
+    }
+
+    fields
+}
+
 // TODO - Return Result<...>, handle case where TokenStream is valid declaration,
 // but not a type.
 
@@ -371,6 +399,57 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
                 generic_params,
                 where_clauses,
                 variants: enum_variants,
+            })
+        } else if ident == "fn" {
+            let fn_name = parse_ident(tokens.next().unwrap()).unwrap();
+
+            let generic_params = consume_generic_params(&mut tokens);
+            
+            let next_token = tokens.next().unwrap();
+            let params = match next_token {
+                TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
+                    parse_fn_params(group.stream())
+                }
+                _ => panic!("detected unknown function deceleration: expected fn x(params). Something went wrong with the brackets, found {}", next_token)
+            };
+            
+
+            let next_token = tokens.next().unwrap();
+            let return_type = match next_token {
+                TokenTree::Punct(p) if p.as_char() == '-' => {
+                    if let TokenTree::Punct(x) = tokens.next().unwrap() {
+                        if !(x.as_char() == '>') {
+                            panic!("Expected function deceleration fn x() -> y or fn x(), found fn x() -");
+                        }
+                        Some(
+                            TyExpr {
+                                tokens: (consume_stuff_until(&mut tokens, |token| match token {
+                                    TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
+                                    TokenTree::Ident(i) if i == &Ident::new("where", i.span()) => true,
+                                    TokenTree::Punct(punct) if punct.as_char() == ';' => true,
+                                    _ => false})),
+                            },
+                        )
+                    } else { None }
+                }
+                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
+                    None
+                }
+                _ => panic!("cannot parse type"),
+            };
+
+            let where_clauses = consume_where_clauses(&mut tokens);
+
+
+
+            TypeDeclaration::Function(Function {
+                attributes,
+                vis_marker,
+                name: fn_name,
+                generic_params,
+                where_clauses,
+                params,
+                returns: return_type,
             })
         } else if ident == "union" {
             panic!("cannot parse unions")
