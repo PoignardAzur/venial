@@ -21,6 +21,7 @@ Function(
         where_clauses: None,
         params: [
             FunctionParameter {
+                attributes: [],
                 name: Ident(
                     a,
                 ),
@@ -34,5 +35,9 @@ Function(
                 "B",
             ],
         ),
+        abi: "Rust",
+        is_unsafe: false,
+        is_async: false,
+        is_const: false,
     },
 )

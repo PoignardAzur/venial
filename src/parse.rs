@@ -1,8 +1,8 @@
 use crate::types::{
-    Attribute, Enum, EnumDiscriminant, EnumVariant, GenericParams, NamedField, Struct,
-    StructFields, TupleField, TyExpr, TypeDeclaration, VisMarker, WhereClauses, Function, FunctionParameter,
+    Attribute, Enum, EnumDiscriminant, EnumVariant, Function, FunctionParameter, GenericParams,
+    NamedField, Struct, StructFields, TupleField, TyExpr, TypeDeclaration, VisMarker, WhereClauses,
 };
-use proc_macro2::{Delimiter, Ident, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Ident, TokenStream, TokenTree, Span};
 use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
@@ -289,6 +289,7 @@ fn parse_fn_params(tokens: TokenStream) -> Vec<FunctionParameter> {
         if tokens.peek().is_none() {
             break;
         }
+        let attributes = consume_attributes(&mut tokens);
 
         let ident = parse_ident(tokens.next().unwrap()).unwrap();
 
@@ -299,6 +300,7 @@ fn parse_fn_params(tokens: TokenStream) -> Vec<FunctionParameter> {
 
         tokens.peek().unwrap();
         fields.push(FunctionParameter {
+            attributes,
             name: ident,
             ty: TyExpr {
                 tokens: consume_field_type(&mut tokens),
@@ -400,19 +402,60 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
                 where_clauses,
                 variants: enum_variants,
             })
-        } else if ident == "fn" {
+        } else if matches!(ident.to_string().as_str(), "extern" | "fn" | "const" | "unsafe" | "async") {
+
+            let (abi, is_unsafe, is_async, is_const) = if !(ident.to_string() == "fn") {
+                let mut abi = String::from("Rust"); // Default ABI
+                let mut is_unsafe = false;
+                let mut is_async = false;
+                let mut is_const = false;
+                let mut chars;
+                let mut next = Some(ident); // Can't be in the loop due to abnormal default value
+                loop {
+                    if let Some(i) = next {
+                        // Due to some reason unknown to me, identifiers hide their name behind a private field
+                        if i == "extern" {
+                            let next = tokens.next().unwrap(); // There must be another one
+                            if let TokenTree::Literal(x) = next {
+                                // The ABI is in the format "\"C\"", we want "C"
+                                // This is a very stupid borrow checker trick. It works and does not cost memory. It just looks dumb
+                                    chars = x.to_string();
+                                    let mut y = chars.chars();
+                                    y.next();
+                                    y.next_back();
+                                    // Convert back into a string
+                                    abi = y.as_str().to_string();
+                            } else {
+                                panic!("invalid extern function attribute")
+                            }
+                        } else if i == "unsafe" {
+                            is_unsafe = true;
+                        } else if i == "async" {
+                            is_async = true;
+                        } else if i == "const" {
+                            is_const = true;
+                        } else {
+                            break;
+                        }
+                    } else {
+                        unreachable!(); // After any keyword, there *must* be an identifier such as the function name
+                        break;
+                    }
+                    next = parse_ident(tokens.next().unwrap());
+                }
+                (abi, is_unsafe, is_async, is_const)
+            } else { ("Rust".to_string(), false, false, false) };
             let fn_name = parse_ident(tokens.next().unwrap()).unwrap();
 
             let generic_params = consume_generic_params(&mut tokens);
-            
+
             let next_token = tokens.next().unwrap();
             let params = match next_token {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
                     parse_fn_params(group.stream())
                 }
-                _ => panic!("detected unknown function deceleration: expected fn x(params). Something went wrong with the brackets, found {}", next_token)
+                _ => panic!("detected unknown function deceleration: expected fn x(params). Something went wrong with the brackets, found {} .. {}", next_token.to_string(), fn_name)
             };
-            
 
             let next_token = tokens.next().unwrap();
             let return_type = match next_token {
@@ -421,26 +464,27 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
                         if !(x.as_char() == '>') {
                             panic!("Expected function deceleration fn x() -> y or fn x(), found fn x() -");
                         }
-                        Some(
-                            TyExpr {
-                                tokens: (consume_stuff_until(&mut tokens, |token| match token {
-                                    TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
-                                    TokenTree::Ident(i) if i == &Ident::new("where", i.span()) => true,
-                                    TokenTree::Punct(punct) if punct.as_char() == ';' => true,
-                                    _ => false})),
-                            },
-                        )
-                    } else { None }
+                        Some(TyExpr {
+                            tokens: (consume_stuff_until(&mut tokens, |token| match token {
+                                TokenTree::Group(group)
+                                    if group.delimiter() == Delimiter::Brace =>
+                                {
+                                    true
+                                }
+                                TokenTree::Ident(i) if i == &Ident::new("where", i.span()) => true,
+                                TokenTree::Punct(punct) if punct.as_char() == ';' => true,
+                                _ => false,
+                            })),
+                        })
+                    } else {
+                        None
+                    }
                 }
-                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                    None
-                }
+                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => None,
                 _ => panic!("cannot parse type"),
             };
 
             let where_clauses = consume_where_clauses(&mut tokens);
-
-
 
             TypeDeclaration::Function(Function {
                 attributes,
@@ -450,6 +494,10 @@ pub fn parse_type(tokens: TokenStream) -> TypeDeclaration {
                 where_clauses,
                 params,
                 returns: return_type,
+                is_async,
+                is_unsafe,
+                is_const,
+                abi: abi.to_string(),
             })
         } else if ident == "union" {
             panic!("cannot parse unions")

@@ -517,3 +517,57 @@ fn parse_visi_fn_definitions() {
 
     assert_debug_snapshot!(func);
 }
+
+#[test]
+fn parse_extern_fn_definitions() {
+    let func = parse_type(quote! {
+        pub extern "C" fn extern_fn(b: f32) {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_const_fn_definitions() {
+    let func = parse_type(quote! {
+        pub const fn const_fn(b: f32) {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_async_fn_definitions() {
+    let func = parse_type(quote! {
+        pub async fn async_fn(b: f32) {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_unsafe_fn_definitions() {
+    let func = parse_type(quote! {
+        pub unsafe fn unsafe_fn(b: f32) {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_all_kw_fn_definitions() {
+    let func = parse_type(quote! {
+        pub async const unsafe extern "C" fn all_kw(b: f32) {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_param_attr_fn_definitions() {
+    let func = parse_type(quote! {
+        pub async fn visibility(#[my_attr] b: f32) {}
+    });
+
+    assert_debug_snapshot!(func);
+}

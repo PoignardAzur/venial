@@ -13,6 +13,7 @@ Function(
         where_clauses: None,
         params: [
             FunctionParameter {
+                attributes: [],
                 name: Ident(
                     a,
                 ),
@@ -21,6 +22,7 @@ Function(
                 ],
             },
             FunctionParameter {
+                attributes: [],
                 name: Ident(
                     b,
                 ),
@@ -34,5 +36,9 @@ Function(
                 "String",
             ],
         ),
+        abi: "Rust",
+        is_unsafe: false,
+        is_async: false,
+        is_const: false,
     },
 )
