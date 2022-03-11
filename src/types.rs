@@ -212,6 +212,7 @@ pub struct EnumDiscriminant {
 /// ```
 #[derive(Clone, Debug)]
 pub struct FunctionParameter {
+    pub attributes: Vec<Attribute>,
     pub name: Ident,
     pub ty: TyExpr,
 }
@@ -232,9 +233,12 @@ pub struct Function {
     pub generic_params: Option<GenericParams>,
     pub where_clauses: Option<WhereClauses>,
     pub params: Vec<FunctionParameter>,
-    pub returns: Option<TyExpr>
+    pub returns: Option<TyExpr>,
+    pub abi: String,
+    pub is_unsafe: bool,
+    pub is_async: bool,
+    pub is_const: bool,
 }
-
 
 // ---
 

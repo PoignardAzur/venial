@@ -30,5 +30,9 @@ Function(
                 "T",
             ],
         ),
+        abi: "Rust",
+        is_unsafe: false,
+        is_async: false,
+        is_const: false,
     },
 )

@@ -4,14 +4,12 @@ expression: func
 ---
 Function(
     Function {
-        attributes: [
-            #[
-                "my_attr",
-            ],
-        ],
-        vis_marker: None,
+        attributes: [],
+        vis_marker: Some(
+            pub,
+        ),
         name: Ident(
-            my_attr_fn,
+            unsafe_fn,
         ),
         generic_params: None,
         where_clauses: None,
@@ -19,16 +17,16 @@ Function(
             FunctionParameter {
                 attributes: [],
                 name: Ident(
-                    a,
+                    b,
                 ),
                 ty: [
-                    "i32",
+                    "f32",
                 ],
             },
         ],
         returns: None,
         abi: "Rust",
-        is_unsafe: false,
+        is_unsafe: true,
         is_async: false,
         is_const: false,
     },
