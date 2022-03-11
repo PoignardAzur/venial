@@ -22,6 +22,7 @@ use proc_macro2::{Ident, TokenTree};
 pub enum TypeDeclaration {
     Struct(Struct),
     Enum(Enum),
+    Function(Function),
 }
 
 // TODO - fn TypeDeclaration::name()
@@ -201,6 +202,39 @@ pub struct TyExpr {
 pub struct EnumDiscriminant {
     pub tokens: Vec<TokenTree>,
 }
+
+/// A parameter of a [`Function`]
+///
+/// For instance, in the following code, `a` and `b` are both function parameters
+///
+/// ```no_run
+/// pub fn hello_world(a: i32, b: f32) {}
+/// ```
+#[derive(Clone, Debug)]
+pub struct FunctionParameter {
+    pub name: Ident,
+    pub ty: TyExpr,
+}
+
+/// Declaration of a function.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// fn hello(a: i32, b: f32) -> f32 { return 0.0; }
+/// fn eval(c: String, b: i32) { return; }
+/// ```
+#[derive(Clone, Debug)]
+pub struct Function {
+    pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
+    pub name: Ident,
+    pub generic_params: Option<GenericParams>,
+    pub where_clauses: Option<WhereClauses>,
+    pub params: Vec<FunctionParameter>,
+    pub returns: Option<TyExpr>
+}
+
 
 // ---
 

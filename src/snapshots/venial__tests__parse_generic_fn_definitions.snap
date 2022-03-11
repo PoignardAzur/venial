@@ -1,0 +1,38 @@
+---
+source: src/tests.rs
+expression: func
+---
+Function(
+    Function {
+        attributes: [],
+        vis_marker: None,
+        name: Ident(
+            generic,
+        ),
+        generic_params: Some(
+            [
+                "<",
+                "T",
+                ",",
+                "B",
+                ">",
+            ],
+        ),
+        where_clauses: None,
+        params: [
+            FunctionParameter {
+                name: Ident(
+                    a,
+                ),
+                ty: [
+                    "T",
+                ],
+            },
+        ],
+        returns: Some(
+            [
+                "B",
+            ],
+        ),
+    },
+)
