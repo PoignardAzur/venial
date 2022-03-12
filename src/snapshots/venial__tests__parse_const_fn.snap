@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 565
+assertion_line: 547
 expression: func
 ---
 Function(
@@ -34,5 +34,11 @@ Function(
         ],
         where_clauses: None,
         return_ty: None,
+        body: Some(
+            Group {
+                delimiter: Brace,
+                stream: TokenStream [],
+            },
+        ),
     },
 )

@@ -35,5 +35,11 @@ Function(
             ],
         ),
         return_ty: None,
+        body: Some(
+            Group {
+                delimiter: Brace,
+                stream: TokenStream [],
+            },
+        ),
     },
 )

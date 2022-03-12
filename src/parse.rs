@@ -423,6 +423,8 @@ pub fn parse_type(tokens: TokenStream) -> Declaration {
     let attributes = consume_attributes(&mut tokens);
     let vis_marker = consume_vis_marker(&mut tokens);
 
+    // TODO - remove next_token vars
+
     if let Some(ident) = parse_ident(tokens.peek().unwrap().clone()) {
         if ident == "struct" {
             // struct keyword
@@ -501,12 +503,21 @@ pub fn parse_type(tokens: TokenStream) -> Declaration {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
                     parse_fn_params(group.stream())
                 }
-                _ => panic!("cannot parse type"),
+                _ => panic!("cannot parse function"),
             };
 
             let return_ty = consume_fn_return(&mut tokens);
 
             let where_clauses = consume_where_clauses(&mut tokens);
+
+            let next_token = tokens.next().unwrap();
+            let function_body = match &next_token {
+                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
+                    Some(next_token)
+                }
+                TokenTree::Punct(punct) if punct.as_char() == ';' => None,
+                _ => panic!("cannot parse function"),
+            };
 
             Declaration::Function(Function {
                 attributes,
@@ -517,6 +528,7 @@ pub fn parse_type(tokens: TokenStream) -> Declaration {
                 params,
                 where_clauses,
                 return_ty,
+                body: function_body,
             })
         } else if ident == "union" {
             panic!("cannot parse unions")

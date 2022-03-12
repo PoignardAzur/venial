@@ -601,5 +601,22 @@ fn parse_param_attr_fn() {
     assert_debug_snapshot!(func);
 }
 
-// TODO - parse function body
-// TODO - test prototype
+#[test]
+fn parse_fn_body() {
+    let func = parse_type(quote! {
+        fn hello_world(a: i32, b: f32) -> String {
+            println!("hello world")
+        }
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_fn_prototype() {
+    let func = parse_type(quote! {
+        fn prototype(a: i32, b: f32) -> String;
+    });
+
+    assert_debug_snapshot!(func);
+}

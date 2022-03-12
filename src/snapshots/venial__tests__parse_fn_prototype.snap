@@ -1,31 +1,34 @@
 ---
 source: src/tests.rs
-assertion_line: 574
+assertion_line: 621
 expression: func
 ---
 Function(
     Function {
         attributes: [],
-        vis_marker: Some(
-            pub,
-        ),
+        vis_marker: None,
         qualifiers: FunctionQualifiers {
             is_default: false,
             is_const: false,
             is_async: false,
             is_unsafe: false,
-            is_extern: true,
-            extern_abi: Some(
-                Literal {
-                    lit: "C",
-                },
-            ),
+            is_extern: false,
+            extern_abi: None,
         },
         name: Ident(
-            extern_fn,
+            prototype,
         ),
         generic_params: None,
         params: [
+            FunctionParameter {
+                attributes: [],
+                name: Ident(
+                    a,
+                ),
+                ty: [
+                    "i32",
+                ],
+            },
             FunctionParameter {
                 attributes: [],
                 name: Ident(
@@ -37,12 +40,11 @@ Function(
             },
         ],
         where_clauses: None,
-        return_ty: None,
-        body: Some(
-            Group {
-                delimiter: Brace,
-                stream: TokenStream [],
-            },
+        return_ty: Some(
+            [
+                "String",
+            ],
         ),
+        body: None,
     },
 )

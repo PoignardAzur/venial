@@ -22,5 +22,11 @@ Function(
         params: [],
         where_clauses: None,
         return_ty: None,
+        body: Some(
+            Group {
+                delimiter: Brace,
+                stream: TokenStream [],
+            },
+        ),
     },
 )

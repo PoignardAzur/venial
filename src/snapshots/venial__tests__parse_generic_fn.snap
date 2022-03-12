@@ -44,5 +44,11 @@ Function(
                 "B",
             ],
         ),
+        body: Some(
+            Group {
+                delimiter: Brace,
+                stream: TokenStream [],
+            },
+        ),
     },
 )

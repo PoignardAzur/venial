@@ -107,8 +107,9 @@ pub struct EnumVariant {
 /// **Example input:**
 ///
 /// ```no_run
-/// fn hello(a: i32, b: f32) -> f32 { return 0.0; }
-/// fn eval(c: String, b: i32) { return; }
+/// const fn hello(a: i32, b: f32) -> f32 { return 0.0; }
+/// unsafe fn eval(c: String, b: i32) { return; }
+/// fn do_thing<T: Clone>(t: T) where T: Default;
 /// ```
 #[derive(Clone, Debug)]
 pub struct Function {
@@ -120,6 +121,7 @@ pub struct Function {
     pub params: Vec<FunctionParameter>,
     pub where_clauses: Option<WhereClauses>,
     pub return_ty: Option<TyExpr>,
+    pub body: Option<TokenTree>,
 }
 
 /// Keywords giving special information on a function.

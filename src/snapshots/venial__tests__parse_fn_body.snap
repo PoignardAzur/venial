@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 473
+assertion_line: 612
 expression: func
 ---
 Function(
@@ -16,7 +16,7 @@ Function(
             extern_abi: None,
         },
         name: Ident(
-            hello,
+            hello_world,
         ),
         generic_params: None,
         params: [
@@ -48,7 +48,23 @@ Function(
         body: Some(
             Group {
                 delimiter: Brace,
-                stream: TokenStream [],
+                stream: TokenStream [
+                    Ident {
+                        sym: println,
+                    },
+                    Punct {
+                        char: '!',
+                        spacing: Alone,
+                    },
+                    Group {
+                        delimiter: Parenthesis,
+                        stream: TokenStream [
+                            Literal {
+                                lit: "hello world",
+                            },
+                        ],
+                    },
+                ],
             },
         ),
     },
