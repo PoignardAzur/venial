@@ -1,6 +1,7 @@
 #![allow(missing_docs)]
 
-use proc_macro2::{Ident, TokenTree};
+use proc_macro2::{Ident, TokenStream, TokenTree};
+use quote::{ToTokens, TokenStreamExt as _};
 
 // TODO - handle unions
 
@@ -18,6 +19,7 @@ use proc_macro2::{Ident, TokenTree};
 ///     // ...
 /// }
 /// ```
+#[non_exhaustive]
 #[derive(Clone, Debug)]
 pub enum TypeDeclaration {
     Struct(Struct),
@@ -129,6 +131,9 @@ pub struct NamedField {
 }
 
 // --- Token groups ---
+
+// TODO - parse better
+// see https://doc.rust-lang.org/reference/attributes.html
 
 /// An outer attribute.
 ///
@@ -336,5 +341,53 @@ impl std::fmt::Debug for EnumDiscriminant {
             };
         }
         list.finish()
+    }
+}
+
+impl ToTokens for Attribute {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(self._hashbang.clone());
+        for token in &self.child_tokens {
+            tokens.append(token.clone());
+        }
+    }
+}
+
+impl ToTokens for VisMarker {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self._token1.to_tokens(tokens);
+        self._token2.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for GenericParams {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for token in &self.tokens {
+            tokens.append(token.clone());
+        }
+    }
+}
+
+impl ToTokens for WhereClauses {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for token in &self.tokens {
+            tokens.append(token.clone());
+        }
+    }
+}
+
+impl ToTokens for TyExpr {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for token in &self.tokens {
+            tokens.append(token.clone());
+        }
+    }
+}
+
+impl ToTokens for EnumDiscriminant {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for token in &self.tokens {
+            tokens.append(token.clone());
+        }
     }
 }
