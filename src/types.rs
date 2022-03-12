@@ -24,6 +24,7 @@ use quote::{ToTokens, TokenStreamExt as _};
 pub enum Declaration {
     Struct(Struct),
     Enum(Enum),
+    Union(Union),
     Function(Function),
 }
 
@@ -101,6 +102,25 @@ pub struct EnumVariant {
 
 // TODO - fn EnumVariant::is_empty_variant()
 // TODO - fn EnumVariant::get_single_type()
+
+/// Declaration of an union.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// union MyUnion {
+///     // ...
+/// }
+/// ```
+#[derive(Clone, Debug)]
+pub struct Union {
+    pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
+    pub name: Ident,
+    pub generic_params: Option<GenericParams>,
+    pub where_clauses: Option<WhereClauses>,
+    pub fields: Vec<NamedField>,
+}
 
 /// Declaration of a function.
 ///

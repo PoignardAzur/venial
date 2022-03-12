@@ -51,6 +51,18 @@ fn parse_enum() {
 }
 
 #[test]
+fn parse_union() {
+    let union_type = parse_type(quote!(
+        union Hello {
+            a: A,
+            b: B,
+        }
+    ));
+
+    assert_debug_snapshot!(union_type);
+}
+
+#[test]
 fn parse_empty_tuple() {
     let struct_type = parse_type(quote!(
         struct Hello();

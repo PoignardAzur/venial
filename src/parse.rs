@@ -1,6 +1,6 @@
 use crate::types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Function, FunctionParameter,
-    FunctionQualifiers, GenericParams, NamedField, Struct, StructFields, TupleField, TyExpr,
+    FunctionQualifiers, GenericParams, NamedField, Struct, StructFields, TupleField, TyExpr, Union,
     VisMarker, WhereClauses,
 };
 use proc_macro2::{Delimiter, Ident, TokenStream, TokenTree};
@@ -485,6 +485,32 @@ pub fn parse_type(tokens: TokenStream) -> Declaration {
                 where_clauses,
                 variants: enum_variants,
             })
+        } else if ident == "union" {
+            // union keyword
+            tokens.next().unwrap();
+
+            let next_token = tokens.next().unwrap();
+            let union_name = parse_ident(next_token).unwrap();
+
+            let generic_params = consume_generic_params(&mut tokens);
+            let where_clauses = consume_where_clauses(&mut tokens);
+
+            let next_token = tokens.next().unwrap();
+            let union_fields = match next_token {
+                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
+                    parse_named_fields(group.stream())
+                }
+                _ => panic!("cannot parse type"),
+            };
+
+            Declaration::Union(Union {
+                attributes,
+                vis_marker,
+                name: union_name,
+                generic_params,
+                where_clauses,
+                fields: union_fields,
+            })
         } else if matches!(
             ident.to_string().as_str(),
             "default" | "const" | "async" | "unsafe" | "extern" | "fn"
@@ -530,8 +556,6 @@ pub fn parse_type(tokens: TokenStream) -> Declaration {
                 return_ty,
                 body: function_body,
             })
-        } else if ident == "union" {
-            panic!("cannot parse unions")
         } else {
             panic!("cannot parse type")
         }
