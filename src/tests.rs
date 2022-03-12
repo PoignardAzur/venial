@@ -1,4 +1,4 @@
-use crate::parse_type;
+use crate::parse_declaration;
 
 use insta::assert_debug_snapshot;
 use quote::quote;
@@ -9,7 +9,7 @@ use quote::quote;
 
 #[test]
 fn parse_unit_struct() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello;
     ));
 
@@ -18,7 +18,7 @@ fn parse_unit_struct() {
 
 #[test]
 fn parse_tuple_struct() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello(A, B);
     ));
 
@@ -27,7 +27,7 @@ fn parse_tuple_struct() {
 
 #[test]
 fn parse_normal_struct() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello {
             a: A,
             b: B,
@@ -39,7 +39,7 @@ fn parse_normal_struct() {
 
 #[test]
 fn parse_enum() {
-    let enum_type = parse_type(quote!(
+    let enum_type = parse_declaration(quote!(
         enum Hello {
             A,
             B(Foo, Bar),
@@ -52,7 +52,7 @@ fn parse_enum() {
 
 #[test]
 fn parse_union() {
-    let union_type = parse_type(quote!(
+    let union_type = parse_declaration(quote!(
         union Hello {
             a: A,
             b: B,
@@ -64,7 +64,7 @@ fn parse_union() {
 
 #[test]
 fn parse_empty_tuple() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello();
     ));
 
@@ -73,7 +73,7 @@ fn parse_empty_tuple() {
 
 #[test]
 fn parse_empty_struct() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello {}
     ));
 
@@ -82,7 +82,7 @@ fn parse_empty_struct() {
 
 #[test]
 fn parse_empty_enum() {
-    let enum_type = parse_type(quote!(
+    let enum_type = parse_declaration(quote!(
         enum Hello {}
     ));
 
@@ -95,13 +95,13 @@ fn parse_empty_enum() {
 
 #[test]
 fn parse_unit_struct_vis() {
-    let struct_type_pub = parse_type(quote!(
+    let struct_type_pub = parse_declaration(quote!(
         pub struct Hello;
     ));
-    let struct_type_pub_crate = parse_type(quote!(
+    let struct_type_pub_crate = parse_declaration(quote!(
         pub(crate) struct Hello;
     ));
-    let struct_type_crate = parse_type(quote!(
+    let struct_type_crate = parse_declaration(quote!(
         crate struct Hello;
     ));
 
@@ -112,13 +112,13 @@ fn parse_unit_struct_vis() {
 
 #[test]
 fn parse_tuple_struct_vis() {
-    let struct_type_pub = parse_type(quote!(
+    let struct_type_pub = parse_declaration(quote!(
         pub struct Hello(A, B);
     ));
-    let struct_type_pub_crate = parse_type(quote!(
+    let struct_type_pub_crate = parse_declaration(quote!(
         pub(crate) struct Hello(A, B);
     ));
-    let struct_type_crate = parse_type(quote!(
+    let struct_type_crate = parse_declaration(quote!(
         crate struct Hello(A, B);
     ));
 
@@ -129,19 +129,19 @@ fn parse_tuple_struct_vis() {
 
 #[test]
 fn parse_normal_struct_vis() {
-    let struct_type_pub = parse_type(quote!(
+    let struct_type_pub = parse_declaration(quote!(
         pub struct Hello {
             a: A,
             b: B,
         }
     ));
-    let struct_type_pub_crate = parse_type(quote!(
+    let struct_type_pub_crate = parse_declaration(quote!(
         pub(crate) struct Hello {
             a: A,
             b: B,
         }
     ));
-    let struct_type_crate = parse_type(quote!(
+    let struct_type_crate = parse_declaration(quote!(
         crate struct Hello {
             a: A,
             b: B,
@@ -155,21 +155,21 @@ fn parse_normal_struct_vis() {
 
 #[test]
 fn parse_enum_vis() {
-    let enum_type_pub = parse_type(quote!(
+    let enum_type_pub = parse_declaration(quote!(
         pub enum Hello {
             A,
             B(Foo, Bar),
             C { foo: Foo, bar: Bar },
         }
     ));
-    let enum_type_pub_crate = parse_type(quote!(
+    let enum_type_pub_crate = parse_declaration(quote!(
         pub(crate) enum Hello {
             A,
             B(Foo, Bar),
             C { foo: Foo, bar: Bar },
         }
     ));
-    let enum_type_crate = parse_type(quote!(
+    let enum_type_crate = parse_declaration(quote!(
         crate enum Hello {
             A,
             B(Foo, Bar),
@@ -184,7 +184,7 @@ fn parse_enum_vis() {
 
 #[test]
 fn parse_struct_fields_vis() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         pub struct Hello {
             pub a: A,
             pub(super) b: B,
@@ -198,7 +198,7 @@ fn parse_struct_fields_vis() {
 
 #[test]
 fn parse_tuple_fields_vis() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         pub struct Hello(pub A, pub(super) B, crate C, D);
     ));
 
@@ -211,7 +211,7 @@ fn parse_tuple_fields_vis() {
 
 #[test]
 fn parse_unit_struct_attributes() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         #[hello]
         pub struct Hello;
     ));
@@ -221,7 +221,7 @@ fn parse_unit_struct_attributes() {
 
 #[test]
 fn parse_tuple_struct_attributes() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         #[hello]
         pub struct Hello(A, B);
     ));
@@ -231,7 +231,7 @@ fn parse_tuple_struct_attributes() {
 
 #[test]
 fn parse_normal_struct_attributes() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         #[hello]
         pub struct Hello {
             a: A,
@@ -244,7 +244,7 @@ fn parse_normal_struct_attributes() {
 
 #[test]
 fn parse_enum_attributes() {
-    let enum_type = parse_type(quote!(
+    let enum_type = parse_declaration(quote!(
         #[hello]
         pub enum Hello {
             A,
@@ -258,7 +258,7 @@ fn parse_enum_attributes() {
 
 #[test]
 fn parse_struct_fields_attributes() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         pub struct Hello {
             #[hello]
             a: A,
@@ -276,7 +276,7 @@ fn parse_struct_fields_attributes() {
 
 #[test]
 fn parse_tuple_fields_attributes() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         pub struct Hello(
             #[hello] A,
             B,
@@ -297,7 +297,7 @@ fn parse_tuple_fields_attributes() {
 
 #[test]
 fn parse_unit_struct_where_clause() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello
         where
             A: B,
@@ -309,7 +309,7 @@ fn parse_unit_struct_where_clause() {
 
 #[test]
 fn parse_tuple_struct_where_clause() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello(A, B)
         where
             A: B,
@@ -321,7 +321,7 @@ fn parse_tuple_struct_where_clause() {
 
 #[test]
 fn parse_normal_struct_where_clause() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello
         where
             A: B,
@@ -337,7 +337,7 @@ fn parse_normal_struct_where_clause() {
 
 #[test]
 fn parse_enum_where_clause() {
-    let enum_type = parse_type(quote!(
+    let enum_type = parse_declaration(quote!(
         enum Hello
         where
             A: B,
@@ -358,7 +358,7 @@ fn parse_enum_where_clause() {
 
 #[test]
 fn parse_unit_struct_generic_params() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello<X, Y: Z<A>, Z>;
     ));
 
@@ -367,7 +367,7 @@ fn parse_unit_struct_generic_params() {
 
 #[test]
 fn parse_tuple_struct_generic_params() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello<X, Y: Z<A>, Z>(A, B);
     ));
 
@@ -376,7 +376,7 @@ fn parse_tuple_struct_generic_params() {
 
 #[test]
 fn parse_normal_struct_generic_params() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello<X, Y: Z<A>, Z> {
             a: A,
             b: B<X, Y, Z>,
@@ -388,7 +388,7 @@ fn parse_normal_struct_generic_params() {
 
 #[test]
 fn parse_enum_generic_params() {
-    let enum_type = parse_type(quote!(
+    let enum_type = parse_declaration(quote!(
         enum Hello<X, Y: Z<A>, Z> {
             A,
             B(Foo, Bar<X, Y, Z>),
@@ -402,7 +402,7 @@ fn parse_enum_generic_params() {
 #[rustfmt::skip]
 #[test]
 fn parse_enum_empty_generic_params() {
-    let enum_type = parse_type(quote!(
+    let enum_type = parse_declaration(quote!(
         enum Hello<>
         where
             A<>: B<>,
@@ -422,7 +422,7 @@ fn parse_enum_empty_generic_params() {
 
 #[test]
 fn parse_enum_discriminant() {
-    let enum_type = parse_type(quote!(
+    let enum_type = parse_declaration(quote!(
         enum Hello {
             A = 1,
             B(Foo, Bar) = call::some::function(1, 2, { 3 }),
@@ -439,7 +439,7 @@ fn parse_enum_discriminant() {
 
 #[test]
 fn parse_const_generics() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello(Array<A, { 123 + (1, 2, 3) }>, B<{ 1 }, { 2 }>);
     ));
 
@@ -448,7 +448,7 @@ fn parse_const_generics() {
 
 #[test]
 fn parse_fn_traits() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello(
             fn(A, B) -> C,
             A<FnOnce(A, B, C<D>) -> E,
@@ -461,7 +461,7 @@ fn parse_fn_traits() {
 #[rustfmt::skip]
 #[test]
 fn parse_multiple_brackets() {
-    let struct_type = parse_type(quote!(
+    let struct_type = parse_declaration(quote!(
         struct Hello(
             A<B<C>>,
             A<B<C, D>>,
@@ -478,7 +478,7 @@ fn parse_multiple_brackets() {
 
 #[test]
 fn parse_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         fn hello(a: i32, b: f32) -> String {}
     });
 
@@ -487,7 +487,7 @@ fn parse_fn() {
 
 #[test]
 fn parse_empty_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         fn test_me() {}
     });
 
@@ -496,7 +496,7 @@ fn parse_empty_fn() {
 
 #[test]
 fn parse_generic_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         fn generic<T, B>(a: T) -> B {}
     });
 
@@ -505,13 +505,13 @@ fn parse_generic_fn() {
 
 #[test]
 fn parse_where_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         fn where_clause<T>() -> T
         where
             T: Debug
         {}
     });
-    let func_2 = parse_type(quote! {
+    let func_2 = parse_declaration(quote! {
         fn where_clause<T>()
         where
             T: Debug
@@ -524,7 +524,7 @@ fn parse_where_fn() {
 
 #[test]
 fn parse_attr_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         #[my_attr]
         fn my_attr_fn(a: i32) {}
     });
@@ -534,7 +534,7 @@ fn parse_attr_fn() {
 
 #[test]
 fn parse_visi_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         pub fn visibility(b: f32) {}
     });
 
@@ -543,7 +543,7 @@ fn parse_visi_fn() {
 
 #[test]
 fn parse_default_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         pub default fn default_fn(b: f32) {}
     });
 
@@ -552,7 +552,7 @@ fn parse_default_fn() {
 
 #[test]
 fn parse_const_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         pub const fn const_fn(b: f32) {}
     });
 
@@ -561,7 +561,7 @@ fn parse_const_fn() {
 
 #[test]
 fn parse_async_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         pub async fn async_fn(b: f32) {}
     });
 
@@ -570,7 +570,7 @@ fn parse_async_fn() {
 
 #[test]
 fn parse_unsafe_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         pub unsafe fn unsafe_fn(b: f32) {}
     });
 
@@ -579,7 +579,7 @@ fn parse_unsafe_fn() {
 
 #[test]
 fn parse_extern_abi_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         pub extern "C" fn extern_fn(b: f32) {}
     });
 
@@ -588,7 +588,7 @@ fn parse_extern_abi_fn() {
 
 #[test]
 fn parse_extern_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         pub extern fn extern_fn(b: f32) {}
     });
 
@@ -597,7 +597,7 @@ fn parse_extern_fn() {
 
 #[test]
 fn parse_all_kw_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         pub default const async unsafe extern "C" fn all_kw(b: f32) {}
     });
 
@@ -606,7 +606,7 @@ fn parse_all_kw_fn() {
 
 #[test]
 fn parse_param_attr_fn() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         pub async fn visibility(#[my_attr] b: f32) {}
     });
 
@@ -615,7 +615,7 @@ fn parse_param_attr_fn() {
 
 #[test]
 fn parse_fn_body() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         fn hello_world(a: i32, b: f32) -> String {
             println!("hello world")
         }
@@ -626,7 +626,7 @@ fn parse_fn_body() {
 
 #[test]
 fn parse_fn_prototype() {
-    let func = parse_type(quote! {
+    let func = parse_declaration(quote! {
         fn prototype(a: i32, b: f32) -> String;
     });
 

@@ -29,10 +29,10 @@
 //! ## Example
 //!
 //! ```rust
-//! use venial::{parse_type, Declaration};
+//! use venial::{parse_declaration, Declaration};
 //! use quote::quote;
 //!
-//! let enum_type = parse_type(quote!(
+//! let enum_type = parse_declaration(quote!(
 //!     enum Shape {
 //!         Square(Square),
 //!         Circle(Circle),
@@ -56,7 +56,7 @@ mod types;
 #[cfg(test)]
 mod tests;
 
-pub use parse::parse_type;
+pub use parse::parse_declaration;
 
 pub use types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericParams, NamedField, Struct,

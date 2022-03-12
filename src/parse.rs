@@ -404,9 +404,9 @@ fn parse_fn_params(tokens: TokenStream) -> Vec<FunctionParameter> {
 /// ## Example
 ///
 /// ```
-/// # use venial::{parse_type, Declaration};
+/// # use venial::{parse_declaration, Declaration};
 /// # use quote::quote;
-/// let struct_type = parse_type(quote!(
+/// let struct_type = parse_declaration(quote!(
 ///     struct Hello {
 ///         foo: Foo,
 ///         bar: Bar,
@@ -415,7 +415,7 @@ fn parse_fn_params(tokens: TokenStream) -> Vec<FunctionParameter> {
 /// assert!(matches!(struct_type, Declaration::Struct(_)));
 /// ```
 ///
-pub fn parse_type(tokens: TokenStream) -> Declaration {
+pub fn parse_declaration(tokens: TokenStream) -> Declaration {
     let mut tokens = tokens.into_iter().peekable();
 
     let attributes = consume_attributes(&mut tokens);

@@ -41,10 +41,10 @@ Note though that venial will accept any syntactically valid declaration, even if
 ## Example
 
 ```rust
-use venial::{parse_type, TypeDeclaration};
+use venial::{parse_declaration, TypeDeclaration};
 use quote::quote;
 
-let enum_type = parse_type(quote!(
+let enum_type = parse_declaration(quote!(
     enum Shape {
         Square(Square),
         Circle(Circle),
