@@ -16,6 +16,11 @@ use quote::{ToTokens, TokenStreamExt as _};
 /// enum MyEnum {
 ///     // ...
 /// }
+/// # #[cfg(FALSE)]
+/// union MyUnion {
+///     // ...
+/// }
+/// fn foobar() {}
 /// ```
 #[non_exhaustive]
 #[derive(Clone, Debug)]
@@ -106,6 +111,7 @@ pub struct EnumVariant {
 /// **Example input:**
 ///
 /// ```no_run
+/// # #[cfg(FALSE)]
 /// union MyUnion {
 ///     // ...
 /// }
@@ -127,6 +133,7 @@ pub struct Union {
 /// ```no_run
 /// const fn hello(a: i32, b: f32) -> f32 { return 0.0; }
 /// unsafe fn eval(c: String, b: i32) { return; }
+/// # #[cfg(FALSE)]
 /// fn do_thing<T: Clone>(t: T) where T: Default;
 /// ```
 #[derive(Clone, Debug)]
