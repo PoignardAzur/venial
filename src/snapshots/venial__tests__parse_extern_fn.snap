@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 538
+assertion_line: 583
 expression: func
 ---
 Function(
@@ -14,11 +14,8 @@ Function(
             is_const: false,
             is_async: false,
             is_unsafe: false,
-            extern_abi: Some(
-                Literal {
-                    lit: "C",
-                },
-            ),
+            is_extern: true,
+            extern_abi: None,
         },
         name: Ident(
             extern_fn,

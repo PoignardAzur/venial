@@ -465,7 +465,7 @@ fn parse_multiple_brackets() {
 // =========
 
 #[test]
-fn parse_fn_definitions() {
+fn parse_fn() {
     let func = parse_type(quote! {
         fn hello(a: i32, b: f32) -> String {}
     });
@@ -474,7 +474,7 @@ fn parse_fn_definitions() {
 }
 
 #[test]
-fn parse_empty_fn_definitions() {
+fn parse_empty_fn() {
     let func = parse_type(quote! {
         fn test_me() {}
     });
@@ -483,7 +483,7 @@ fn parse_empty_fn_definitions() {
 }
 
 #[test]
-fn parse_generic_fn_definitions() {
+fn parse_generic_fn() {
     let func = parse_type(quote! {
         fn generic<T, B>(a: T) -> B {}
     });
@@ -492,7 +492,7 @@ fn parse_generic_fn_definitions() {
 }
 
 #[test]
-fn parse_where_fn_definitions() {
+fn parse_where_fn() {
     let func = parse_type(quote! {
         fn where_clause<T>() -> T
         where
@@ -511,7 +511,7 @@ fn parse_where_fn_definitions() {
 }
 
 #[test]
-fn parse_attr_fn_definitions() {
+fn parse_attr_fn() {
     let func = parse_type(quote! {
         #[my_attr]
         fn my_attr_fn(a: i32) {}
@@ -521,7 +521,7 @@ fn parse_attr_fn_definitions() {
 }
 
 #[test]
-fn parse_visi_fn_definitions() {
+fn parse_visi_fn() {
     let func = parse_type(quote! {
         pub fn visibility(b: f32) {}
     });
@@ -530,25 +530,7 @@ fn parse_visi_fn_definitions() {
 }
 
 #[test]
-fn parse_extern_abi_fn_definitions() {
-    let func = parse_type(quote! {
-        pub extern "C" fn extern_fn(b: f32) {}
-    });
-
-    assert_debug_snapshot!(func);
-}
-
-#[test]
-fn parse_extern_fn_definitions() {
-    let func = parse_type(quote! {
-        pub extern fn extern_fn(b: f32) {}
-    });
-
-    assert_debug_snapshot!(func);
-}
-
-#[test]
-fn parse_default_fn_definitions() {
+fn parse_default_fn() {
     let func = parse_type(quote! {
         pub default fn default_fn(b: f32) {}
     });
@@ -557,7 +539,7 @@ fn parse_default_fn_definitions() {
 }
 
 #[test]
-fn parse_const_fn_definitions() {
+fn parse_const_fn() {
     let func = parse_type(quote! {
         pub const fn const_fn(b: f32) {}
     });
@@ -566,7 +548,7 @@ fn parse_const_fn_definitions() {
 }
 
 #[test]
-fn parse_async_fn_definitions() {
+fn parse_async_fn() {
     let func = parse_type(quote! {
         pub async fn async_fn(b: f32) {}
     });
@@ -575,7 +557,7 @@ fn parse_async_fn_definitions() {
 }
 
 #[test]
-fn parse_unsafe_fn_definitions() {
+fn parse_unsafe_fn() {
     let func = parse_type(quote! {
         pub unsafe fn unsafe_fn(b: f32) {}
     });
@@ -584,7 +566,25 @@ fn parse_unsafe_fn_definitions() {
 }
 
 #[test]
-fn parse_all_kw_fn_definitions() {
+fn parse_extern_abi_fn() {
+    let func = parse_type(quote! {
+        pub extern "C" fn extern_fn(b: f32) {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_extern_fn() {
+    let func = parse_type(quote! {
+        pub extern fn extern_fn(b: f32) {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_all_kw_fn() {
     let func = parse_type(quote! {
         pub default const async unsafe extern "C" fn all_kw(b: f32) {}
     });
@@ -593,7 +593,7 @@ fn parse_all_kw_fn_definitions() {
 }
 
 #[test]
-fn parse_param_attr_fn_definitions() {
+fn parse_param_attr_fn() {
     let func = parse_type(quote! {
         pub async fn visibility(#[my_attr] b: f32) {}
     });
@@ -603,5 +603,3 @@ fn parse_param_attr_fn_definitions() {
 
 // TODO - parse function body
 // TODO - test prototype
-// TODO - reorder
-// TODO - remove _definitions
