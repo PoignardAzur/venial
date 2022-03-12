@@ -1,5 +1,6 @@
 ---
 source: src/tests.rs
+assertion_line: 529
 expression: func
 ---
 Function(
@@ -8,11 +9,18 @@ Function(
         vis_marker: Some(
             pub,
         ),
+        qualifiers: FunctionQualifiers {
+            is_default: false,
+            is_const: false,
+            is_async: false,
+            is_unsafe: false,
+            is_extern: false,
+            extern_abi: None,
+        },
         name: Ident(
             visibility,
         ),
         generic_params: None,
-        where_clauses: None,
         params: [
             FunctionParameter {
                 attributes: [],
@@ -24,10 +32,7 @@ Function(
                 ],
             },
         ],
-        returns: None,
-        abi: "Rust",
-        is_unsafe: false,
-        is_async: false,
-        is_const: false,
+        where_clauses: None,
+        return_ty: None,
     },
 )

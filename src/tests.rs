@@ -460,6 +460,10 @@ fn parse_multiple_brackets() {
     assert_debug_snapshot!(struct_type);
 }
 
+// =========
+// FUNCTIONS
+// =========
+
 #[test]
 fn parse_fn_definitions() {
     let func = parse_type(quote! {
@@ -495,8 +499,15 @@ fn parse_where_fn_definitions() {
             T: Debug
         {}
     });
+    let func_2 = parse_type(quote! {
+        fn where_clause<T>()
+        where
+            T: Debug
+        {}
+    });
 
     assert_debug_snapshot!(func);
+    assert_debug_snapshot!(func_2);
 }
 
 #[test]
@@ -519,9 +530,27 @@ fn parse_visi_fn_definitions() {
 }
 
 #[test]
-fn parse_extern_fn_definitions() {
+fn parse_extern_abi_fn_definitions() {
     let func = parse_type(quote! {
         pub extern "C" fn extern_fn(b: f32) {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_extern_fn_definitions() {
+    let func = parse_type(quote! {
+        pub extern fn extern_fn(b: f32) {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_default_fn_definitions() {
+    let func = parse_type(quote! {
+        pub default fn default_fn(b: f32) {}
     });
 
     assert_debug_snapshot!(func);
@@ -557,7 +586,7 @@ fn parse_unsafe_fn_definitions() {
 #[test]
 fn parse_all_kw_fn_definitions() {
     let func = parse_type(quote! {
-        pub async const unsafe extern "C" fn all_kw(b: f32) {}
+        pub default const async unsafe extern "C" fn all_kw(b: f32) {}
     });
 
     assert_debug_snapshot!(func);
@@ -571,3 +600,8 @@ fn parse_param_attr_fn_definitions() {
 
     assert_debug_snapshot!(func);
 }
+
+// TODO - parse function body
+// TODO - test prototype
+// TODO - reorder
+// TODO - remove _definitions

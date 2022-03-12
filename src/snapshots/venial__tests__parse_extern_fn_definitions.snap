@@ -1,5 +1,6 @@
 ---
 source: src/tests.rs
+assertion_line: 538
 expression: func
 ---
 Function(
@@ -8,11 +9,21 @@ Function(
         vis_marker: Some(
             pub,
         ),
+        qualifiers: FunctionQualifiers {
+            is_default: false,
+            is_const: false,
+            is_async: false,
+            is_unsafe: false,
+            extern_abi: Some(
+                Literal {
+                    lit: "C",
+                },
+            ),
+        },
         name: Ident(
             extern_fn,
         ),
         generic_params: None,
-        where_clauses: None,
         params: [
             FunctionParameter {
                 attributes: [],
@@ -24,10 +35,7 @@ Function(
                 ],
             },
         ],
-        returns: None,
-        abi: "C",
-        is_unsafe: false,
-        is_async: false,
-        is_const: false,
+        where_clauses: None,
+        return_ty: None,
     },
 )

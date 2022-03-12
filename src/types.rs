@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 
-use proc_macro2::{Ident, TokenStream, TokenTree};
+use proc_macro2::{Ident, Literal, TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt as _};
 
 // TODO - handle unions
@@ -21,15 +21,15 @@ use quote::{ToTokens, TokenStreamExt as _};
 /// ```
 #[non_exhaustive]
 #[derive(Clone, Debug)]
-pub enum TypeDeclaration {
+pub enum Declaration {
     Struct(Struct),
     Enum(Enum),
     Function(Function),
 }
 
-// TODO - fn TypeDeclaration::name()
-// TODO - fn TypeDeclaration::as_struct()
-// TODO - fn TypeDeclaration::as_enum()
+// TODO - fn Declaration::name()
+// TODO - fn Declaration::as_struct()
+// TODO - fn Declaration::as_enum()
 
 /// Declaration of a struct.
 ///
@@ -101,6 +101,54 @@ pub struct EnumVariant {
 
 // TODO - fn EnumVariant::is_empty_variant()
 // TODO - fn EnumVariant::get_single_type()
+
+/// Declaration of a function.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// fn hello(a: i32, b: f32) -> f32 { return 0.0; }
+/// fn eval(c: String, b: i32) { return; }
+/// ```
+#[derive(Clone, Debug)]
+pub struct Function {
+    pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
+    pub qualifiers: FunctionQualifiers,
+    pub name: Ident,
+    pub generic_params: Option<GenericParams>,
+    pub params: Vec<FunctionParameter>,
+    pub where_clauses: Option<WhereClauses>,
+    pub return_ty: Option<TyExpr>,
+}
+
+/// Keywords giving special information on a function.
+///
+/// Possible qualifiers are `default`, `const`, `async`, `unsafe` and `extern`,
+/// always in that order.
+#[derive(Clone, Debug, Default)]
+pub struct FunctionQualifiers {
+    pub is_default: bool,
+    pub is_const: bool,
+    pub is_async: bool,
+    pub is_unsafe: bool,
+    pub is_extern: bool,
+    pub extern_abi: Option<Literal>,
+}
+
+/// A parameter of a [`Function`]
+///
+/// In the following code, the function parameters captured are `a: i32` and `b: f32`
+///
+/// ```no_run
+/// pub fn hello_world(a: i32, b: f32) {}
+/// ```
+#[derive(Clone, Debug)]
+pub struct FunctionParameter {
+    pub attributes: Vec<Attribute>,
+    pub name: Ident,
+    pub ty: TyExpr,
+}
 
 /// A field of a tuple [`Struct`] or tuple-like [`EnumVariant`].
 ///
@@ -206,43 +254,6 @@ pub struct TyExpr {
 #[derive(Clone)]
 pub struct EnumDiscriminant {
     pub tokens: Vec<TokenTree>,
-}
-
-/// A parameter of a [`Function`]
-///
-/// For instance, in the following code, `a` and `b` are both function parameters
-///
-/// ```no_run
-/// pub fn hello_world(a: i32, b: f32) {}
-/// ```
-#[derive(Clone, Debug)]
-pub struct FunctionParameter {
-    pub attributes: Vec<Attribute>,
-    pub name: Ident,
-    pub ty: TyExpr,
-}
-
-/// Declaration of a function.
-///
-/// **Example input:**
-///
-/// ```no_run
-/// fn hello(a: i32, b: f32) -> f32 { return 0.0; }
-/// fn eval(c: String, b: i32) { return; }
-/// ```
-#[derive(Clone, Debug)]
-pub struct Function {
-    pub attributes: Vec<Attribute>,
-    pub vis_marker: Option<VisMarker>,
-    pub name: Ident,
-    pub generic_params: Option<GenericParams>,
-    pub where_clauses: Option<WhereClauses>,
-    pub params: Vec<FunctionParameter>,
-    pub returns: Option<TyExpr>,
-    pub abi: String,
-    pub is_unsafe: bool,
-    pub is_async: bool,
-    pub is_const: bool,
 }
 
 // ---

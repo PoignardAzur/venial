@@ -29,7 +29,7 @@
 //! ## Example
 //!
 //! ```rust
-//! use venial::{parse_type, TypeDeclaration};
+//! use venial::{parse_type, Declaration};
 //! use quote::quote;
 //!
 //! let enum_type = parse_type(quote!(
@@ -41,7 +41,7 @@
 //! ));
 //!
 //! let enum_type = match enum_type {
-//!     TypeDeclaration::Enum(enum_type) => enum_type,
+//!     Declaration::Enum(enum_type) => enum_type,
 //!     _ => unreachable!(),
 //! };
 //!
@@ -59,6 +59,6 @@ mod tests;
 pub use parse::parse_type;
 
 pub use types::{
-    Attribute, Enum, EnumDiscriminant, EnumVariant, GenericParams, NamedField, Struct,
-    StructFields, TupleField, TyExpr, TypeDeclaration, VisMarker, WhereClauses,
+    Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericParams, NamedField, Struct,
+    StructFields, TupleField, TyExpr, VisMarker, WhereClauses,
 };

@@ -1,7 +1,7 @@
 ---
 source: src/tests.rs
-assertion_line: 509
-expression: func
+assertion_line: 510
+expression: func_2
 ---
 Function(
     Function {
@@ -34,10 +34,6 @@ Function(
                 "Debug",
             ],
         ),
-        return_ty: Some(
-            [
-                "T",
-            ],
-        ),
+        return_ty: None,
     },
 )
