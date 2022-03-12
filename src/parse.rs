@@ -401,8 +401,6 @@ fn parse_fn_params(tokens: TokenStream) -> Vec<FunctionParameter> {
 /// macro, there should be no way for this to happen, as Rust will emit an
 /// error instead of calling this macro.
 ///
-/// Currently panics on unions.
-///
 /// ## Example
 ///
 /// ```

@@ -3,8 +3,6 @@
 use proc_macro2::{Ident, Literal, TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt as _};
 
-// TODO - handle unions
-
 /// The declaration of a Rust type.
 ///
 /// **Example input:**

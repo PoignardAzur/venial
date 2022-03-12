@@ -29,12 +29,13 @@ Venial has no dependency besides proc-macro2 and quote.
 
 To achieve this simplicity, venial makes several trade-offs:
 
-- It doesn't try to parse type expressions. For instance, if your struct includes a field like `foo_bar: &mut Foo<Bar, dyn Foobariser>`, venial will dutifully give you this type as a sequence of tokens and let you interpret it.
+- It can only parse declarations (eg `struct MyStruct {}`). It can't parse expressions or statements. For now, only types and functions are supported.
+- It doesn't try to parse inside type expressions. For instance, if your struct includes a field like `foo_bar: &mut Foo<Bar, dyn Foobariser>`, venial will dutifully give you this type as a sequence of tokens and let you interpret it.
 - It doesn't attempt to recover gracefully from errors. Venial assumes you're running inside a derive macro, and thus that your input is statically guaranteed to be a valid type declaration. If it isn't, venial will summarily panic.
 
 Note though that venial will accept any syntactically valid declaration, even if it isn't semantically valid. The rule of thumb is "if it compiles under a `#[cfg(FALSE)]`, venial will parse it without panicking".
 
-(Note: The above sentence is a lie; venial currently panics on unions and all non-type declarations.)
+(Note: The above sentence is a lie; venial currently panics on unsupported declarations, eg traits, aliases, etc.)
 
 
 ## Example
@@ -78,8 +79,6 @@ My current roadmap is:
 
 On the long term, I'd also like to add parsing for more use cases, while keeping the crate lightweight:
 
-- Parsing unions.
-- Parsing functions.
 - Parsing traits.
 - Parsing comma-separated expression lists.
 
