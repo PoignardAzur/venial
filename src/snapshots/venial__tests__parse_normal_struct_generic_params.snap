@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 374
+assertion_line: 386
 expression: struct_type
 ---
 Struct(
@@ -12,18 +12,25 @@ Struct(
         ),
         generic_params: Some(
             [
-                "<",
-                "X",
-                ",",
-                "Y",
-                ":",
-                "Z",
-                "<",
-                "A",
-                ">",
-                ",",
-                "Z",
-                ">",
+                GenericParam {
+                    name: "X",
+                    bound: None,
+                },
+                GenericParam {
+                    name: "Y",
+                    bound: Some(
+                        [
+                            Z,
+                            "<",
+                            A,
+                            ">",
+                        ],
+                    ),
+                },
+                GenericParam {
+                    name: "Z",
+                    bound: None,
+                },
             ],
         ),
         where_clauses: None,
@@ -36,7 +43,7 @@ Struct(
                         a,
                     ),
                     ty: [
-                        "A",
+                        A,
                     ],
                 },
                 NamedField {
@@ -46,13 +53,13 @@ Struct(
                         b,
                     ),
                     ty: [
-                        "B",
+                        B,
                         "<",
-                        "X",
+                        X,
                         ",",
-                        "Y",
+                        Y,
                         ",",
-                        "Z",
+                        Z,
                         ">",
                     ],
                 },

@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 340
+assertion_line: 352
 expression: enum_type
 ---
 Enum(
@@ -13,19 +13,19 @@ Enum(
         generic_params: None,
         where_clauses: Some(
             [
-                "where",
-                "A",
+                where,
+                A,
                 ":",
-                "B",
+                B,
                 ",",
-                "C",
+                C,
                 "<",
-                "D",
+                D,
                 ">",
                 ":",
-                "E",
+                E,
                 "<",
-                "F",
+                F,
                 ">",
                 ",",
             ],
@@ -52,14 +52,14 @@ Enum(
                             attributes: [],
                             vis_marker: None,
                             ty: [
-                                "Foo",
+                                Foo,
                             ],
                         },
                         TupleField {
                             attributes: [],
                             vis_marker: None,
                             ty: [
-                                "Bar",
+                                Bar,
                             ],
                         },
                     ],
@@ -81,7 +81,7 @@ Enum(
                                 foo,
                             ),
                             ty: [
-                                "Foo",
+                                Foo,
                             ],
                         },
                         NamedField {
@@ -91,7 +91,7 @@ Enum(
                                 bar,
                             ),
                             ty: [
-                                "Bar",
+                                Bar,
                             ],
                         },
                     ],

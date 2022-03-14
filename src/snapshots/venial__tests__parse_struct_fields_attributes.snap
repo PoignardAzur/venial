@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 262
+assertion_line: 274
 expression: struct_type
 ---
 Struct(
@@ -19,7 +19,7 @@ Struct(
                 NamedField {
                     attributes: [
                         #[
-                            "hello",
+                            hello,
                         ],
                     ],
                     vis_marker: None,
@@ -27,7 +27,7 @@ Struct(
                         a,
                     ),
                     ty: [
-                        "A",
+                        A,
                     ],
                 },
                 NamedField {
@@ -37,19 +37,19 @@ Struct(
                         b,
                     ),
                     ty: [
-                        "B",
+                        B,
                     ],
                 },
                 NamedField {
                     attributes: [
                         #[
-                            "hello",
+                            hello,
                         ],
                         #[
-                            "hello",
+                            hello,
                         ],
                         #[
-                            "hello",
+                            hello,
                         ],
                     ],
                     vis_marker: None,
@@ -57,7 +57,7 @@ Struct(
                         c,
                     ),
                     ty: [
-                        "C",
+                        C,
                     ],
                 },
                 NamedField {
@@ -67,7 +67,7 @@ Struct(
                         d,
                     ),
                     ty: [
-                        "D",
+                        D,
                     ],
                 },
             ],

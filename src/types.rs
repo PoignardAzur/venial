@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 
-use proc_macro2::{Ident, Literal, TokenStream, TokenTree};
+use proc_macro2::{Ident, Literal, Punct, TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt as _};
 
 /// The declaration of a Rust type.
@@ -52,7 +52,7 @@ pub struct Struct {
     pub vis_marker: Option<VisMarker>,
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
-    pub where_clauses: Option<WhereClauses>,
+    pub where_clauses: Option<WhereClause>,
     pub fields: StructFields,
 }
 
@@ -82,7 +82,7 @@ pub struct Enum {
     pub vis_marker: Option<VisMarker>,
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
-    pub where_clauses: Option<WhereClauses>,
+    pub where_clauses: Option<WhereClause>,
     pub variants: Vec<EnumVariant>,
 }
 
@@ -122,7 +122,7 @@ pub struct Union {
     pub vis_marker: Option<VisMarker>,
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
-    pub where_clauses: Option<WhereClauses>,
+    pub where_clauses: Option<WhereClause>,
     pub fields: Vec<NamedField>,
 }
 
@@ -144,7 +144,7 @@ pub struct Function {
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub params: Vec<FunctionParameter>,
-    pub where_clauses: Option<WhereClauses>,
+    pub where_clauses: Option<WhereClause>,
     pub return_ty: Option<TyExpr>,
     pub body: Option<TokenTree>,
 }
@@ -243,12 +243,41 @@ pub struct VisMarker {
 /// ```
 #[derive(Clone)]
 pub struct GenericParams {
+    pub _gt: Punct,
+    pub params: Vec<GenericParam>,
+    pub _lt: Punct,
+}
+
+/// A parameter in a type's generic list.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// # struct MyUnitStruct<
+/// 'a, B, const C: usize,
+/// # >(&'a [B; C]);
+/// ```
+#[derive(Clone)]
+pub struct GenericParam {
+    /// Either `'` for lifetimes, `const` for const parameters, or None for type parameters.
+    pub _prefix: Option<TokenTree>,
+    pub name: Ident,
+    pub bound: Option<GenericBound>,
+}
+
+/// A parameter in a type's generic list.
+///
+/// For instance, this is the `: Clone` in `struct MyStruct <T: Clone>(T);`
+#[derive(Clone)]
+pub struct GenericBound {
+    pub _colon: Punct,
     pub tokens: Vec<TokenTree>,
 }
 
 /// All the stuff that comes after the `where` keyword.
 #[derive(Clone)]
-pub struct WhereClauses {
+pub struct WhereClause {
+    pub _where: Ident,
     pub tokens: Vec<TokenTree>,
 }
 
@@ -285,17 +314,25 @@ pub struct EnumDiscriminant {
 
 // ---
 
+struct TokenRef<'a>(&'a TokenTree);
+
+impl<'a> std::fmt::Debug for TokenRef<'a> {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match self.0 {
+            TokenTree::Group(_group) => self.0.fmt(f),
+            TokenTree::Ident(_ident) => f.write_str(&self.0.to_string()),
+            TokenTree::Punct(_punct) => write!(f, "\"{}\"", &self.0.to_string()),
+            TokenTree::Literal(_literal) => f.write_str(&self.0.to_string()),
+        }
+    }
+}
+
 impl std::fmt::Debug for Attribute {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("#")?;
         let mut list = f.debug_list();
         for token in &self.child_tokens {
-            match token {
-                TokenTree::Group(_group) => list.entry(token),
-                TokenTree::Ident(_ident) => list.entry(&token.to_string()),
-                TokenTree::Punct(_punct) => list.entry(&token.to_string()),
-                TokenTree::Literal(_literal) => list.entry(&token.to_string()),
-            };
+            list.entry(&TokenRef(&token));
         }
         list.finish()
     }
@@ -308,12 +345,7 @@ impl std::fmt::Debug for VisMarker {
             Some(TokenTree::Group(group)) => {
                 let mut list = f.debug_tuple(&self._token1.to_string());
                 for token in group.stream() {
-                    match &token {
-                        TokenTree::Group(_group) => list.field(&token),
-                        TokenTree::Ident(_ident) => list.field(&token.to_string()),
-                        TokenTree::Punct(_punct) => list.field(&token.to_string()),
-                        TokenTree::Literal(_literal) => list.field(&token.to_string()),
-                    };
+                    list.field(&TokenRef(&token));
                 }
                 list.finish()
             }
@@ -325,28 +357,37 @@ impl std::fmt::Debug for VisMarker {
 impl std::fmt::Debug for GenericParams {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut list = f.debug_list();
-        for token in &self.tokens {
-            match token {
-                TokenTree::Group(_group) => list.entry(token),
-                TokenTree::Ident(_ident) => list.entry(&token.to_string()),
-                TokenTree::Punct(_punct) => list.entry(&token.to_string()),
-                TokenTree::Literal(_literal) => list.entry(&token.to_string()),
-            };
+        for param in &self.params {
+            list.entry(&param);
         }
         list.finish()
     }
 }
 
-impl std::fmt::Debug for WhereClauses {
+impl std::fmt::Debug for GenericParam {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("GenericParam");
+        f.field("name", &self.name.to_string());
+        f.field("bound", &self.bound);
+        f.finish()
+    }
+}
+
+impl std::fmt::Debug for GenericBound {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut list = f.debug_list();
         for token in &self.tokens {
-            match token {
-                TokenTree::Group(_group) => list.entry(token),
-                TokenTree::Ident(_ident) => list.entry(&token.to_string()),
-                TokenTree::Punct(_punct) => list.entry(&token.to_string()),
-                TokenTree::Literal(_literal) => list.entry(&token.to_string()),
-            };
+            list.entry(&TokenRef(&token));
+        }
+        list.finish()
+    }
+}
+
+impl std::fmt::Debug for WhereClause {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut list = f.debug_list();
+        for token in &self.tokens {
+            list.entry(&TokenRef(&token));
         }
         list.finish()
     }
@@ -356,12 +397,7 @@ impl std::fmt::Debug for TyExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut list = f.debug_list();
         for token in &self.tokens {
-            match token {
-                TokenTree::Group(_group) => list.entry(token),
-                TokenTree::Ident(_ident) => list.entry(&token.to_string()),
-                TokenTree::Punct(_punct) => list.entry(&token.to_string()),
-                TokenTree::Literal(_literal) => list.entry(&token.to_string()),
-            };
+            list.entry(&TokenRef(&token));
         }
         list.finish()
     }
@@ -371,12 +407,7 @@ impl std::fmt::Debug for EnumDiscriminant {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut list = f.debug_list();
         for token in &self.tokens {
-            match token {
-                TokenTree::Group(_group) => list.entry(token),
-                TokenTree::Ident(_ident) => list.entry(&token.to_string()),
-                TokenTree::Punct(_punct) => list.entry(&token.to_string()),
-                TokenTree::Literal(_literal) => list.entry(&token.to_string()),
-            };
+            list.entry(&TokenRef(&token));
         }
         list.finish()
     }
@@ -400,13 +431,34 @@ impl ToTokens for VisMarker {
 
 impl ToTokens for GenericParams {
     fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(self._gt.clone());
+
+        for param in &self.params {
+            param.to_tokens(tokens);
+        }
+
+        tokens.append(self._lt.clone());
+    }
+}
+
+impl ToTokens for GenericParam {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self._prefix.to_tokens(tokens);
+        self.name.to_tokens(tokens);
+        self.bound.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for GenericBound {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self._colon.to_tokens(tokens);
         for token in &self.tokens {
             tokens.append(token.clone());
         }
     }
 }
 
-impl ToTokens for WhereClauses {
+impl ToTokens for WhereClause {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for token in &self.tokens {
             tokens.append(token.clone());

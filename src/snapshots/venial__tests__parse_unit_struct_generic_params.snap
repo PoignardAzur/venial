@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 353
+assertion_line: 365
 expression: struct_type
 ---
 Struct(
@@ -12,18 +12,25 @@ Struct(
         ),
         generic_params: Some(
             [
-                "<",
-                "X",
-                ",",
-                "Y",
-                ":",
-                "Z",
-                "<",
-                "A",
-                ">",
-                ",",
-                "Z",
-                ">",
+                GenericParam {
+                    name: "X",
+                    bound: None,
+                },
+                GenericParam {
+                    name: "Y",
+                    bound: Some(
+                        [
+                            Z,
+                            "<",
+                            A,
+                            ">",
+                        ],
+                    ),
+                },
+                GenericParam {
+                    name: "Z",
+                    bound: None,
+                },
             ],
         ),
         where_clauses: None,

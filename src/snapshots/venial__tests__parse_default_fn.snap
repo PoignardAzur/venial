@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 538
+assertion_line: 550
 expression: func
 ---
 Function(
@@ -28,7 +28,7 @@ Function(
                     b,
                 ),
                 ty: [
-                    "f32",
+                    f32,
                 ],
             },
         ],

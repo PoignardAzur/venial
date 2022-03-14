@@ -20,7 +20,7 @@ Union(
                     a,
                 ),
                 ty: [
-                    "A",
+                    A,
                 ],
             },
             NamedField {
@@ -30,7 +30,7 @@ Union(
                     b,
                 ),
                 ty: [
-                    "B",
+                    B,
                 ],
             },
         ],

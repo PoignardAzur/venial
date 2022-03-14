@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 460
+assertion_line: 472
 expression: struct_type
 ---
 Struct(
@@ -18,11 +18,11 @@ Struct(
                     attributes: [],
                     vis_marker: None,
                     ty: [
-                        "A",
+                        A,
                         "<",
-                        "B",
+                        B,
                         "<",
-                        "C",
+                        C,
                         ">",
                         ">",
                     ],
@@ -31,13 +31,13 @@ Struct(
                     attributes: [],
                     vis_marker: None,
                     ty: [
-                        "A",
+                        A,
                         "<",
-                        "B",
+                        B,
                         "<",
-                        "C",
+                        C,
                         ",",
-                        "D",
+                        D,
                         ">",
                         ">",
                     ],
@@ -48,19 +48,19 @@ Struct(
                     ty: [
                         "<",
                         "<",
-                        "D",
-                        "as",
-                        "Trait",
+                        D,
+                        as,
+                        Trait,
                         ">",
                         ":",
                         ":",
-                        "X",
-                        "as",
-                        "Trait",
+                        X,
+                        as,
+                        Trait,
                         ">",
                         ":",
                         ":",
-                        "Y",
+                        Y,
                     ],
                 },
             ],

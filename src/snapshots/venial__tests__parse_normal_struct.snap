@@ -21,7 +21,7 @@ Struct(
                         a,
                     ),
                     ty: [
-                        "A",
+                        A,
                     ],
                 },
                 NamedField {
@@ -31,7 +31,7 @@ Struct(
                         b,
                     ),
                     ty: [
-                        "B",
+                        B,
                     ],
                 },
             ],

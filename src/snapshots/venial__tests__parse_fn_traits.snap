@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 446
+assertion_line: 458
 expression: struct_type
 ---
 Struct(
@@ -18,7 +18,7 @@ Struct(
                     attributes: [],
                     vis_marker: None,
                     ty: [
-                        "fn",
+                        fn,
                         Group {
                             delimiter: Parenthesis,
                             stream: TokenStream [
@@ -36,16 +36,16 @@ Struct(
                         },
                         "-",
                         ">",
-                        "C",
+                        C,
                     ],
                 },
                 TupleField {
                     attributes: [],
                     vis_marker: None,
                     ty: [
-                        "A",
+                        A,
                         "<",
-                        "FnOnce",
+                        FnOnce,
                         Group {
                             delimiter: Parenthesis,
                             stream: TokenStream [
@@ -81,7 +81,7 @@ Struct(
                         },
                         "-",
                         ">",
-                        "E",
+                        E,
                         ",",
                     ],
                 },

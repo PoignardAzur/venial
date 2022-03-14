@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 510
+assertion_line: 522
 expression: func_2
 ---
 Function(
@@ -20,18 +20,19 @@ Function(
         ),
         generic_params: Some(
             [
-                "<",
-                "T",
-                ">",
+                GenericParam {
+                    name: "T",
+                    bound: None,
+                },
             ],
         ),
         params: [],
         where_clauses: Some(
             [
-                "where",
-                "T",
+                where,
+                T,
                 ":",
-                "Debug",
+                Debug,
             ],
         ),
         return_ty: None,

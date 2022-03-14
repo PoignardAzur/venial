@@ -1,13 +1,13 @@
 ---
 source: src/tests.rs
-assertion_line: 230
+assertion_line: 242
 expression: struct_type
 ---
 Struct(
     Struct {
         attributes: [
             #[
-                "hello",
+                hello,
             ],
         ],
         vis_marker: Some(
@@ -27,7 +27,7 @@ Struct(
                         a,
                     ),
                     ty: [
-                        "A",
+                        A,
                     ],
                 },
                 NamedField {
@@ -37,7 +37,7 @@ Struct(
                         b,
                     ),
                     ty: [
-                        "B",
+                        B,
                     ],
                 },
             ],

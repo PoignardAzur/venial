@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 434
+assertion_line: 446
 expression: struct_type
 ---
 Struct(
@@ -18,9 +18,9 @@ Struct(
                     attributes: [],
                     vis_marker: None,
                     ty: [
-                        "Array",
+                        Array,
                         "<",
-                        "A",
+                        A,
                         ",",
                         Group {
                             delimiter: Brace,
@@ -63,7 +63,7 @@ Struct(
                     attributes: [],
                     vis_marker: None,
                     ty: [
-                        "B",
+                        B,
                         "<",
                         Group {
                             delimiter: Brace,

@@ -1,13 +1,13 @@
 ---
 source: src/tests.rs
-assertion_line: 217
+assertion_line: 229
 expression: struct_type
 ---
 Struct(
     Struct {
         attributes: [
             #[
-                "hello",
+                hello,
             ],
         ],
         vis_marker: Some(
@@ -24,14 +24,14 @@ Struct(
                     attributes: [],
                     vis_marker: None,
                     ty: [
-                        "A",
+                        A,
                     ],
                 },
                 TupleField {
                     attributes: [],
                     vis_marker: None,
                     ty: [
-                        "B",
+                        B,
                     ],
                 },
             ],

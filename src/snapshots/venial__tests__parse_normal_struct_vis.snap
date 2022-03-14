@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 139
+assertion_line: 151
 expression: struct_type_pub
 ---
 Struct(
@@ -23,7 +23,7 @@ Struct(
                         a,
                     ),
                     ty: [
-                        "A",
+                        A,
                     ],
                 },
                 NamedField {
@@ -33,7 +33,7 @@ Struct(
                         b,
                     ),
                     ty: [
-                        "B",
+                        B,
                     ],
                 },
             ],

@@ -1,13 +1,13 @@
 ---
 source: src/tests.rs
-assertion_line: 207
+assertion_line: 219
 expression: struct_type
 ---
 Struct(
     Struct {
         attributes: [
             #[
-                "hello",
+                hello,
             ],
         ],
         vis_marker: Some(

@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 473
+assertion_line: 485
 expression: func
 ---
 Function(
@@ -26,7 +26,7 @@ Function(
                     a,
                 ),
                 ty: [
-                    "i32",
+                    i32,
                 ],
             },
             FunctionParameter {
@@ -35,14 +35,14 @@ Function(
                     b,
                 ),
                 ty: [
-                    "f32",
+                    f32,
                 ],
             },
         ],
         where_clauses: None,
         return_ty: Some(
             [
-                "String",
+                String,
             ],
         ),
         body: Some(

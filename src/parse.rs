@@ -1,9 +1,9 @@
 use crate::types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Function, FunctionParameter,
-    FunctionQualifiers, GenericParams, NamedField, Struct, StructFields, TupleField, TyExpr, Union,
-    VisMarker, WhereClauses,
+    FunctionQualifiers, GenericBound, GenericParam, GenericParams, NamedField, Struct,
+    StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause,
 };
-use proc_macro2::{Delimiter, Ident, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Ident, Punct, TokenStream, TokenTree};
 use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
@@ -100,28 +100,109 @@ fn consume_stuff_until(
             _ => false,
         };
 
+        // We're out of the brack group we were called in
+        // TODO - explain better
+        if bracket_count < 0 {
+            break;
+        }
+
         output_tokens.push(tokens.next().unwrap());
     }
 
     output_tokens
 }
 
-fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
+fn consume_period(tokens: &mut TokenIter) -> Option<Punct> {
     match tokens.peek() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => (),
+        Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => {
+            let punct = punct.clone();
+            tokens.next().unwrap();
+            Some(punct)
+        }
+        _ => None,
+    }
+}
+
+fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
+    let gt: Punct;
+    let mut generic_params = Vec::new();
+    let lt: Punct;
+
+    match tokens.peek() {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => {
+            gt = punct.clone();
+        }
         _ => return None,
     };
+    // consume '<'
+    tokens.next();
 
-    let param_tokens = consume_stuff_until(tokens, |_| true);
+    loop {
+        let prefix = match tokens.peek().unwrap() {
+            TokenTree::Punct(punct) if punct.as_char() == '>' => {
+                lt = punct.clone();
+                break;
+            }
+            TokenTree::Punct(punct) if punct.as_char() == '\'' => Some(tokens.next().unwrap()),
+            TokenTree::Ident(ident) if ident == "const" => Some(tokens.next().unwrap()),
+            TokenTree::Ident(_ident) => None,
+            token => {
+                dbg!(&token);
+                panic!("cannot parse type")
+            }
+        };
+
+        let name = parse_ident(tokens.next().unwrap()).unwrap();
+
+        let bound = match tokens.peek().unwrap() {
+            TokenTree::Punct(punct) if punct.as_char() == ':' => {
+                let colon = punct.clone();
+                // consume ':'
+                tokens.next();
+
+                let bound_tokens = consume_stuff_until(tokens, |token| match token {
+                    TokenTree::Punct(punct) if punct.as_char() == ',' => true,
+                    _ => false,
+                });
+
+                Some(GenericBound {
+                    _colon: colon,
+                    tokens: bound_tokens,
+                })
+            }
+            TokenTree::Punct(punct) if punct.as_char() == ',' => None,
+            TokenTree::Punct(punct) if punct.as_char() == '>' => None,
+            token => {
+                dbg!(&token);
+                panic!("cannot parse type")
+            }
+        };
+
+        consume_period(tokens);
+
+        generic_params.push(GenericParam {
+            _prefix: prefix,
+            name,
+            bound,
+        });
+    }
+
+    // consume '>'
+    tokens.next();
 
     Some(GenericParams {
-        tokens: param_tokens,
+        _gt: gt,
+        params: generic_params,
+        _lt: lt,
     })
 }
 
-fn consume_where_clauses(tokens: &mut TokenIter) -> Option<WhereClauses> {
+fn consume_where_clauses(tokens: &mut TokenIter) -> Option<WhereClause> {
+    let where_token: Ident;
     match tokens.peek() {
-        Some(TokenTree::Ident(ident)) if ident == "where" => (),
+        Some(TokenTree::Ident(ident)) if ident == "where" => {
+            where_token = ident.clone();
+        }
         _ => return None,
     }
 
@@ -131,7 +212,8 @@ fn consume_where_clauses(tokens: &mut TokenIter) -> Option<WhereClauses> {
         _ => false,
     });
 
-    Some(WhereClauses {
+    Some(WhereClause {
+        _where: where_token,
         tokens: where_clause_tokens,
     })
 }
@@ -142,13 +224,7 @@ fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
         _ => false,
     });
 
-    // consume period, if any
-    match tokens.peek() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => {
-            tokens.next();
-        }
-        _ => (),
-    };
+    consume_period(tokens);
 
     field_type_tokens
 }

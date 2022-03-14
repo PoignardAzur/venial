@@ -1,13 +1,13 @@
 ---
 source: src/tests.rs
-assertion_line: 520
+assertion_line: 532
 expression: func
 ---
 Function(
     Function {
         attributes: [
             #[
-                "my_attr",
+                my_attr,
             ],
         ],
         vis_marker: None,
@@ -30,7 +30,7 @@ Function(
                     a,
                 ),
                 ty: [
-                    "i32",
+                    i32,
                 ],
             },
         ],

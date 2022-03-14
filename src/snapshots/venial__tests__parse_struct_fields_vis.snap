@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 184
+assertion_line: 196
 expression: struct_type
 ---
 Struct(
@@ -25,21 +25,21 @@ Struct(
                         a,
                     ),
                     ty: [
-                        "A",
+                        A,
                     ],
                 },
                 NamedField {
                     attributes: [],
                     vis_marker: Some(
                         pub(
-                            "super",
+                            super,
                         ),
                     ),
                     name: Ident(
                         b,
                     ),
                     ty: [
-                        "B",
+                        B,
                     ],
                 },
                 NamedField {
@@ -51,7 +51,7 @@ Struct(
                         c,
                     ),
                     ty: [
-                        "C",
+                        C,
                     ],
                 },
                 NamedField {
@@ -61,7 +61,7 @@ Struct(
                         d,
                     ),
                     ty: [
-                        "D",
+                        D,
                     ],
                 },
             ],

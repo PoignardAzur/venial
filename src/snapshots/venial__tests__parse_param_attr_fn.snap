@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 601
+assertion_line: 613
 expression: func
 ---
 Function(
@@ -25,14 +25,14 @@ Function(
             FunctionParameter {
                 attributes: [
                     #[
-                        "my_attr",
+                        my_attr,
                     ],
                 ],
                 name: Ident(
                     b,
                 ),
                 ty: [
-                    "f32",
+                    f32,
                 ],
             },
         ],

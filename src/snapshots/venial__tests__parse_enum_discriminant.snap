@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 421
+assertion_line: 433
 expression: enum_type
 ---
 Enum(
@@ -23,7 +23,7 @@ Enum(
                 discriminant: Some(
                     [
                         "=",
-                        "1",
+                        1,
                     ],
                 ),
             },
@@ -39,14 +39,14 @@ Enum(
                             attributes: [],
                             vis_marker: None,
                             ty: [
-                                "Foo",
+                                Foo,
                             ],
                         },
                         TupleField {
                             attributes: [],
                             vis_marker: None,
                             ty: [
-                                "Bar",
+                                Bar,
                             ],
                         },
                     ],
@@ -54,13 +54,13 @@ Enum(
                 discriminant: Some(
                     [
                         "=",
-                        "call",
+                        call,
                         ":",
                         ":",
-                        "some",
+                        some,
                         ":",
                         ":",
-                        "function",
+                        function,
                         Group {
                             delimiter: Parenthesis,
                             stream: TokenStream [
@@ -106,7 +106,7 @@ Enum(
                                 foo,
                             ),
                             ty: [
-                                "Foo",
+                                Foo,
                             ],
                         },
                         NamedField {
@@ -116,7 +116,7 @@ Enum(
                                 bar,
                             ),
                             ty: [
-                                "Bar",
+                                Bar,
                             ],
                         },
                     ],
@@ -124,9 +124,9 @@ Enum(
                 discriminant: Some(
                     [
                         "=",
-                        "A",
+                        A,
                         "<",
-                        "B",
+                        B,
                         ">",
                         Group {
                             delimiter: Parenthesis,

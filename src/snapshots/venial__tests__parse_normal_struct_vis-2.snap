@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 140
+assertion_line: 152
 expression: struct_type_pub_crate
 ---
 Struct(
@@ -8,7 +8,7 @@ Struct(
         attributes: [],
         vis_marker: Some(
             pub(
-                "crate",
+                crate,
             ),
         ),
         name: Ident(
@@ -25,7 +25,7 @@ Struct(
                         a,
                     ),
                     ty: [
-                        "A",
+                        A,
                     ],
                 },
                 NamedField {
@@ -35,7 +35,7 @@ Struct(
                         b,
                     ),
                     ty: [
-                        "B",
+                        B,
                     ],
                 },
             ],

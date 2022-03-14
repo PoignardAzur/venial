@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 169
+assertion_line: 181
 expression: enum_type_pub_crate
 ---
 Enum(
@@ -8,7 +8,7 @@ Enum(
         attributes: [],
         vis_marker: Some(
             pub(
-                "crate",
+                crate,
             ),
         ),
         name: Ident(
@@ -38,14 +38,14 @@ Enum(
                             attributes: [],
                             vis_marker: None,
                             ty: [
-                                "Foo",
+                                Foo,
                             ],
                         },
                         TupleField {
                             attributes: [],
                             vis_marker: None,
                             ty: [
-                                "Bar",
+                                Bar,
                             ],
                         },
                     ],
@@ -67,7 +67,7 @@ Enum(
                                 foo,
                             ),
                             ty: [
-                                "Foo",
+                                Foo,
                             ],
                         },
                         NamedField {
@@ -77,7 +77,7 @@ Enum(
                                 bar,
                             ),
                             ty: [
-                                "Bar",
+                                Bar,
                             ],
                         },
                     ],

@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 387
+assertion_line: 399
 expression: enum_type
 ---
 Enum(
@@ -12,18 +12,25 @@ Enum(
         ),
         generic_params: Some(
             [
-                "<",
-                "X",
-                ",",
-                "Y",
-                ":",
-                "Z",
-                "<",
-                "A",
-                ">",
-                ",",
-                "Z",
-                ">",
+                GenericParam {
+                    name: "X",
+                    bound: None,
+                },
+                GenericParam {
+                    name: "Y",
+                    bound: Some(
+                        [
+                            Z,
+                            "<",
+                            A,
+                            ">",
+                        ],
+                    ),
+                },
+                GenericParam {
+                    name: "Z",
+                    bound: None,
+                },
             ],
         ),
         where_clauses: None,
@@ -49,20 +56,20 @@ Enum(
                             attributes: [],
                             vis_marker: None,
                             ty: [
-                                "Foo",
+                                Foo,
                             ],
                         },
                         TupleField {
                             attributes: [],
                             vis_marker: None,
                             ty: [
-                                "Bar",
+                                Bar,
                                 "<",
-                                "X",
+                                X,
                                 ",",
-                                "Y",
+                                Y,
                                 ",",
-                                "Z",
+                                Z,
                                 ">",
                             ],
                         },
@@ -85,13 +92,13 @@ Enum(
                                 foo,
                             ),
                             ty: [
-                                "Foo",
+                                Foo,
                                 "<",
-                                "X",
+                                X,
                                 ",",
-                                "Y",
+                                Y,
                                 ",",
-                                "Z",
+                                Z,
                                 ">",
                             ],
                         },
@@ -102,7 +109,7 @@ Enum(
                                 bar,
                             ),
                             ty: [
-                                "Bar",
+                                Bar,
                             ],
                         },
                     ],
