@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 335
+assertion_line: 337
 expression: struct_type
 ---
 Struct(
@@ -13,21 +13,22 @@ Struct(
         generic_params: None,
         where_clauses: Some(
             [
-                where,
-                A,
-                ":",
-                B,
-                ",",
-                C,
-                "<",
-                D,
-                ">",
-                ":",
-                E,
-                "<",
-                F,
-                ">",
-                ",",
+                [
+                    A,
+                    ":",
+                    B,
+                ],
+                [
+                    C,
+                    "<",
+                    D,
+                    ">",
+                    ":",
+                    E,
+                    "<",
+                    F,
+                    ">",
+                ],
             ],
         ),
         fields: Named(

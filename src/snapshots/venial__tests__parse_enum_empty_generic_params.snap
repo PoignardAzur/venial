@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 416
+assertion_line: 418
 expression: enum_type
 ---
 Enum(
@@ -15,15 +15,15 @@ Enum(
         ),
         where_clauses: Some(
             [
-                where,
-                A,
-                "<",
-                ">",
-                ":",
-                B,
-                "<",
-                ">",
-                ",",
+                [
+                    A,
+                    "<",
+                    ">",
+                    ":",
+                    B,
+                    "<",
+                    ">",
+                ],
             ],
         ),
         variants: [

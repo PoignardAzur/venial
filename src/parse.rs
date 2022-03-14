@@ -1,12 +1,14 @@
 use crate::types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Function, FunctionParameter,
     FunctionQualifiers, GenericBound, GenericParam, GenericParams, NamedField, Struct,
-    StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause,
+    StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
 use proc_macro2::{Delimiter, Ident, Punct, TokenStream, TokenTree};
 use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
+
+// TODO - improve panic messages
 
 fn parse_ident(token: TokenTree) -> Option<Ident> {
     match token {
@@ -197,7 +199,7 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
     })
 }
 
-fn consume_where_clauses(tokens: &mut TokenIter) -> Option<WhereClause> {
+fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
     let where_token: Ident;
     match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "where" => {
@@ -205,16 +207,45 @@ fn consume_where_clauses(tokens: &mut TokenIter) -> Option<WhereClause> {
         }
         _ => return None,
     }
+    tokens.next();
 
-    let where_clause_tokens = consume_stuff_until(tokens, |token| match token {
-        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
-        TokenTree::Punct(punct) if punct.as_char() == ';' => true,
-        _ => false,
-    });
+    let mut items = Vec::new();
+    loop {
+        match tokens.peek().unwrap() {
+            TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => break,
+            TokenTree::Punct(punct) if punct.as_char() == ';' => break,
+            _ => (),
+        };
+
+        let left_side = consume_stuff_until(tokens, |token| match token {
+            TokenTree::Punct(punct) if punct.as_char() == ':' => true,
+            _ => false,
+        });
+
+        let colon = match tokens.next().unwrap() {
+            TokenTree::Punct(punct) if punct.as_char() == ':' => punct.clone(),
+            _ => panic!("cannot parse type"),
+        };
+        let bound_tokens = consume_stuff_until(tokens, |token| match token {
+            TokenTree::Punct(punct) if punct.as_char() == ',' => true,
+            TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
+            TokenTree::Punct(punct) if punct.as_char() == ';' => true,
+            _ => false,
+        });
+        consume_period(tokens);
+
+        items.push(WhereClauseItem {
+            left_side,
+            bound: GenericBound {
+                _colon: colon,
+                tokens: bound_tokens,
+            },
+        });
+    }
 
     Some(WhereClause {
         _where: where_token,
-        tokens: where_clause_tokens,
+        items,
     })
 }
 
@@ -507,7 +538,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             let struct_name = parse_ident(tokens.next().unwrap()).unwrap();
 
             let generic_params = consume_generic_params(&mut tokens);
-            let mut where_clauses = consume_where_clauses(&mut tokens);
+            let mut where_clauses = consume_where_clause(&mut tokens);
 
             let next_token = tokens.next().unwrap();
             let struct_fields = match next_token {
@@ -522,7 +553,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             };
 
             if matches!(struct_fields, StructFields::Unit | StructFields::Tuple(_)) {
-                where_clauses = consume_where_clauses(&mut tokens);
+                where_clauses = consume_where_clause(&mut tokens);
             }
 
             Declaration::Struct(Struct {
@@ -541,7 +572,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             let enum_name = parse_ident(next_token).unwrap();
 
             let generic_params = consume_generic_params(&mut tokens);
-            let where_clauses = consume_where_clauses(&mut tokens);
+            let where_clauses = consume_where_clause(&mut tokens);
 
             let next_token = tokens.next().unwrap();
             let enum_variants = match next_token {
@@ -567,7 +598,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             let union_name = parse_ident(next_token).unwrap();
 
             let generic_params = consume_generic_params(&mut tokens);
-            let where_clauses = consume_where_clauses(&mut tokens);
+            let where_clauses = consume_where_clause(&mut tokens);
 
             let next_token = tokens.next().unwrap();
             let union_fields = match next_token {
@@ -608,7 +639,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
 
             let return_ty = consume_fn_return(&mut tokens);
 
-            let where_clauses = consume_where_clauses(&mut tokens);
+            let where_clauses = consume_where_clause(&mut tokens);
 
             let next_token = tokens.next().unwrap();
             let function_body = match &next_token {

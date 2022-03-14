@@ -60,5 +60,5 @@ pub use parse::parse_declaration;
 
 pub use types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericParam, GenericParams,
-    NamedField, Struct, StructFields, TupleField, TyExpr, VisMarker, WhereClause,
+    NamedField, Struct, StructFields, TupleField, TyExpr, VisMarker, WhereClause, WhereClauseItem,
 };

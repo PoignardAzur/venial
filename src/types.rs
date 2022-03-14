@@ -265,7 +265,7 @@ pub struct GenericParam {
     pub bound: Option<GenericBound>,
 }
 
-/// A parameter in a type's generic list.
+/// A parameter bound in a type's generic list.
 ///
 /// For instance, this is the `: Clone` in `struct MyStruct <T: Clone>(T);`
 #[derive(Clone)]
@@ -278,7 +278,20 @@ pub struct GenericBound {
 #[derive(Clone)]
 pub struct WhereClause {
     pub _where: Ident,
-    pub tokens: Vec<TokenTree>,
+    pub items: Vec<WhereClauseItem>,
+}
+
+/// An item in a where clause
+///
+/// This is the `T: Clone` in the following code:
+///
+/// ```
+/// struct MyStruct<T>(T) where T: Clone;
+/// ```
+#[derive(Clone)]
+pub struct WhereClauseItem {
+    pub left_side: Vec<TokenTree>,
+    pub bound: GenericBound,
 }
 
 /// Type expression in a [`TupleField`] or [`NamedField`].
@@ -386,7 +399,17 @@ impl std::fmt::Debug for GenericBound {
 impl std::fmt::Debug for WhereClause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut list = f.debug_list();
-        for token in &self.tokens {
+        for item in &self.items {
+            list.entry(&item);
+        }
+        list.finish()
+    }
+}
+
+impl std::fmt::Debug for WhereClauseItem {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut list = f.debug_list();
+        for token in quote::quote!(#self) {
             list.entry(&TokenRef(&token));
         }
         list.finish()
@@ -460,9 +483,19 @@ impl ToTokens for GenericBound {
 
 impl ToTokens for WhereClause {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        for token in &self.tokens {
+        tokens.append(self._where.clone());
+        for item in &self.items {
+            item.to_tokens(tokens);
+        }
+    }
+}
+
+impl ToTokens for WhereClauseItem {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for token in &self.left_side {
             tokens.append(token.clone());
         }
+        self.bound.to_tokens(tokens);
     }
 }
 

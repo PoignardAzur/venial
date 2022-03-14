@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 521
+assertion_line: 523
 expression: func
 ---
 Function(
@@ -29,10 +29,11 @@ Function(
         params: [],
         where_clauses: Some(
             [
-                where,
-                T,
-                ":",
-                Debug,
+                [
+                    T,
+                    ":",
+                    Debug,
+                ],
             ],
         ),
         return_ty: Some(
