@@ -59,6 +59,7 @@ mod tests;
 pub use parse::parse_declaration;
 
 pub use types::{
-    Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericParam, GenericParams,
-    NamedField, Struct, StructFields, TupleField, TyExpr, VisMarker, WhereClause, WhereClauseItem,
+    Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericBound, GenericParam,
+    GenericParams, NamedField, Struct, StructFields, TupleField, TyExpr, VisMarker, WhereClause,
+    WhereClauseItem,
 };
