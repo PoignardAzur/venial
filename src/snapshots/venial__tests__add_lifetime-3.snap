@@ -1,0 +1,60 @@
+---
+source: src/tests.rs
+assertion_line: 677
+expression: type_with_lifetime
+---
+Struct {
+    attributes: [],
+    vis_marker: None,
+    name: Ident(
+        Hello,
+    ),
+    generic_params: Some(
+        [
+            GenericParam {
+                name: "b",
+                bound: None,
+            },
+            GenericParam {
+                name: "a",
+                bound: None,
+            },
+            GenericParam {
+                name: "A",
+                bound: None,
+            },
+            GenericParam {
+                name: "B",
+                bound: None,
+            },
+        ],
+    ),
+    where_clauses: None,
+    fields: Named(
+        [
+            NamedField {
+                attributes: [],
+                vis_marker: None,
+                name: Ident(
+                    a,
+                ),
+                ty: [
+                    "&",
+                    "'",
+                    a,
+                    A,
+                ],
+            },
+            NamedField {
+                attributes: [],
+                vis_marker: None,
+                name: Ident(
+                    b,
+                ),
+                ty: [
+                    B,
+                ],
+            },
+        ],
+    ),
+}

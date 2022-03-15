@@ -1,0 +1,53 @@
+---
+source: src/tests.rs
+assertion_line: 676
+expression: type_with_args
+---
+Struct {
+    attributes: [],
+    vis_marker: None,
+    name: Ident(
+        Hello,
+    ),
+    generic_params: Some(
+        [
+            GenericParam {
+                name: "b",
+                bound: None,
+            },
+            GenericParam {
+                name: "A",
+                bound: None,
+            },
+            GenericParam {
+                name: "B",
+                bound: None,
+            },
+        ],
+    ),
+    where_clauses: None,
+    fields: Named(
+        [
+            NamedField {
+                attributes: [],
+                vis_marker: None,
+                name: Ident(
+                    a,
+                ),
+                ty: [
+                    A,
+                ],
+            },
+            NamedField {
+                attributes: [],
+                vis_marker: None,
+                name: Ident(
+                    b,
+                ),
+                ty: [
+                    B,
+                ],
+            },
+        ],
+    ),
+}

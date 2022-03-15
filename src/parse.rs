@@ -72,7 +72,7 @@ fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {
 // separator in between angle brackets
 // eg consume_stuff_until(..., ',') will consume all
 // of `Foobar<A, B>,` except for the last comma
-fn consume_stuff_until(
+pub(crate) fn consume_stuff_until(
     tokens: &mut TokenIter,
     predicate: impl FnMut(&TokenTree) -> bool,
 ) -> Vec<TokenTree> {
@@ -193,9 +193,9 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
     tokens.next();
 
     Some(GenericParams {
-        _gt: gt,
+        _l_bracket: gt,
         params: generic_params,
-        _lt: lt,
+        _r_bracket: lt,
     })
 }
 

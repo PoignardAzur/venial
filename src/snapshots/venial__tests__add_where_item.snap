@@ -1,0 +1,46 @@
+---
+source: src/tests.rs
+assertion_line: 789
+expression: basic_type
+---
+Struct {
+    attributes: [],
+    vis_marker: None,
+    name: Ident(
+        Hello,
+    ),
+    generic_params: None,
+    where_clauses: Some(
+        [
+            [
+                Self,
+                ":",
+                Sized,
+            ],
+        ],
+    ),
+    fields: Named(
+        [
+            NamedField {
+                attributes: [],
+                vis_marker: None,
+                name: Ident(
+                    a,
+                ),
+                ty: [
+                    A,
+                ],
+            },
+            NamedField {
+                attributes: [],
+                vis_marker: None,
+                name: Ident(
+                    b,
+                ),
+                ty: [
+                    B,
+                ],
+            },
+        ],
+    ),
+}

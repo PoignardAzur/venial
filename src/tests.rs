@@ -1,6 +1,7 @@
-use crate::parse_declaration;
+use crate::{parse_declaration, Declaration, GenericParam, Struct, WhereClauseItem};
 
 use insta::assert_debug_snapshot;
+use proc_macro2::TokenStream;
 use quote::quote;
 
 // TODO - check that ToTokens implementations are correct
@@ -354,6 +355,8 @@ fn parse_enum_where_clause() {
     assert_debug_snapshot!(enum_type);
 }
 
+// TODO - empty where clause
+
 // ==============
 // GENERIC PARAMS
 // ==============
@@ -633,4 +636,158 @@ fn parse_fn_prototype() {
     });
 
     assert_debug_snapshot!(func);
+}
+
+// ============
+// TYPE EDITING
+// ============
+
+fn parse_struct_declaration(tokens: TokenStream) -> Struct {
+    match parse_declaration(tokens) {
+        Declaration::Struct(struct_decl) => struct_decl,
+        _ => panic!("not a struct"),
+    }
+}
+
+// TODO - assert_quote_snapshot
+
+#[test]
+fn add_lifetime() {
+    let basic_type = parse_struct_declaration(quote!(
+        struct Hello {
+            a: A,
+            b: B,
+        }
+    ));
+    let type_with_args = parse_struct_declaration(quote!(
+        struct Hello<A, B> {
+            a: A,
+            b: B,
+        }
+    ));
+    let type_with_lifetime = parse_struct_declaration(quote!(
+        struct Hello<'a, A, B> {
+            a: &'a A,
+            b: B,
+        }
+    ));
+
+    let basic_type = basic_type.with_param(GenericParam::lifetime("b"));
+    let type_with_args = type_with_args.with_param(GenericParam::lifetime("b"));
+    let type_with_lifetime = type_with_lifetime.with_param(GenericParam::lifetime("b"));
+
+    assert_debug_snapshot!(basic_type);
+    assert_debug_snapshot!(type_with_args);
+    assert_debug_snapshot!(type_with_lifetime);
+}
+
+#[test]
+fn add_bounded_lifetime() {
+    let basic_type = parse_struct_declaration(quote!(
+        struct Hello {
+            a: A,
+            b: B,
+        }
+    ));
+
+    let basic_type = basic_type.with_param(GenericParam::bounded_lifetime(
+        "b",
+        quote!("c + d").into_iter().collect(),
+    ));
+
+    assert_debug_snapshot!(basic_type);
+}
+
+#[test]
+fn add_ty_param() {
+    let basic_type = parse_struct_declaration(quote!(
+        struct Hello {
+            a: A,
+            b: B,
+        }
+    ));
+    let type_with_args = parse_struct_declaration(quote!(
+        struct Hello<A, B> {
+            a: A,
+            b: B,
+        }
+    ));
+
+    let basic_type = basic_type.with_param(GenericParam::ty("T"));
+    let type_with_args = type_with_args.with_param(GenericParam::ty("T"));
+
+    assert_debug_snapshot!(basic_type);
+    assert_debug_snapshot!(type_with_args);
+}
+
+#[test]
+fn add_bounded_ty_param() {
+    let basic_type = parse_struct_declaration(quote!(
+        struct Hello {
+            a: A,
+            b: B,
+        }
+    ));
+
+    let basic_type = basic_type.with_param(GenericParam::bounded_ty(
+        "T",
+        quote!("Clone").into_iter().collect(),
+    ));
+
+    assert_debug_snapshot!(basic_type);
+}
+
+#[test]
+fn add_const_param() {
+    let basic_type = parse_struct_declaration(quote!(
+        struct Hello {
+            a: A,
+            b: B,
+        }
+    ));
+    let type_with_args = parse_struct_declaration(quote!(
+        struct Hello<A, B> {
+            a: A,
+            b: B,
+        }
+    ));
+
+    let basic_type = basic_type.with_param(GenericParam::const_param(
+        "N",
+        quote!("u32").into_iter().collect(),
+    ));
+    let type_with_args = type_with_args.with_param(GenericParam::const_param(
+        "N",
+        quote!("u32").into_iter().collect(),
+    ));
+
+    assert_debug_snapshot!(basic_type);
+    assert_debug_snapshot!(type_with_args);
+}
+
+#[test]
+fn add_where_item() {
+    let basic_type = parse_struct_declaration(quote!(
+        struct Hello {
+            a: A,
+            b: B,
+        }
+    ));
+    let type_with_args = parse_struct_declaration(quote!(
+        struct Hello<A, B>
+        where
+            A: Clone,
+            B: Clone,
+        {
+            a: A,
+            b: B,
+        }
+    ));
+
+    let basic_type = basic_type.with_where_item(WhereClauseItem::parse(quote!(Self: Sized)));
+    let type_with_args =
+        type_with_args.with_where_item(WhereClauseItem::parse(quote!(Self: Sized)));
+
+    assert_debug_snapshot!(basic_type);
+    assert_debug_snapshot!(type_with_args);
 }

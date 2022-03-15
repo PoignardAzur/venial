@@ -52,6 +52,7 @@
 
 mod parse;
 mod types;
+mod types_edition;
 
 #[cfg(test)]
 mod tests;
@@ -60,6 +61,6 @@ pub use parse::parse_declaration;
 
 pub use types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericBound, GenericParam,
-    GenericParams, NamedField, Struct, StructFields, TupleField, TyExpr, VisMarker, WhereClause,
-    WhereClauseItem,
+    GenericParams, NamedField, Struct, StructFields, TupleField, TyExpr, Union, VisMarker,
+    WhereClause, WhereClauseItem,
 };

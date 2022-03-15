@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 
-use proc_macro2::{Ident, Literal, Punct, TokenStream, TokenTree};
+use proc_macro2::{Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt as _};
 
 /// The declaration of a Rust type.
@@ -243,9 +243,9 @@ pub struct VisMarker {
 /// ```
 #[derive(Clone)]
 pub struct GenericParams {
-    pub _gt: Punct,
+    pub _l_bracket: Punct,
     pub params: Vec<GenericParam>,
-    pub _lt: Punct,
+    pub _r_bracket: Punct,
 }
 
 /// A parameter in a type's generic list.
@@ -325,7 +325,7 @@ pub struct EnumDiscriminant {
     pub tokens: Vec<TokenTree>,
 }
 
-// ---
+// --- Debug impls ---
 
 struct TokenRef<'a>(&'a TokenTree);
 
@@ -436,6 +436,8 @@ impl std::fmt::Debug for EnumDiscriminant {
     }
 }
 
+// --- ToTokens impls ---
+
 impl ToTokens for Attribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.append(self._hashbang.clone());
@@ -454,13 +456,13 @@ impl ToTokens for VisMarker {
 
 impl ToTokens for GenericParams {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        tokens.append(self._gt.clone());
+        tokens.append(self._l_bracket.clone());
 
         for param in &self.params {
             param.to_tokens(tokens);
         }
 
-        tokens.append(self._lt.clone());
+        tokens.append(self._r_bracket.clone());
     }
 }
 
@@ -511,6 +513,28 @@ impl ToTokens for EnumDiscriminant {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for token in &self.tokens {
             tokens.append(token.clone());
+        }
+    }
+}
+
+// --- Default impls ---
+
+impl Default for GenericParams {
+    fn default() -> Self {
+        Self {
+            _l_bracket: Punct::new('<', Spacing::Alone),
+            params: Vec::new(),
+            _r_bracket: Punct::new('>', Spacing::Alone),
+        }
+    }
+}
+
+impl Default for WhereClause {
+    fn default() -> Self {
+        // Note that an empty where clause is perfectly valid syntax
+        Self {
+            _where: Ident::new("where", Span::call_site()),
+            items: Vec::new(),
         }
     }
 }
