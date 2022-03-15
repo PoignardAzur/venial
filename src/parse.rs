@@ -1,7 +1,10 @@
-use crate::types::{
-    Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Function, FunctionParameter,
-    FunctionQualifiers, GenericBound, GenericParam, GenericParams, NamedField, Struct,
-    StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
+use crate::{
+    types::{
+        Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Function, FunctionParameter,
+        FunctionQualifiers, GenericBound, GenericParam, GenericParams, NamedField, Struct,
+        StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
+    },
+    Punctuated,
 };
 use proc_macro2::{Delimiter, Ident, Punct, TokenStream, TokenTree};
 use std::iter::Peekable;
@@ -127,7 +130,7 @@ fn consume_period(tokens: &mut TokenIter) -> Option<Punct> {
 
 fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
     let gt: Punct;
-    let mut generic_params = Vec::new();
+    let mut generic_params = Punctuated::new();
     let lt: Punct;
 
     match tokens.peek() {
@@ -180,13 +183,16 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
             }
         };
 
-        consume_period(tokens);
+        let period = consume_period(tokens);
 
-        generic_params.push(GenericParam {
-            _prefix: prefix,
-            name,
-            bound,
-        });
+        generic_params.push_with_period(
+            GenericParam {
+                _prefix: prefix,
+                name,
+                bound,
+            },
+            period,
+        );
     }
 
     // consume '>'
@@ -209,7 +215,7 @@ fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
     }
     tokens.next();
 
-    let mut items = Vec::new();
+    let mut items = Punctuated::new();
     loop {
         match tokens.peek().unwrap() {
             TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => break,
@@ -232,15 +238,19 @@ fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
             TokenTree::Punct(punct) if punct.as_char() == ';' => true,
             _ => false,
         });
-        consume_period(tokens);
 
-        items.push(WhereClauseItem {
-            left_side,
-            bound: GenericBound {
-                _colon: colon,
-                tokens: bound_tokens,
+        let period = consume_period(tokens);
+
+        items.push_with_period(
+            WhereClauseItem {
+                left_side,
+                bound: GenericBound {
+                    _colon: colon,
+                    tokens: bound_tokens,
+                },
             },
-        });
+            period,
+        );
     }
 
     Some(WhereClause {
@@ -276,8 +286,8 @@ fn consume_enum_discriminant(tokens: &mut TokenIter) -> Option<EnumDiscriminant>
     })
 }
 
-fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
-    let mut fields = Vec::new();
+fn parse_tuple_fields(tokens: TokenStream) -> Punctuated<TupleField> {
+    let mut fields = Punctuated::new();
 
     let mut tokens = tokens.into_iter().peekable();
     loop {
@@ -288,20 +298,24 @@ fn parse_tuple_fields(tokens: TokenStream) -> Vec<TupleField> {
         let attributes = consume_attributes(&mut tokens);
         let vis_marker = consume_vis_marker(&mut tokens);
 
-        fields.push(TupleField {
-            attributes,
-            vis_marker,
-            ty: TyExpr {
-                tokens: consume_field_type(&mut tokens),
+        let ty_tokens = consume_field_type(&mut tokens);
+        let period = consume_period(&mut tokens);
+
+        fields.push_with_period(
+            TupleField {
+                attributes,
+                vis_marker,
+                ty: TyExpr { tokens: ty_tokens },
             },
-        });
+            period,
+        );
     }
 
     fields
 }
 
-fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
-    let mut fields = Vec::new();
+fn parse_named_fields(tokens: TokenStream) -> Punctuated<NamedField> {
+    let mut fields = Punctuated::new();
 
     let mut tokens = tokens.into_iter().peekable();
     loop {
@@ -318,23 +332,27 @@ fn parse_named_fields(tokens: TokenStream) -> Vec<NamedField> {
             Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => (),
             _ => panic!("cannot parse type"),
         };
-
         tokens.peek().unwrap();
-        fields.push(NamedField {
-            attributes,
-            vis_marker,
-            name: ident,
-            ty: TyExpr {
-                tokens: consume_field_type(&mut tokens),
+
+        let ty_tokens = consume_field_type(&mut tokens);
+        let period = consume_period(&mut tokens);
+
+        fields.push_with_period(
+            NamedField {
+                attributes,
+                vis_marker,
+                name: ident,
+                ty: TyExpr { tokens: ty_tokens },
             },
-        });
+            period,
+        );
     }
 
     fields
 }
 
-fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
-    let mut variants = Vec::new();
+fn parse_enum_variants(tokens: TokenStream) -> Punctuated<EnumVariant> {
+    let mut variants = Punctuated::new();
 
     let mut tokens = tokens.into_iter().peekable();
     loop {
@@ -369,21 +387,18 @@ fn parse_enum_variants(tokens: TokenStream) -> Vec<EnumVariant> {
 
         let enum_discriminant = consume_enum_discriminant(&mut tokens);
 
-        // Consume period, if any
-        match tokens.peek() {
-            Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => {
-                tokens.next();
-            }
-            _ => (),
-        };
+        let period = consume_period(&mut tokens);
 
-        variants.push(EnumVariant {
-            attributes,
-            vis_marker,
-            name: ident,
-            contents,
-            discriminant: enum_discriminant,
-        });
+        variants.push_with_period(
+            EnumVariant {
+                attributes,
+                vis_marker,
+                name: ident,
+                contents,
+                discriminant: enum_discriminant,
+            },
+            period,
+        );
     }
 
     variants
@@ -462,8 +477,8 @@ fn consume_fn_return(tokens: &mut TokenIter) -> Option<TyExpr> {
     })
 }
 
-fn parse_fn_params(tokens: TokenStream) -> Vec<FunctionParameter> {
-    let mut fields = Vec::new();
+fn parse_fn_params(tokens: TokenStream) -> Punctuated<FunctionParameter> {
+    let mut fields = Punctuated::new();
 
     let mut tokens = tokens.into_iter().peekable();
     loop {
@@ -481,13 +496,17 @@ fn parse_fn_params(tokens: TokenStream) -> Vec<FunctionParameter> {
             _ => panic!("cannot parse type"),
         };
 
-        fields.push(FunctionParameter {
-            attributes,
-            name: ident,
-            ty: TyExpr {
-                tokens: consume_field_type(&mut tokens),
+        let ty_tokens = consume_field_type(&mut tokens);
+        let period = consume_period(&mut tokens);
+
+        fields.push_with_period(
+            FunctionParameter {
+                attributes,
+                name: ident,
+                ty: TyExpr { tokens: ty_tokens },
             },
-        });
+            period,
+        );
     }
 
     fields

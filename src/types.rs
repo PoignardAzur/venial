@@ -3,6 +3,8 @@
 use proc_macro2::{Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt as _};
 
+use crate::Punctuated;
+
 /// The declaration of a Rust type.
 ///
 /// **Example input:**
@@ -63,8 +65,8 @@ pub struct Struct {
 #[derive(Clone, Debug)]
 pub enum StructFields {
     Unit,
-    Tuple(Vec<TupleField>),
-    Named(Vec<NamedField>),
+    Tuple(Punctuated<TupleField>),
+    Named(Punctuated<NamedField>),
 }
 
 /// Declaration of an enum.
@@ -83,7 +85,7 @@ pub struct Enum {
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub where_clauses: Option<WhereClause>,
-    pub variants: Vec<EnumVariant>,
+    pub variants: Punctuated<EnumVariant>,
 }
 
 // TODO - fn Enum::is_c_enum()
@@ -123,7 +125,7 @@ pub struct Union {
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub where_clauses: Option<WhereClause>,
-    pub fields: Vec<NamedField>,
+    pub fields: Punctuated<NamedField>,
 }
 
 /// Declaration of a function.
@@ -143,7 +145,7 @@ pub struct Function {
     pub qualifiers: FunctionQualifiers,
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
-    pub params: Vec<FunctionParameter>,
+    pub params: Punctuated<FunctionParameter>,
     pub where_clauses: Option<WhereClause>,
     pub return_ty: Option<TyExpr>,
     pub body: Option<TokenTree>,
@@ -244,7 +246,7 @@ pub struct VisMarker {
 #[derive(Clone)]
 pub struct GenericParams {
     pub _l_bracket: Punct,
-    pub params: Vec<GenericParam>,
+    pub params: Punctuated<GenericParam>,
     pub _r_bracket: Punct,
 }
 
@@ -278,7 +280,7 @@ pub struct GenericBound {
 #[derive(Clone)]
 pub struct WhereClause {
     pub _where: Ident,
-    pub items: Vec<WhereClauseItem>,
+    pub items: Punctuated<WhereClauseItem>,
 }
 
 /// An item in a where clause
@@ -369,11 +371,7 @@ impl std::fmt::Debug for VisMarker {
 
 impl std::fmt::Debug for GenericParams {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut list = f.debug_list();
-        for param in &self.params {
-            list.entry(&param);
-        }
-        list.finish()
+        self.params.fmt(f)
     }
 }
 
@@ -398,11 +396,7 @@ impl std::fmt::Debug for GenericBound {
 
 impl std::fmt::Debug for WhereClause {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut list = f.debug_list();
-        for item in &self.items {
-            list.entry(&item);
-        }
-        list.finish()
+        self.items.fmt(f)
     }
 }
 
@@ -457,11 +451,7 @@ impl ToTokens for VisMarker {
 impl ToTokens for GenericParams {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.append(self._l_bracket.clone());
-
-        for param in &self.params {
-            param.to_tokens(tokens);
-        }
-
+        self.params.to_tokens(tokens);
         tokens.append(self._r_bracket.clone());
     }
 }
@@ -486,9 +476,7 @@ impl ToTokens for GenericBound {
 impl ToTokens for WhereClause {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.append(self._where.clone());
-        for item in &self.items {
-            item.to_tokens(tokens);
-        }
+        self.items.to_tokens(tokens);
     }
 }
 
@@ -523,7 +511,7 @@ impl Default for GenericParams {
     fn default() -> Self {
         Self {
             _l_bracket: Punct::new('<', Spacing::Alone),
-            params: Vec::new(),
+            params: Punctuated::new(),
             _r_bracket: Punct::new('>', Spacing::Alone),
         }
     }
@@ -534,7 +522,7 @@ impl Default for WhereClause {
         // Note that an empty where clause is perfectly valid syntax
         Self {
             _where: Ident::new("where", Span::call_site()),
-            items: Vec::new(),
+            items: Punctuated::new(),
         }
     }
 }

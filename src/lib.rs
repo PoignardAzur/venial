@@ -54,11 +54,13 @@ mod parse;
 mod types;
 mod types_edition;
 
+mod punctuated;
 #[cfg(test)]
 mod tests;
 
 pub use parse::parse_declaration;
 
+pub use punctuated::Punctuated;
 pub use types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericBound, GenericParam,
     GenericParams, NamedField, Struct, StructFields, TupleField, TyExpr, Union, VisMarker,
