@@ -1,12 +1,13 @@
 use crate::{
     types::{
         Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Function, FunctionParameter,
-        FunctionQualifiers, GenericBound, GenericParam, GenericParams, NamedField, Struct,
-        StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
+        FunctionQualifiers, GenericBound, GenericParam, GenericParams, NamedField,
+        NamedStructFields, Struct, StructFields, TupleField, TupleStructFields, TyExpr, Union,
+        VisMarker, WhereClause, WhereClauseItem,
     },
     Punctuated,
 };
-use proc_macro2::{Delimiter, Ident, Punct, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Group, Ident, Punct, TokenStream, TokenTree};
 use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
@@ -26,11 +27,11 @@ fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
     let mut attributes = Vec::new();
 
     loop {
-        match tokens.peek() {
-            Some(TokenTree::Punct(punct)) if punct.as_char() == '#' => (),
+        let hashbang = match tokens.peek() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '#' => punct.clone(),
             _ => break,
         };
-        let hashbang = tokens.next().unwrap();
+        tokens.next();
 
         let child_tokens = match tokens.next().unwrap() {
             TokenTree::Group(group) if group.delimiter() == Delimiter::Bracket => group.stream(),
@@ -286,10 +287,10 @@ fn consume_enum_discriminant(tokens: &mut TokenIter) -> Option<EnumDiscriminant>
     })
 }
 
-fn parse_tuple_fields(tokens: TokenStream) -> Punctuated<TupleField> {
+fn parse_tuple_fields(token_group: Group) -> TupleStructFields {
     let mut fields = Punctuated::new();
 
-    let mut tokens = tokens.into_iter().peekable();
+    let mut tokens = token_group.stream().into_iter().peekable();
     loop {
         if tokens.peek().is_none() {
             break;
@@ -311,13 +312,16 @@ fn parse_tuple_fields(tokens: TokenStream) -> Punctuated<TupleField> {
         );
     }
 
-    fields
+    TupleStructFields {
+        fields,
+        tk_parens: token_group,
+    }
 }
 
-fn parse_named_fields(tokens: TokenStream) -> Punctuated<NamedField> {
+fn parse_named_fields(token_group: Group) -> NamedStructFields {
     let mut fields = Punctuated::new();
 
-    let mut tokens = tokens.into_iter().peekable();
+    let mut tokens = token_group.stream().into_iter().peekable();
     loop {
         if tokens.peek().is_none() {
             break;
@@ -328,8 +332,8 @@ fn parse_named_fields(tokens: TokenStream) -> Punctuated<NamedField> {
 
         let ident = parse_ident(tokens.next().unwrap()).unwrap();
 
-        match tokens.next() {
-            Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => (),
+        let colon = match tokens.next() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct,
             _ => panic!("cannot parse type"),
         };
         tokens.peek().unwrap();
@@ -342,13 +346,17 @@ fn parse_named_fields(tokens: TokenStream) -> Punctuated<NamedField> {
                 attributes,
                 vis_marker,
                 name: ident,
+                _colon: colon,
                 ty: TyExpr { tokens: ty_tokens },
             },
             period,
         );
     }
 
-    fields
+    NamedStructFields {
+        fields,
+        tk_braces: token_group,
+    }
 }
 
 fn parse_enum_variants(tokens: TokenStream) -> Punctuated<EnumVariant> {
@@ -371,16 +379,16 @@ fn parse_enum_variants(tokens: TokenStream) -> Punctuated<EnumVariant> {
             Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => StructFields::Unit,
             Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => StructFields::Unit,
             Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Parenthesis => {
-                let fields = group.stream();
+                let group = group.clone();
                 // Consume group
                 tokens.next();
-                StructFields::Tuple(parse_tuple_fields(fields))
+                StructFields::Tuple(parse_tuple_fields(group))
             }
             Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Brace => {
-                let fields = group.stream();
+                let group = group.clone();
                 // Consume group
                 tokens.next();
-                StructFields::Named(parse_named_fields(fields))
+                StructFields::Named(parse_named_fields(group))
             }
             _ => panic!("cannot parse type"),
         };
@@ -407,38 +415,42 @@ fn parse_enum_variants(tokens: TokenStream) -> Punctuated<EnumVariant> {
 fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FunctionQualifiers {
     let mut qualifiers = FunctionQualifiers::default();
 
-    qualifiers.is_default = match tokens.peek() {
+    qualifiers.tk_default = match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "default" => {
+            let ident = ident.clone();
             tokens.next();
-            true
+            Some(ident)
         }
-        _ => false,
+        _ => None,
     };
-    qualifiers.is_const = match tokens.peek() {
+    qualifiers.tk_const = match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "const" => {
+            let ident = ident.clone();
             tokens.next();
-            true
+            Some(ident)
         }
-        _ => false,
+        _ => None,
     };
-    qualifiers.is_async = match tokens.peek() {
+    qualifiers.tk_async = match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "async" => {
+            let ident = ident.clone();
             tokens.next();
-            true
+            Some(ident)
         }
-        _ => false,
+        _ => None,
     };
-    qualifiers.is_unsafe = match tokens.peek() {
+    qualifiers.tk_unsafe = match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "unsafe" => {
+            let ident = ident.clone();
             tokens.next();
-            true
+            Some(ident)
         }
-        _ => false,
+        _ => None,
     };
 
     match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "extern" => {
-            qualifiers.is_extern = true;
+            qualifiers.tk_extern = Some(ident.clone());
             tokens.next();
 
             match tokens.peek() {
@@ -559,14 +571,22 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             let generic_params = consume_generic_params(&mut tokens);
             let mut where_clauses = consume_where_clause(&mut tokens);
 
-            let next_token = tokens.next().unwrap();
+            let next_token = tokens.peek().unwrap();
             let struct_fields = match next_token {
                 TokenTree::Punct(punct) if punct.as_char() == ';' => StructFields::Unit,
+                // TODO - add test
+                TokenTree::Ident(ident) if ident == "where" => StructFields::Unit,
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
-                    StructFields::Tuple(parse_tuple_fields(group.stream()))
+                    let group = group.clone();
+                    // Consume group
+                    tokens.next();
+                    StructFields::Tuple(parse_tuple_fields(group.clone()))
                 }
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                    StructFields::Named(parse_named_fields(group.stream()))
+                    let group = group.clone();
+                    // Consume group
+                    tokens.next();
+                    StructFields::Named(parse_named_fields(group.clone()))
                 }
                 _ => panic!("cannot parse type"),
             };
@@ -575,6 +595,15 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 where_clauses = consume_where_clause(&mut tokens);
             }
 
+            let semicolon = match tokens.peek() {
+                Some(TokenTree::Punct(punct)) if punct.as_char() == ';' => {
+                    let punct = punct.clone();
+                    tokens.next().unwrap();
+                    Some(punct)
+                }
+                _ => None,
+            };
+
             Declaration::Struct(Struct {
                 attributes,
                 vis_marker,
@@ -582,6 +611,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 generic_params,
                 where_clauses,
                 fields: struct_fields,
+                _semicolon: semicolon,
             })
         } else if ident == "enum" {
             // enum keyword
@@ -622,7 +652,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             let next_token = tokens.next().unwrap();
             let union_fields = match next_token {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                    parse_named_fields(group.stream())
+                    parse_named_fields(group.clone())
                 }
                 _ => panic!("cannot parse type"),
             };

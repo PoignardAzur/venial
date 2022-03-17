@@ -63,6 +63,6 @@ pub use parse::parse_declaration;
 pub use punctuated::Punctuated;
 pub use types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericBound, GenericParam,
-    GenericParams, NamedField, Struct, StructFields, TupleField, TyExpr, Union, VisMarker,
-    WhereClause, WhereClauseItem,
+    GenericParams, NamedField, NamedStructFields, Struct, StructFields, TupleField,
+    TupleStructFields, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };

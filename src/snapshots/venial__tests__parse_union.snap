@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 62
+assertion_line: 73
 expression: union_type
 ---
 Union(
@@ -19,6 +19,10 @@ Union(
                 name: Ident(
                     a,
                 ),
+                _colon: Punct {
+                    char: ':',
+                    spacing: Alone,
+                },
                 ty: [
                     A,
                 ],
@@ -29,6 +33,10 @@ Union(
                 name: Ident(
                     b,
                 ),
+                _colon: Punct {
+                    char: ':',
+                    spacing: Alone,
+                },
                 ty: [
                     B,
                 ],

@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 274
+assertion_line: 285
 expression: struct_type
 ---
 Struct(
@@ -26,6 +26,10 @@ Struct(
                     name: Ident(
                         a,
                     ),
+                    _colon: Punct {
+                        char: ':',
+                        spacing: Alone,
+                    },
                     ty: [
                         A,
                     ],
@@ -36,6 +40,10 @@ Struct(
                     name: Ident(
                         b,
                     ),
+                    _colon: Punct {
+                        char: ':',
+                        spacing: Alone,
+                    },
                     ty: [
                         B,
                     ],
@@ -56,6 +64,10 @@ Struct(
                     name: Ident(
                         c,
                     ),
+                    _colon: Punct {
+                        char: ':',
+                        spacing: Alone,
+                    },
                     ty: [
                         C,
                     ],
@@ -66,11 +78,16 @@ Struct(
                     name: Ident(
                         d,
                     ),
+                    _colon: Punct {
+                        char: ':',
+                        spacing: Alone,
+                    },
                     ty: [
                         D,
                     ],
                 },
             ],
         ),
+        _semicolon: None,
     },
 )

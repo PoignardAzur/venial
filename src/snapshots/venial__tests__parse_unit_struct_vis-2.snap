@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 109
+assertion_line: 120
 expression: struct_type_pub_crate
 ---
 Struct(
@@ -17,5 +17,11 @@ Struct(
         generic_params: None,
         where_clauses: None,
         fields: Unit,
+        _semicolon: Some(
+            Punct {
+                char: ';',
+                spacing: Alone,
+            },
+        ),
     },
 )

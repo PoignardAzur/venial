@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 182
+assertion_line: 193
 expression: enum_type_crate
 ---
 Enum(
@@ -64,6 +64,10 @@ Enum(
                             name: Ident(
                                 foo,
                             ),
+                            _colon: Punct {
+                                char: ':',
+                                spacing: Alone,
+                            },
                             ty: [
                                 Foo,
                             ],
@@ -74,6 +78,10 @@ Enum(
                             name: Ident(
                                 bar,
                             ),
+                            _colon: Punct {
+                                char: ':',
+                                spacing: Alone,
+                            },
                             ty: [
                                 Bar,
                             ],

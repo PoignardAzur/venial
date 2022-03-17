@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 229
+assertion_line: 240
 expression: struct_type
 ---
 Struct(
@@ -35,6 +35,12 @@ Struct(
                     ],
                 },
             ],
+        ),
+        _semicolon: Some(
+            Punct {
+                char: ';',
+                spacing: Alone,
+            },
         ),
     },
 )

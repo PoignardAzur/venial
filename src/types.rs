@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 
-use proc_macro2::{Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
+use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt as _};
 
 use crate::Punctuated;
@@ -56,6 +56,7 @@ pub struct Struct {
     pub generic_params: Option<GenericParams>,
     pub where_clauses: Option<WhereClause>,
     pub fields: StructFields,
+    pub _semicolon: Option<Punct>,
 }
 
 // TODO - fn Struct::field_names()
@@ -65,8 +66,22 @@ pub struct Struct {
 #[derive(Clone, Debug)]
 pub enum StructFields {
     Unit,
-    Tuple(Punctuated<TupleField>),
-    Named(Punctuated<NamedField>),
+    Tuple(TupleStructFields),
+    Named(NamedStructFields),
+}
+
+#[derive(Clone)]
+pub struct TupleStructFields {
+    // TODO - inner attribute
+    pub fields: Punctuated<TupleField>,
+    pub tk_parens: Group,
+}
+
+#[derive(Clone)]
+pub struct NamedStructFields {
+    // TODO - inner attribute
+    pub fields: Punctuated<NamedField>,
+    pub tk_braces: Group,
 }
 
 /// Declaration of an enum.
@@ -125,7 +140,7 @@ pub struct Union {
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub where_clauses: Option<WhereClause>,
-    pub fields: Punctuated<NamedField>,
+    pub fields: NamedStructFields,
 }
 
 /// Declaration of a function.
@@ -157,11 +172,11 @@ pub struct Function {
 /// always in that order.
 #[derive(Clone, Debug, Default)]
 pub struct FunctionQualifiers {
-    pub is_default: bool,
-    pub is_const: bool,
-    pub is_async: bool,
-    pub is_unsafe: bool,
-    pub is_extern: bool,
+    pub tk_default: Option<Ident>,
+    pub tk_const: Option<Ident>,
+    pub tk_async: Option<Ident>,
+    pub tk_unsafe: Option<Ident>,
+    pub tk_extern: Option<Ident>,
     pub extern_abi: Option<Literal>,
 }
 
@@ -204,6 +219,7 @@ pub struct NamedField {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
     pub name: Ident,
+    pub _colon: Punct,
     pub ty: TyExpr,
 }
 
@@ -223,7 +239,7 @@ pub struct NamedField {
 /// ```
 #[derive(Clone)]
 pub struct Attribute {
-    pub _hashbang: TokenTree,
+    pub _hashbang: Punct,
     pub child_tokens: Vec<TokenTree>,
 }
 
@@ -342,6 +358,18 @@ impl<'a> std::fmt::Debug for TokenRef<'a> {
     }
 }
 
+impl std::fmt::Debug for TupleStructFields {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.fields.fmt(f)
+    }
+}
+
+impl std::fmt::Debug for NamedStructFields {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.fields.fmt(f)
+    }
+}
+
 impl std::fmt::Debug for Attribute {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("#")?;
@@ -431,6 +459,151 @@ impl std::fmt::Debug for EnumDiscriminant {
 }
 
 // --- ToTokens impls ---
+
+impl ToTokens for Declaration {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        match self {
+            Declaration::Struct(struct_decl) => struct_decl.to_tokens(tokens),
+            Declaration::Enum(enum_decl) => enum_decl.to_tokens(tokens),
+            Declaration::Union(union_decl) => union_decl.to_tokens(tokens),
+            Declaration::Function(function_decl) => function_decl.to_tokens(tokens),
+        }
+    }
+}
+
+impl ToTokens for Struct {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
+        self.name.to_tokens(tokens);
+        self.generic_params.to_tokens(tokens);
+        self.where_clauses.to_tokens(tokens);
+        self.fields.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for StructFields {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        match self {
+            StructFields::Unit => (),
+            StructFields::Tuple(fields) => fields.to_tokens(tokens),
+            StructFields::Named(fields) => fields.to_tokens(tokens),
+        }
+    }
+}
+
+impl ToTokens for TupleStructFields {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.tk_parens.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for NamedStructFields {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.tk_braces.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for Enum {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
+        self.name.to_tokens(tokens);
+        self.generic_params.to_tokens(tokens);
+        self.where_clauses.to_tokens(tokens);
+        self.variants.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for EnumVariant {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
+        self.name.to_tokens(tokens);
+        self.contents.to_tokens(tokens);
+        self.discriminant.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for Union {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
+        self.name.to_tokens(tokens);
+        self.generic_params.to_tokens(tokens);
+        self.where_clauses.to_tokens(tokens);
+        self.fields.to_tokens(tokens);
+    }
+}
+
+// FIXME
+impl ToTokens for Function {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
+        self.qualifiers.to_tokens(tokens);
+        self.name.to_tokens(tokens);
+        self.generic_params.to_tokens(tokens);
+        self.params.to_tokens(tokens);
+        self.where_clauses.to_tokens(tokens);
+        //self.return_ty.to_tokens(tokens);
+        //self.body.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for FunctionQualifiers {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.tk_default.to_tokens(tokens);
+        self.tk_const.to_tokens(tokens);
+        self.tk_async.to_tokens(tokens);
+        self.tk_unsafe.to_tokens(tokens);
+        self.tk_extern.to_tokens(tokens);
+        self.extern_abi.to_tokens(tokens);
+    }
+}
+
+// FIXME
+impl ToTokens for FunctionParameter {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.name.to_tokens(tokens);
+        self.ty.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for TupleField {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
+        self.ty.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for NamedField {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
+        self.name.to_tokens(tokens);
+        self._colon.to_tokens(tokens);
+        self.ty.to_tokens(tokens);
+    }
+}
 
 impl ToTokens for Attribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {

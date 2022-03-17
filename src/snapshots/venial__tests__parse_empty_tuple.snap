@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 59
+assertion_line: 82
 expression: struct_type
 ---
 Struct(
@@ -14,6 +14,12 @@ Struct(
         where_clauses: None,
         fields: Tuple(
             [],
+        ),
+        _semicolon: Some(
+            Punct {
+                char: ';',
+                spacing: Alone,
+            },
         ),
     },
 )

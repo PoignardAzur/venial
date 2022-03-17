@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 604
+assertion_line: 617
 expression: func
 ---
 Function(
@@ -10,11 +10,31 @@ Function(
             pub,
         ),
         qualifiers: FunctionQualifiers {
-            is_default: true,
-            is_const: true,
-            is_async: true,
-            is_unsafe: true,
-            is_extern: true,
+            tk_default: Some(
+                Ident(
+                    default,
+                ),
+            ),
+            tk_const: Some(
+                Ident(
+                    const,
+                ),
+            ),
+            tk_async: Some(
+                Ident(
+                    async,
+                ),
+            ),
+            tk_unsafe: Some(
+                Ident(
+                    unsafe,
+                ),
+            ),
+            tk_extern: Some(
+                Ident(
+                    extern,
+                ),
+            ),
             extern_abi: Some(
                 Literal {
                     lit: "C",

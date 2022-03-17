@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 68
+assertion_line: 91
 expression: struct_type
 ---
 Struct(
@@ -15,5 +15,6 @@ Struct(
         fields: Named(
             [],
         ),
+        _semicolon: None,
     },
 )

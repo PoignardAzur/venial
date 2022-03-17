@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 523
+assertion_line: 534
 expression: func
 ---
 Function(
@@ -8,11 +8,11 @@ Function(
         attributes: [],
         vis_marker: None,
         qualifiers: FunctionQualifiers {
-            is_default: false,
-            is_const: false,
-            is_async: false,
-            is_unsafe: false,
-            is_extern: false,
+            tk_default: None,
+            tk_const: None,
+            tk_async: None,
+            tk_unsafe: None,
+            tk_extern: None,
             extern_abi: None,
         },
         name: Ident(
