@@ -1,12 +1,12 @@
 #![allow(missing_docs)]
 #![allow(unused)]
 
-use crate::types::InlineGenericArgs;
 pub use crate::types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericBound, GenericParam,
     GenericParams, NamedField, Struct, StructFields, TupleField, TyExpr, Union, VisMarker,
     WhereClause, WhereClauseItem,
 };
+use crate::types::{Function, InlineGenericArgs};
 use proc_macro2::{Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
 impl Declaration {
@@ -25,6 +25,43 @@ impl Declaration {
             Declaration::Enum(enum_decl) => enum_decl.generic_params.as_mut(),
             Declaration::Union(union_decl) => union_decl.generic_params.as_mut(),
             Declaration::Function(function_decl) => function_decl.generic_params.as_mut(),
+        }
+    }
+
+    pub fn name(&self) -> Ident {
+        match self {
+            Declaration::Struct(struct_decl) => struct_decl.name.clone(),
+            Declaration::Enum(enum_decl) => enum_decl.name.clone(),
+            Declaration::Union(union_decl) => union_decl.name.clone(),
+            Declaration::Function(function_decl) => function_decl.name.clone(),
+        }
+    }
+
+    pub fn as_struct(&self) -> Option<&Struct> {
+        match self {
+            Declaration::Struct(struct_decl) => Some(&struct_decl),
+            _ => None,
+        }
+    }
+
+    pub fn as_enum(&self) -> Option<&Enum> {
+        match self {
+            Declaration::Enum(enum_decl) => Some(&enum_decl),
+            _ => None,
+        }
+    }
+
+    pub fn as_union(&self) -> Option<&Union> {
+        match self {
+            Declaration::Union(union_decl) => Some(&union_decl),
+            _ => None,
+        }
+    }
+
+    pub fn as_function(&self) -> Option<&Function> {
+        match self {
+            Declaration::Function(function_decl) => Some(&function_decl),
+            _ => None,
         }
     }
 }

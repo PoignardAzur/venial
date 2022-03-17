@@ -33,10 +33,6 @@ pub enum Declaration {
     Function(Function),
 }
 
-// TODO - fn Declaration::name()
-// TODO - fn Declaration::as_struct()
-// TODO - fn Declaration::as_enum()
-
 /// Declaration of a struct.
 ///
 /// **Example input:**

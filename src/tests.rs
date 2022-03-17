@@ -4,6 +4,8 @@ use insta::assert_debug_snapshot;
 use proc_macro2::TokenStream;
 use quote::quote;
 
+// TODO - Include tests from loiclec's fuzzing run
+
 fn parse_declaration_checked(tokens: TokenStream) -> Declaration {
     let initial_tokens = tokens.clone();
     let declaration = parse_declaration(tokens);
