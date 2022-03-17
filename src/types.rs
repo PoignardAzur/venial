@@ -55,7 +55,7 @@ pub struct Struct {
     pub _struct: Ident,
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
-    pub where_clauses: Option<WhereClause>,
+    pub where_clause: Option<WhereClause>,
     pub fields: StructFields,
     pub _semicolon: Option<Punct>,
 }
@@ -516,11 +516,11 @@ impl ToTokens for Struct {
         self.generic_params.to_tokens(tokens);
 
         if matches!(&self.fields, StructFields::Named(_)) {
-            self.where_clauses.to_tokens(tokens);
+            self.where_clause.to_tokens(tokens);
             self.fields.to_tokens(tokens);
         } else {
             self.fields.to_tokens(tokens);
-            self.where_clauses.to_tokens(tokens);
+            self.where_clause.to_tokens(tokens);
             self._semicolon.to_tokens(tokens);
         }
     }

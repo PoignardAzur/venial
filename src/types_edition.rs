@@ -37,10 +37,10 @@ impl Struct {
     }
 
     pub fn with_where_item(mut self, item: WhereClauseItem) -> Self {
-        if let Some(where_clause) = self.where_clauses {
-            self.where_clauses = Some(where_clause.with_item(item));
+        if let Some(where_clause) = self.where_clause {
+            self.where_clause = Some(where_clause.with_item(item));
         } else {
-            self.where_clauses = Some(WhereClause::from_item(item));
+            self.where_clause = Some(WhereClause::from_item(item));
         }
         self
     }

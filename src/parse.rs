@@ -612,7 +612,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 _struct: ident.clone(),
                 name: struct_name,
                 generic_params,
-                where_clauses,
+                where_clause: where_clauses,
                 fields: struct_fields,
                 _semicolon: semicolon,
             })

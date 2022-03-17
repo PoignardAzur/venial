@@ -6,7 +6,8 @@ use quote::{ToTokens, TokenStreamExt as _};
 /// Inspired by syn's `Punctuated` type.
 #[derive(Clone)]
 pub struct Punctuated<T> {
-    inner: Vec<(T, Punct)>,
+    // TODO - pub
+    pub inner: Vec<(T, Punct)>,
     skip_last: bool,
 }
 
@@ -80,3 +81,5 @@ impl<T: ToTokens> ToTokens for Punctuated<T> {
         }
     }
 }
+
+// TODO - impl Deref
