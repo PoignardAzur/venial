@@ -599,8 +599,6 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
 
             let struct_fields = match tokens.peek().unwrap() {
                 TokenTree::Punct(punct) if punct.as_char() == ';' => StructFields::Unit,
-                // TODO - add test
-                TokenTree::Ident(ident) if ident == "where" => StructFields::Unit,
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
                     let group = group.clone();
                     // Consume group
