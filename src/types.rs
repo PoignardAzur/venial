@@ -56,9 +56,6 @@ pub struct Struct {
     pub _semicolon: Option<Punct>,
 }
 
-// TODO - fn Struct::field_names()
-// TODO - fn Struct::field_types()
-
 /// Fields of a [`Struct`] or an [`EnumVariant`].
 #[derive(Clone, Debug)]
 pub enum StructFields {
@@ -102,8 +99,6 @@ pub struct Enum {
     pub variants: Punctuated<EnumVariant>,
 }
 
-// TODO - fn Enum::is_c_enum()
-
 /// The individual variant of an [`Enum`].
 ///
 /// The variant can either be a c-like variant, hold one or multiple types,
@@ -118,9 +113,6 @@ pub struct EnumVariant {
     /// The value of the variant, normally for c-like enums.
     pub discriminant: Option<EnumDiscriminant>,
 }
-
-// TODO - fn EnumVariant::is_empty_variant()
-// TODO - fn EnumVariant::get_single_type()
 
 /// Declaration of an union.
 ///

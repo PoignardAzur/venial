@@ -69,6 +69,51 @@ impl Declaration {
 // TODO - use macros to remove copy-pasting
 
 impl Struct {
+    // TODO - document
+    fn field_names(&self) -> impl IntoIterator<Item = String> {
+        match &self.fields {
+            StructFields::Unit => Vec::new(),
+            StructFields::Tuple(tuple_fields) => {
+                let range = 0..tuple_fields.fields.len();
+                range.map(|i| i.to_string()).collect()
+            }
+            StructFields::Named(named_fields) => named_fields
+                .fields
+                .items()
+                .map(|field| field.name.to_string())
+                .collect(),
+        }
+    }
+
+    // TODO - document
+    fn field_tokens(&self) -> impl IntoIterator<Item = TokenTree> {
+        match &self.fields {
+            StructFields::Unit => Vec::new(),
+            StructFields::Tuple(tuple_fields) => {
+                let range = 0..tuple_fields.fields.len();
+                range.map(|i| Literal::usize_unsuffixed(i).into()).collect()
+            }
+            StructFields::Named(named_fields) => named_fields
+                .fields
+                .items()
+                .map(|field| field.name.clone().into())
+                .collect(),
+        }
+    }
+
+    // TODO - document
+    fn field_types(&self) -> impl IntoIterator<Item = &TyExpr> {
+        match &self.fields {
+            StructFields::Unit => Vec::new(),
+            StructFields::Tuple(tuple_fields) => {
+                tuple_fields.fields.items().map(|field| &field.ty).collect()
+            }
+            StructFields::Named(named_fields) => {
+                named_fields.fields.items().map(|field| &field.ty).collect()
+            }
+        }
+    }
+
     pub fn with_param(mut self, param: GenericParam) -> Self {
         let params = self.generic_params.take().unwrap_or_default();
         let params = params.with_param(param);
@@ -148,6 +193,16 @@ impl Struct {
 }
 
 impl Enum {
+    // TODO - document
+    pub fn is_c_enum(&self) -> bool {
+        for variant in self.variants.items() {
+            if !variant.is_empty_variant() {
+                return false;
+            }
+        }
+        true
+    }
+
     pub fn with_param(mut self, param: GenericParam) -> Self {
         let params = self.generic_params.take().unwrap_or_default();
         let params = params.with_param(param);
@@ -302,6 +357,23 @@ impl Union {
         }
 
         where_clause
+    }
+}
+
+impl EnumVariant {
+    // TODO - document
+    pub fn is_empty_variant(&self) -> bool {
+        matches!(self.contents, StructFields::Unit)
+    }
+
+    // TODO - document
+    pub fn get_single_type(&self) -> Option<&TupleField> {
+        match &self.contents {
+            StructFields::Tuple(fields) if fields.fields.len() == 1 => Some(&fields.fields[0].0),
+            StructFields::Tuple(fields) => None,
+            StructFields::Unit => None,
+            StructFields::Named(_) => None,
+        }
     }
 }
 
