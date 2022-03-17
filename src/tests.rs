@@ -496,9 +496,9 @@ fn parse_enum_discriminant() {
     assert_debug_snapshot!(enum_type);
 }
 
-// =====================
-// GENERICS CORNER CASES
-// =====================
+// =================
+// TYPE CORNER CASES
+// =================
 
 #[test]
 fn parse_const_generics() {
@@ -533,6 +533,34 @@ fn parse_multiple_brackets() {
     ));
 
     assert_debug_snapshot!(struct_type);
+}
+
+// FIXME
+#[test]
+#[should_panic = "cannot parse type"]
+fn parse_closure_as_discriminant() {
+    let enum_type = parse_declaration_checked(quote!(
+        enum Hello {
+            A = |b, c| b + c,
+        };
+    ));
+
+    assert_debug_snapshot!(enum_type);
+}
+
+// FIXME
+#[test]
+#[should_panic]
+fn parse_macro_in_where_clause() {
+    // venial thinks the content of the macro is the content of the enum
+    // so it tries to parse `:` as a variant
+    let enum_type = parse_declaration_checked(quote!(
+        enum A
+        where
+            b: c! { : }:, {}
+    ));
+
+    assert_debug_snapshot!(enum_type);
 }
 
 // =========
@@ -694,6 +722,62 @@ fn parse_fn_prototype() {
     });
 
     assert_debug_snapshot!(func);
+}
+
+// FIXME
+#[test]
+#[should_panic]
+fn parse_fn_pattern_arg() {
+    let func = parse_declaration(quote! {
+        fn foobar((a, b): (i32, i32)) {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+// FIXME
+#[test]
+#[should_panic]
+fn parse_fn_c_variadics() {
+    let func = parse_declaration(quote! {
+        fn foobar(a: i32, ...) {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+// FIXME
+#[test]
+#[should_panic]
+fn parse_fn_no_pattern() {
+    let func = parse_declaration(quote! {
+        fn foobar(i32) {}
+    });
+
+    assert_debug_snapshot!(func);
+}
+
+// FIXME
+#[test]
+#[should_panic]
+fn parse_fn_self_param() {
+    let func_0 = parse_declaration(quote! {
+        fn foobar(self) {}
+    });
+    let func_1 = parse_declaration(quote! {
+        fn foobar(&self) {}
+    });
+    let func_2 = parse_declaration(quote! {
+        fn foobar(mut self) {}
+    });
+    let func_3 = parse_declaration(quote! {
+        fn foobar(&mut self) {}
+    });
+
+    assert_debug_snapshot!(func_0);
+    assert_debug_snapshot!(func_1);
+    assert_debug_snapshot!(func_2);
+    assert_debug_snapshot!(func_3);
 }
 
 // ============
