@@ -284,13 +284,16 @@ fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
 }
 
 fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
-    // TODO - assert this isn't empty
     let field_type_tokens = consume_stuff_until(tokens, |token| match token {
         TokenTree::Punct(punct) if punct.as_char() == ',' => true,
         _ => false,
     });
 
-    consume_period(tokens);
+    if field_type_tokens.is_empty() && consume_period(tokens).is_some() {
+        panic!("cannot parse type: unexpected token ','");
+    } else if field_type_tokens.is_empty() {
+        panic!("cannot parse type: expected tokens, found end-of-stream");
+    }
 
     field_type_tokens
 }
@@ -324,7 +327,6 @@ fn parse_tuple_fields(token_group: Group) -> TupleStructFields {
         let vis_marker = consume_vis_marker(&mut tokens);
 
         let ty_tokens = consume_field_type(&mut tokens);
-        assert!(!ty_tokens.is_empty());
 
         let period = consume_period(&mut tokens);
 
@@ -367,7 +369,6 @@ fn parse_named_fields(token_group: Group) -> NamedStructFields {
         };
 
         let ty_tokens = consume_field_type(&mut tokens);
-        assert!(!ty_tokens.is_empty());
         let period = consume_period(&mut tokens);
 
         fields.push(
