@@ -97,7 +97,7 @@ impl GenericParam {
     pub fn lifetime(name: &str) -> Self {
         let lifetime_ident = Ident::new(name, Span::call_site());
         GenericParam {
-            _prefix: Some(Punct::new('\'', Spacing::Alone).into()),
+            _prefix: Some(Punct::new('\'', Spacing::Joint).into()),
             name: lifetime_ident,
             bound: None,
         }
