@@ -376,8 +376,7 @@ fn parse_enum_variants(tokens: TokenStream) -> Punctuated<EnumVariant> {
 
         let ident = parse_ident(tokens.next().unwrap()).unwrap();
 
-        let next_token = tokens.peek();
-        let contents = match next_token {
+        let contents = match tokens.peek() {
             None => StructFields::Unit,
             Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => StructFields::Unit,
             Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => StructFields::Unit,
@@ -562,8 +561,6 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
     let attributes = consume_attributes(&mut tokens);
     let vis_marker = consume_vis_marker(&mut tokens);
 
-    // TODO - remove next_token vars
-
     if let Some(ident) = parse_ident(tokens.peek().unwrap().clone()) {
         if ident == "struct" {
             // struct keyword
@@ -574,8 +571,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             let generic_params = consume_generic_params(&mut tokens);
             let mut where_clause = consume_where_clause(&mut tokens);
 
-            let next_token = tokens.peek().unwrap();
-            let struct_fields = match next_token {
+            let struct_fields = match tokens.peek().unwrap() {
                 TokenTree::Punct(punct) if punct.as_char() == ';' => StructFields::Unit,
                 // TODO - add test
                 TokenTree::Ident(ident) if ident == "where" => StructFields::Unit,
@@ -622,14 +618,12 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             // enum keyword
             tokens.next().unwrap();
 
-            let next_token = tokens.next().unwrap();
-            let enum_name = parse_ident(next_token).unwrap();
+            let enum_name = parse_ident(tokens.next().unwrap()).unwrap();
 
             let generic_params = consume_generic_params(&mut tokens);
             let where_clause = consume_where_clause(&mut tokens);
 
-            let next_token = tokens.next().unwrap();
-            let (group, enum_variants) = match next_token {
+            let (group, enum_variants) = match tokens.next().unwrap() {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
                     (group.clone(), parse_enum_variants(group.stream()))
                 }
@@ -650,14 +644,12 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             // union keyword
             tokens.next().unwrap();
 
-            let next_token = tokens.next().unwrap();
-            let union_name = parse_ident(next_token).unwrap();
+            let union_name = parse_ident(tokens.next().unwrap()).unwrap();
 
             let generic_params = consume_generic_params(&mut tokens);
             let where_clause = consume_where_clause(&mut tokens);
 
-            let next_token = tokens.next().unwrap();
-            let (group, union_fields) = match next_token {
+            let (group, union_fields) = match tokens.next().unwrap() {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
                     (group.clone(), parse_named_fields(group.clone()))
                 }
@@ -687,8 +679,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
 
             let generic_params = consume_generic_params(&mut tokens);
 
-            let next_token = tokens.next().unwrap();
-            let params = match next_token {
+            let params = match tokens.next().unwrap() {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
                     parse_fn_params(group.stream())
                 }
@@ -699,10 +690,9 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
 
             let where_clause = consume_where_clause(&mut tokens);
 
-            let next_token = tokens.next().unwrap();
-            let function_body = match &next_token {
+            let function_body = match &tokens.next().unwrap() {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                    Some(next_token)
+                    Some(group.clone())
                 }
                 TokenTree::Punct(punct) if punct.as_char() == ';' => None,
                 _ => panic!("cannot parse function"),

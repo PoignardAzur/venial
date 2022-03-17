@@ -66,14 +66,12 @@ pub enum StructFields {
 
 #[derive(Clone)]
 pub struct TupleStructFields {
-    // TODO - inner attribute
     pub fields: Punctuated<TupleField>,
     pub tk_parens: Group,
 }
 
 #[derive(Clone)]
 pub struct NamedStructFields {
-    // TODO - inner attribute
     pub fields: Punctuated<NamedField>,
     pub tk_braces: Group,
 }
@@ -156,7 +154,7 @@ pub struct Function {
     pub params: Punctuated<FunctionParameter>,
     pub where_clause: Option<WhereClause>,
     pub return_ty: Option<TyExpr>,
-    pub body: Option<TokenTree>,
+    pub body: Option<Group>,
 }
 
 /// Keywords giving special information on a function.
