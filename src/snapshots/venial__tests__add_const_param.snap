@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 771
+assertion_line: 826
 expression: basic_type
 ---
 Struct {
@@ -24,7 +24,7 @@ Struct {
             },
         ],
     ),
-    where_clauses: None,
+    where_clause: None,
     fields: Named(
         [
             NamedField {

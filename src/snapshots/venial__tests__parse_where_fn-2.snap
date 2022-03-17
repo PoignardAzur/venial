@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 535
+assertion_line: 589
 expression: func_2
 ---
 Function(
@@ -27,7 +27,7 @@ Function(
             ],
         ),
         params: [],
-        where_clauses: Some(
+        where_clause: Some(
             [
                 [
                     T,

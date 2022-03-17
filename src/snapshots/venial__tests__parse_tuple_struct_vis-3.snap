@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 137
+assertion_line: 139
 expression: struct_type_crate
 ---
 Struct(
@@ -16,7 +16,7 @@ Struct(
             Hello,
         ),
         generic_params: None,
-        where_clauses: None,
+        where_clause: None,
         fields: Tuple(
             [
                 TupleField {

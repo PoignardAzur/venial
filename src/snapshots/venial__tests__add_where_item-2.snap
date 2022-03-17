@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 799
+assertion_line: 854
 expression: type_with_args
 ---
 Struct {
@@ -24,7 +24,7 @@ Struct {
             },
         ],
     ),
-    where_clauses: Some(
+    where_clause: Some(
         [
             [
                 A,

@@ -50,6 +50,8 @@
 //! assert_eq!(enum_type.variants[2].name, "Triangle");
 //! ```
 
+// TODO - Add CI
+
 mod parse;
 mod types;
 mod types_edition;

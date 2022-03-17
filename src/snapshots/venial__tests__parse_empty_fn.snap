@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 507
+assertion_line: 561
 expression: func
 ---
 Function(
@@ -20,7 +20,7 @@ Function(
         ),
         generic_params: None,
         params: [],
-        where_clauses: None,
+        where_clause: None,
         return_ty: None,
         body: Some(
             Group {

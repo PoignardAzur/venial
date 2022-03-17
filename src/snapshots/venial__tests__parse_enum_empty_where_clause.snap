@@ -1,0 +1,98 @@
+---
+source: src/tests.rs
+assertion_line: 417
+expression: enum_type
+---
+Enum(
+    Enum {
+        attributes: [],
+        vis_marker: None,
+        _enum: Ident(
+            enum,
+        ),
+        name: Ident(
+            Hello,
+        ),
+        generic_params: None,
+        where_clauses: Some(
+            [],
+        ),
+        variants: [
+            EnumVariant {
+                attributes: [],
+                vis_marker: None,
+                name: Ident(
+                    A,
+                ),
+                contents: Unit,
+                discriminant: None,
+            },
+            EnumVariant {
+                attributes: [],
+                vis_marker: None,
+                name: Ident(
+                    B,
+                ),
+                contents: Tuple(
+                    [
+                        TupleField {
+                            attributes: [],
+                            vis_marker: None,
+                            ty: [
+                                Foo,
+                            ],
+                        },
+                        TupleField {
+                            attributes: [],
+                            vis_marker: None,
+                            ty: [
+                                Bar,
+                            ],
+                        },
+                    ],
+                ),
+                discriminant: None,
+            },
+            EnumVariant {
+                attributes: [],
+                vis_marker: None,
+                name: Ident(
+                    C,
+                ),
+                contents: Named(
+                    [
+                        NamedField {
+                            attributes: [],
+                            vis_marker: None,
+                            name: Ident(
+                                foo,
+                            ),
+                            _colon: Punct {
+                                char: ':',
+                                spacing: Alone,
+                            },
+                            ty: [
+                                Foo,
+                            ],
+                        },
+                        NamedField {
+                            attributes: [],
+                            vis_marker: None,
+                            name: Ident(
+                                bar,
+                            ),
+                            _colon: Punct {
+                                char: ':',
+                                spacing: Alone,
+                            },
+                            ty: [
+                                Bar,
+                            ],
+                        },
+                    ],
+                ),
+                discriminant: None,
+            },
+        ],
+    },
+)

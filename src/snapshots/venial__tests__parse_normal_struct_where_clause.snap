@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 345
+assertion_line: 347
 expression: struct_type
 ---
 Struct(
@@ -14,7 +14,7 @@ Struct(
             Hello,
         ),
         generic_params: None,
-        where_clauses: Some(
+        where_clause: Some(
             [
                 [
                     A,

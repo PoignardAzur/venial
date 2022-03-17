@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 331
+assertion_line: 401
 expression: struct_type
 ---
 Struct(
@@ -15,48 +15,40 @@ Struct(
         ),
         generic_params: None,
         where_clause: Some(
-            [
-                [
-                    A,
-                    ":",
-                    B,
-                ],
-                [
-                    C,
-                    "<",
-                    D,
-                    ">",
-                    ":",
-                    E,
-                    "<",
-                    F,
-                    ">",
-                ],
-            ],
+            [],
         ),
-        fields: Tuple(
+        fields: Named(
             [
-                TupleField {
+                NamedField {
                     attributes: [],
                     vis_marker: None,
+                    name: Ident(
+                        a,
+                    ),
+                    _colon: Punct {
+                        char: ':',
+                        spacing: Alone,
+                    },
                     ty: [
                         A,
                     ],
                 },
-                TupleField {
+                NamedField {
                     attributes: [],
                     vis_marker: None,
+                    name: Ident(
+                        b,
+                    ),
+                    _colon: Punct {
+                        char: ':',
+                        spacing: Alone,
+                    },
                     ty: [
                         B,
                     ],
                 },
             ],
         ),
-        _semicolon: Some(
-            Punct {
-                char: ';',
-                spacing: Alone,
-            },
-        ),
+        _semicolon: None,
     },
 )

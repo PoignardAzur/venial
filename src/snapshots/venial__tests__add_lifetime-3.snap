@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 688
+assertion_line: 743
 expression: type_with_lifetime
 ---
 Struct {
@@ -32,7 +32,7 @@ Struct {
             },
         ],
     ),
-    where_clauses: None,
+    where_clause: None,
     fields: Named(
         [
             NamedField {

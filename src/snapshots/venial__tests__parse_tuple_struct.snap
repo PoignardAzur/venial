@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 35
+assertion_line: 37
 expression: struct_type
 ---
 Struct(
@@ -14,7 +14,7 @@ Struct(
             Hello,
         ),
         generic_params: None,
-        where_clauses: None,
+        where_clause: None,
         fields: Tuple(
             [
                 TupleField {

@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 637
+assertion_line: 691
 expression: func
 ---
 Function(
@@ -39,7 +39,7 @@ Function(
                 ],
             },
         ],
-        where_clauses: None,
+        where_clause: None,
         return_ty: Some(
             [
                 String,

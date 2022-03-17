@@ -364,7 +364,56 @@ fn parse_enum_where_clause() {
     assert_debug_snapshot!(enum_type);
 }
 
-// TODO - empty where clause
+#[rustfmt::skip]
+#[test]
+fn parse_unit_struct_empty_where_clause() {
+    let struct_type = parse_declaration_checked(quote!(
+        struct Hello where;
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[rustfmt::skip]
+#[test]
+fn parse_tuple_struct_empty_where_clause() {
+    let struct_type = parse_declaration_checked(quote!(
+        struct Hello(A, B) where;
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[rustfmt::skip]
+#[test]
+fn parse_normal_struct_empty_where_clause() {
+    let struct_type = parse_declaration_checked(quote!(
+        struct Hello
+        where
+        {
+            a: A,
+            b: B,
+        }
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
+#[rustfmt::skip]
+#[test]
+fn parse_enum_empty_where_clause() {
+    let enum_type = parse_declaration_checked(quote!(
+        enum Hello
+        where
+        {
+            A,
+            B(Foo, Bar),
+            C { foo: Foo, bar: Bar },
+        }
+    ));
+
+    assert_debug_snapshot!(enum_type);
+}
 
 // ==============
 // GENERIC PARAMS

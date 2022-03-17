@@ -1,18 +1,12 @@
 ---
 source: src/tests.rs
-assertion_line: 231
+assertion_line: 374
 expression: struct_type
 ---
 Struct(
     Struct {
-        attributes: [
-            #[
-                hello,
-            ],
-        ],
-        vis_marker: Some(
-            pub,
-        ),
+        attributes: [],
+        vis_marker: None,
         _struct: Ident(
             struct,
         ),
@@ -20,7 +14,9 @@ Struct(
             Hello,
         ),
         generic_params: None,
-        where_clause: None,
+        where_clause: Some(
+            [],
+        ),
         fields: Unit,
         _semicolon: Some(
             Punct {
