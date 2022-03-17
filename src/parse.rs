@@ -33,14 +33,15 @@ fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
         };
         tokens.next();
 
-        let child_tokens = match tokens.next().unwrap() {
-            TokenTree::Group(group) if group.delimiter() == Delimiter::Bracket => group.stream(),
+        let group = match tokens.next().unwrap() {
+            TokenTree::Group(group) if group.delimiter() == Delimiter::Bracket => group,
             _ => panic!("cannot parse type"),
         };
 
         attributes.push(Attribute {
             _hashbang: hashbang,
-            child_tokens: child_tokens.into_iter().collect(),
+            child_tokens: group.stream().into_iter().collect(),
+            _braces: group,
         });
     }
 
@@ -591,7 +592,8 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 _ => panic!("cannot parse type"),
             };
 
-            if matches!(struct_fields, StructFields::Unit | StructFields::Tuple(_)) {
+            if matches!(struct_fields, StructFields::Tuple(_)) {
+                assert!(where_clauses.is_none());
                 where_clauses = consume_where_clause(&mut tokens);
             }
 
@@ -607,6 +609,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             Declaration::Struct(Struct {
                 attributes,
                 vis_marker,
+                _struct: ident.clone(),
                 name: struct_name,
                 generic_params,
                 where_clauses,
@@ -624,9 +627,9 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             let where_clauses = consume_where_clause(&mut tokens);
 
             let next_token = tokens.next().unwrap();
-            let enum_variants = match next_token {
+            let (group, enum_variants) = match next_token {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                    parse_enum_variants(group.stream())
+                    (group.clone(), parse_enum_variants(group.stream()))
                 }
                 _ => panic!("cannot parse type"),
             };
@@ -634,9 +637,11 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             Declaration::Enum(Enum {
                 attributes,
                 vis_marker,
+                _enum: ident.clone(),
                 name: enum_name,
                 generic_params,
                 where_clauses,
+                tk_braces: group,
                 variants: enum_variants,
             })
         } else if ident == "union" {
@@ -650,9 +655,9 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             let where_clauses = consume_where_clause(&mut tokens);
 
             let next_token = tokens.next().unwrap();
-            let union_fields = match next_token {
+            let (group, union_fields) = match next_token {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                    parse_named_fields(group.clone())
+                    (group.clone(), parse_named_fields(group.clone()))
                 }
                 _ => panic!("cannot parse type"),
             };
@@ -660,9 +665,11 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             Declaration::Union(Union {
                 attributes,
                 vis_marker,
+                _union: ident.clone(),
                 name: union_name,
                 generic_params,
                 where_clauses,
+                tk_braces: group,
                 fields: union_fields,
             })
         } else if matches!(

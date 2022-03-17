@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 285
+assertion_line: 284
 expression: struct_type
 ---
 Struct(
@@ -8,6 +8,9 @@ Struct(
         attributes: [],
         vis_marker: Some(
             pub,
+        ),
+        _struct: Ident(
+            struct,
         ),
         name: Ident(
             Hello,

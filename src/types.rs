@@ -52,6 +52,7 @@ pub enum Declaration {
 pub struct Struct {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
+    pub _struct: Ident,
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub where_clauses: Option<WhereClause>,
@@ -93,13 +94,15 @@ pub struct NamedStructFields {
 ///     // ...
 /// }
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Enum {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
+    pub _enum: Ident,
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub where_clauses: Option<WhereClause>,
+    pub tk_braces: Group,
     pub variants: Punctuated<EnumVariant>,
 }
 
@@ -133,13 +136,15 @@ pub struct EnumVariant {
 ///     // ...
 /// }
 /// ```
-#[derive(Clone, Debug)]
+#[derive(Clone)]
 pub struct Union {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
+    pub _union: Ident,
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub where_clauses: Option<WhereClause>,
+    pub tk_braces: Group,
     pub fields: NamedStructFields,
 }
 
@@ -240,6 +245,7 @@ pub struct NamedField {
 #[derive(Clone)]
 pub struct Attribute {
     pub _hashbang: Punct,
+    pub _braces: Group,
     pub child_tokens: Vec<TokenTree>,
 }
 
@@ -370,6 +376,34 @@ impl std::fmt::Debug for NamedStructFields {
     }
 }
 
+impl std::fmt::Debug for Enum {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Enum")
+            .field("attributes", &self.attributes)
+            .field("vis_marker", &self.vis_marker)
+            .field("_enum", &self._enum)
+            .field("name", &self.name)
+            .field("generic_params", &self.generic_params)
+            .field("where_clauses", &self.where_clauses)
+            .field("variants", &self.variants)
+            .finish()
+    }
+}
+
+impl std::fmt::Debug for Union {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        f.debug_struct("Union")
+            .field("attributes", &self.attributes)
+            .field("vis_marker", &self.vis_marker)
+            .field("_union", &self._union)
+            .field("name", &self.name)
+            .field("generic_params", &self.generic_params)
+            .field("where_clauses", &self.where_clauses)
+            .field("fields", &self.fields)
+            .finish()
+    }
+}
+
 impl std::fmt::Debug for Attribute {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         f.write_str("#")?;
@@ -477,10 +511,18 @@ impl ToTokens for Struct {
             attribute.to_tokens(tokens);
         }
         self.vis_marker.to_tokens(tokens);
+        self._struct.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
-        self.where_clauses.to_tokens(tokens);
-        self.fields.to_tokens(tokens);
+
+        if matches!(&self.fields, StructFields::Named(_)) {
+            self.where_clauses.to_tokens(tokens);
+            self.fields.to_tokens(tokens);
+        } else {
+            self.fields.to_tokens(tokens);
+            self.where_clauses.to_tokens(tokens);
+            self._semicolon.to_tokens(tokens);
+        }
     }
 }
 
@@ -512,10 +554,11 @@ impl ToTokens for Enum {
             attribute.to_tokens(tokens);
         }
         self.vis_marker.to_tokens(tokens);
+        self._enum.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
         self.where_clauses.to_tokens(tokens);
-        self.variants.to_tokens(tokens);
+        self.tk_braces.to_tokens(tokens);
     }
 }
 
@@ -537,10 +580,11 @@ impl ToTokens for Union {
             attribute.to_tokens(tokens);
         }
         self.vis_marker.to_tokens(tokens);
+        self._union.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
         self.where_clauses.to_tokens(tokens);
-        self.fields.to_tokens(tokens);
+        self.tk_braces.to_tokens(tokens);
     }
 }
 
@@ -608,9 +652,7 @@ impl ToTokens for NamedField {
 impl ToTokens for Attribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.append(self._hashbang.clone());
-        for token in &self.child_tokens {
-            tokens.append(token.clone());
-        }
+        tokens.append(self._braces.clone());
     }
 }
 

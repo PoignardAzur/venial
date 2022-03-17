@@ -1,12 +1,15 @@
 ---
 source: src/tests.rs
-assertion_line: 73
+assertion_line: 72
 expression: union_type
 ---
 Union(
     Union {
         attributes: [],
         vis_marker: None,
+        _union: Ident(
+            union,
+        ),
         name: Ident(
             Hello,
         ),

@@ -1,12 +1,15 @@
 ---
 source: src/tests.rs
-assertion_line: 77
+assertion_line: 99
 expression: enum_type
 ---
 Enum(
     Enum {
         attributes: [],
         vis_marker: None,
+        _enum: Ident(
+            enum,
+        ),
         name: Ident(
             Hello,
         ),

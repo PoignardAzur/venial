@@ -19,7 +19,7 @@ impl<T> Punctuated<T> {
     }
 
     pub fn push(&mut self, value: T, period: Option<Punct>) {
-        self.skip_last = period.is_some();
+        self.skip_last = period.is_none();
         let period = period.unwrap_or(Punct::new(',', Spacing::Alone));
         self.inner.push((value, period))
     }

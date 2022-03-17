@@ -1,11 +1,14 @@
 ---
 source: src/tests.rs
-assertion_line: 688
+assertion_line: 687
 expression: type_with_args
 ---
 Struct {
     attributes: [],
     vis_marker: None,
+    _struct: Ident(
+        struct,
+    ),
     name: Ident(
         Hello,
     ),

@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 120
+assertion_line: 119
 expression: struct_type_pub_crate
 ---
 Struct(
@@ -10,6 +10,9 @@ Struct(
             pub(
                 crate,
             ),
+        ),
+        _struct: Ident(
+            struct,
         ),
         name: Ident(
             Hello,

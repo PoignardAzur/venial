@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 192
+assertion_line: 191
 expression: enum_type_pub_crate
 ---
 Enum(
@@ -10,6 +10,9 @@ Enum(
             pub(
                 crate,
             ),
+        ),
+        _enum: Ident(
+            enum,
         ),
         name: Ident(
             Hello,

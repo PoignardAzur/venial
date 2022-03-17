@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 193
+assertion_line: 192
 expression: enum_type_crate
 ---
 Enum(
@@ -8,6 +8,9 @@ Enum(
         attributes: [],
         vis_marker: Some(
             crate,
+        ),
+        _enum: Ident(
+            enum,
         ),
         name: Ident(
             Hello,

@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 267
+assertion_line: 266
 expression: enum_type
 ---
 Enum(
@@ -12,6 +12,9 @@ Enum(
         ],
         vis_marker: Some(
             pub,
+        ),
+        _enum: Ident(
+            enum,
         ),
         name: Ident(
             Hello,
