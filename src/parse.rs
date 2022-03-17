@@ -301,6 +301,8 @@ fn parse_tuple_fields(token_group: Group) -> TupleStructFields {
         let vis_marker = consume_vis_marker(&mut tokens);
 
         let ty_tokens = consume_field_type(&mut tokens);
+        assert!(!ty_tokens.is_empty());
+
         let period = consume_period(&mut tokens);
 
         fields.push(
