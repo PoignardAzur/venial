@@ -543,7 +543,7 @@ fn parse_multiple_brackets() {
 
 // FIXME
 #[test]
-#[should_panic = "cannot parse type"]
+#[should_panic = "cannot parse enum variant"]
 fn parse_closure_as_discriminant() {
     let enum_type = parse_declaration_checked(quote!(
         enum Hello {

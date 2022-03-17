@@ -12,14 +12,12 @@ use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
 
-// TODO - improve panic messages
-
-fn parse_ident(token: TokenTree) -> Option<Ident> {
+fn parse_ident(token: TokenTree) -> Result<Ident, TokenTree> {
     match token {
-        TokenTree::Group(_group) => None,
-        TokenTree::Ident(ident) => Some(ident),
-        TokenTree::Punct(_punct) => None,
-        TokenTree::Literal(_literal) => None,
+        TokenTree::Group(_) => Err(token),
+        TokenTree::Ident(ident) => Ok(ident),
+        TokenTree::Punct(_) => Err(token),
+        TokenTree::Literal(_) => Err(token),
     }
 }
 
@@ -33,9 +31,9 @@ fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
         };
         tokens.next();
 
-        let group = match tokens.next().unwrap() {
-            TokenTree::Group(group) if group.delimiter() == Delimiter::Bracket => group,
-            _ => panic!("cannot parse type"),
+        let group = match tokens.next() {
+            Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Bracket => group,
+            _ => panic!("cannot parse attribute: expected '[' after '#' token"),
         };
 
         attributes.push(Attribute {
@@ -51,7 +49,9 @@ fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
 fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {
     match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "pub" => {
-            let pub_token = tokens.next().unwrap();
+            let pub_token = tokens
+                .next()
+                .expect("cannot parse declaration: expected token after 'pub'");
             match tokens.peek() {
                 Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Parenthesis => {
                     Some(VisMarker {
@@ -73,6 +73,18 @@ fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {
     }
 }
 
+fn consume_declaration_name(tokens: &mut TokenIter) -> Ident {
+    let token = tokens
+        .next()
+        .expect("cannot parse declaration: expected identifier, found end-of-stream");
+    parse_ident(token).unwrap_or_else(|token| {
+        panic!(
+            "cannot parse declaration: expected identifier, found token {:?}",
+            token
+        );
+    })
+}
+
 // Consumes tokens until a separator is reached *unless* the
 // separator in between angle brackets
 // eg consume_stuff_until(..., ',') will consume all
@@ -85,6 +97,8 @@ pub(crate) fn consume_stuff_until(
     let mut bracket_count = 0;
     let mut predicate = predicate;
     let mut prev_token_is_dash = false;
+
+    // TODO - handle closures
 
     loop {
         let token = tokens.peek();
@@ -141,11 +155,15 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
         }
         _ => return None,
     };
+
     // consume '<'
     tokens.next();
 
     loop {
-        let prefix = match tokens.peek().unwrap() {
+        let token = tokens
+            .peek()
+            .expect("cannot parse generic params: expected token after '>'");
+        let prefix = match token {
             TokenTree::Punct(punct) if punct.as_char() == '>' => {
                 lt = punct.clone();
                 break;
@@ -154,8 +172,7 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
             TokenTree::Ident(ident) if ident == "const" => Some(tokens.next().unwrap()),
             TokenTree::Ident(_ident) => None,
             token => {
-                dbg!(&token);
-                panic!("cannot parse type")
+                panic!("cannot parse generic params: unexpected token {:?}", token)
             }
         };
 
@@ -180,8 +197,7 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
             TokenTree::Punct(punct) if punct.as_char() == ',' => None,
             TokenTree::Punct(punct) if punct.as_char() == '>' => None,
             token => {
-                dbg!(&token);
-                panic!("cannot parse type")
+                panic!("cannot parse generic params: unexpected token {:?}", token)
             }
         };
 
@@ -219,7 +235,10 @@ fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
 
     let mut items = Punctuated::new();
     loop {
-        match tokens.peek().unwrap() {
+        let token = tokens
+            .peek()
+            .expect("cannot parse where clause: expected tokens");
+        match token {
             TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => break,
             TokenTree::Punct(punct) if punct.as_char() == ';' => break,
             _ => (),
@@ -232,7 +251,10 @@ fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
 
         let colon = match tokens.next().unwrap() {
             TokenTree::Punct(punct) if punct.as_char() == ':' => punct.clone(),
-            _ => panic!("cannot parse type"),
+            token => panic!(
+                "cannot parse where clause: expected colon, found token {:?}",
+                token
+            ),
         };
         let bound_tokens = consume_stuff_until(tokens, |token| match token {
             TokenTree::Punct(punct) if punct.as_char() == ',' => true,
@@ -262,6 +284,7 @@ fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
 }
 
 fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
+    // TODO - assert this isn't empty
     let field_type_tokens = consume_stuff_until(tokens, |token| match token {
         TokenTree::Punct(punct) if punct.as_char() == ',' => true,
         _ => false,
@@ -337,11 +360,14 @@ fn parse_named_fields(token_group: Group) -> NamedStructFields {
 
         let colon = match tokens.next() {
             Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct,
-            _ => panic!("cannot parse type"),
+            token => panic!(
+                "cannot parse named fields: expected ':', found token {:?}",
+                token
+            ),
         };
-        tokens.peek().unwrap();
 
         let ty_tokens = consume_field_type(&mut tokens);
+        assert!(!ty_tokens.is_empty());
         let period = consume_period(&mut tokens);
 
         fields.push(
@@ -392,7 +418,7 @@ fn parse_enum_variants(tokens: TokenStream) -> Punctuated<EnumVariant> {
                 tokens.next();
                 StructFields::Named(parse_named_fields(group))
             }
-            _ => panic!("cannot parse type"),
+            token => panic!("cannot parse enum variant: unexpected token {:?}", token),
         };
 
         let enum_discriminant = consume_enum_discriminant(&mut tokens);
@@ -478,7 +504,7 @@ fn consume_fn_return(tokens: &mut TokenIter) -> Option<TyExpr> {
 
     match tokens.next() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == '>' => (),
-        _ => panic!("expect '>' token"),
+        _ => panic!("cannot parse fn return: expected '>' after '-' token"),
     };
 
     Some(TyExpr {
@@ -507,7 +533,7 @@ fn parse_fn_params(tokens: TokenStream) -> Punctuated<FunctionParameter> {
         // TODO - Handle self parameter
         match tokens.next() {
             Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => (),
-            _ => panic!("cannot parse type"),
+            _ => panic!("cannot parse fn params"),
         };
 
         let ty_tokens = consume_field_type(&mut tokens);
@@ -561,13 +587,12 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
     let attributes = consume_attributes(&mut tokens);
     let vis_marker = consume_vis_marker(&mut tokens);
 
-    if let Some(ident) = parse_ident(tokens.peek().unwrap().clone()) {
-        if ident == "struct" {
+    match tokens.peek().cloned() {
+        Some(TokenTree::Ident(keyword)) if keyword == "struct" => {
             // struct keyword
             tokens.next().unwrap();
 
-            let struct_name = parse_ident(tokens.next().unwrap()).unwrap();
-
+            let struct_name = consume_declaration_name(&mut tokens);
             let generic_params = consume_generic_params(&mut tokens);
             let mut where_clause = consume_where_clause(&mut tokens);
 
@@ -587,7 +612,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                     tokens.next();
                     StructFields::Named(parse_named_fields(group.clone()))
                 }
-                _ => panic!("cannot parse type"),
+                token => panic!("cannot parse struct: unexpected token {:?}", token),
             };
 
             if matches!(struct_fields, StructFields::Tuple(_)) {
@@ -607,19 +632,19 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             Declaration::Struct(Struct {
                 attributes,
                 vis_marker,
-                _struct: ident.clone(),
+                _struct: keyword.clone(),
                 name: struct_name,
                 generic_params,
                 where_clause,
                 fields: struct_fields,
                 _semicolon: semicolon,
             })
-        } else if ident == "enum" {
+        }
+        Some(TokenTree::Ident(keyword)) if keyword == "enum" => {
             // enum keyword
             tokens.next().unwrap();
 
-            let enum_name = parse_ident(tokens.next().unwrap()).unwrap();
-
+            let enum_name = consume_declaration_name(&mut tokens);
             let generic_params = consume_generic_params(&mut tokens);
             let where_clause = consume_where_clause(&mut tokens);
 
@@ -627,25 +652,25 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
                     (group.clone(), parse_enum_variants(group.stream()))
                 }
-                _ => panic!("cannot parse type"),
+                token => panic!("cannot parse enum: unexpected token {:?}", token),
             };
 
             Declaration::Enum(Enum {
                 attributes,
                 vis_marker,
-                _enum: ident.clone(),
+                _enum: keyword.clone(),
                 name: enum_name,
                 generic_params,
                 where_clause,
                 tk_braces: group,
                 variants: enum_variants,
             })
-        } else if ident == "union" {
+        }
+        Some(TokenTree::Ident(keyword)) if keyword == "union" => {
             // union keyword
             tokens.next().unwrap();
 
-            let union_name = parse_ident(tokens.next().unwrap()).unwrap();
-
+            let union_name = consume_declaration_name(&mut tokens);
             let generic_params = consume_generic_params(&mut tokens);
             let where_clause = consume_where_clause(&mut tokens);
 
@@ -653,30 +678,32 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
                     (group.clone(), parse_named_fields(group.clone()))
                 }
-                _ => panic!("cannot parse type"),
+                token => panic!("cannot parse union: unexpected token {:?}", token),
             };
 
             Declaration::Union(Union {
                 attributes,
                 vis_marker,
-                _union: ident.clone(),
+                _union: keyword.clone(),
                 name: union_name,
                 generic_params,
                 where_clause,
                 tk_braces: group,
                 fields: union_fields,
             })
-        } else if matches!(
-            ident.to_string().as_str(),
-            "default" | "const" | "async" | "unsafe" | "extern" | "fn"
-        ) {
+        }
+        Some(TokenTree::Ident(keyword))
+            if matches!(
+                keyword.to_string().as_str(),
+                "default" | "const" | "async" | "unsafe" | "extern" | "fn"
+            ) =>
+        {
             let qualifiers = consume_fn_qualifiers(&mut tokens);
 
             // fn keyword
             tokens.next().unwrap();
 
-            let fn_name = parse_ident(tokens.next().unwrap()).unwrap();
-
+            let fn_name = consume_declaration_name(&mut tokens);
             let generic_params = consume_generic_params(&mut tokens);
 
             let params = match tokens.next().unwrap() {
@@ -709,10 +736,15 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 return_ty,
                 body: function_body,
             })
-        } else {
-            panic!("cannot parse type")
         }
-    } else {
-        panic!("cannot parse type")
+        Some(token) => {
+            panic!(
+                "cannot parse declaration: expected keyword struct/enum/union/fn, found token {:?}",
+                token
+            );
+        }
+        None => {
+            panic!("cannot parse type: expected keyword struct/enum/union/fn, found end-of-stream");
+        }
     }
 }
