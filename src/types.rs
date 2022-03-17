@@ -101,7 +101,7 @@ pub struct Enum {
     pub _enum: Ident,
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
-    pub where_clauses: Option<WhereClause>,
+    pub where_clause: Option<WhereClause>,
     pub tk_braces: Group,
     pub variants: Punctuated<EnumVariant>,
 }
@@ -143,7 +143,7 @@ pub struct Union {
     pub _union: Ident,
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
-    pub where_clauses: Option<WhereClause>,
+    pub where_clause: Option<WhereClause>,
     pub tk_braces: Group,
     pub fields: NamedStructFields,
 }
@@ -166,7 +166,7 @@ pub struct Function {
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub params: Punctuated<FunctionParameter>,
-    pub where_clauses: Option<WhereClause>,
+    pub where_clause: Option<WhereClause>,
     pub return_ty: Option<TyExpr>,
     pub body: Option<TokenTree>,
 }
@@ -298,6 +298,12 @@ pub struct GenericBound {
     pub tokens: Vec<TokenTree>,
 }
 
+/// Generic arguments deduced from a type's [GenericParams].
+///
+/// For instance, `<'a: 'static, T, U: Clone, const N: usize>` becomes `<'a, T, U, N>`.
+/// This is useful when creating wrapper types in derive macros.
+pub struct InlineGenericArgs<'a>(pub(crate) &'a GenericParams);
+
 /// All the stuff that comes after the `where` keyword.
 #[derive(Clone)]
 pub struct WhereClause {
@@ -384,7 +390,7 @@ impl std::fmt::Debug for Enum {
             .field("_enum", &self._enum)
             .field("name", &self.name)
             .field("generic_params", &self.generic_params)
-            .field("where_clauses", &self.where_clauses)
+            .field("where_clauses", &self.where_clause)
             .field("variants", &self.variants)
             .finish()
     }
@@ -398,7 +404,7 @@ impl std::fmt::Debug for Union {
             .field("_union", &self._union)
             .field("name", &self.name)
             .field("generic_params", &self.generic_params)
-            .field("where_clauses", &self.where_clauses)
+            .field("where_clauses", &self.where_clause)
             .field("fields", &self.fields)
             .finish()
     }
@@ -557,7 +563,7 @@ impl ToTokens for Enum {
         self._enum.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
-        self.where_clauses.to_tokens(tokens);
+        self.where_clause.to_tokens(tokens);
         self.tk_braces.to_tokens(tokens);
     }
 }
@@ -583,7 +589,7 @@ impl ToTokens for Union {
         self._union.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
-        self.where_clauses.to_tokens(tokens);
+        self.where_clause.to_tokens(tokens);
         self.tk_braces.to_tokens(tokens);
     }
 }
@@ -599,7 +605,7 @@ impl ToTokens for Function {
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
         self.params.to_tokens(tokens);
-        self.where_clauses.to_tokens(tokens);
+        self.where_clause.to_tokens(tokens);
         //self.return_ty.to_tokens(tokens);
         //self.body.to_tokens(tokens);
     }
@@ -685,6 +691,22 @@ impl ToTokens for GenericBound {
         for token in &self.tokens {
             tokens.append(token.clone());
         }
+    }
+}
+
+impl ToTokens for InlineGenericArgs<'_> {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(Punct::new('<', Spacing::Alone));
+
+        for param in &self.0.params.inner {
+            if param.0.is_lifetime() {
+                param.0._prefix.to_tokens(tokens);
+            }
+            tokens.append(param.0.name.clone());
+            tokens.append(Punct::new(',', Spacing::Alone));
+        }
+
+        tokens.append(Punct::new('>', Spacing::Alone));
     }
 }
 

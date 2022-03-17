@@ -1,6 +1,7 @@
 #![allow(missing_docs)]
 #![allow(unused)]
 
+use crate::types::InlineGenericArgs;
 pub use crate::types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericBound, GenericParam,
     GenericParams, NamedField, Struct, StructFields, TupleField, TyExpr, Union, VisMarker,
@@ -28,6 +29,8 @@ impl Declaration {
     }
 }
 
+// TODO - use macros to remove copy-pasting
+
 impl Struct {
     pub fn with_param(mut self, param: GenericParam) -> Self {
         let params = self.generic_params.take().unwrap_or_default();
@@ -44,6 +47,67 @@ impl Struct {
         }
         self
     }
+
+    pub fn get_lifetime_params(&self) -> impl Iterator<Item = &GenericParam> {
+        let params: &[_] = if let Some(params) = self.generic_params.as_ref() {
+            &params.params
+        } else {
+            &[]
+        };
+
+        params
+            .iter()
+            .map(|(param, _punct)| param)
+            .filter(|param| GenericParam::is_lifetime(param))
+    }
+
+    pub fn get_type_params(&self) -> impl Iterator<Item = &GenericParam> {
+        let params: &[_] = if let Some(params) = self.generic_params.as_ref() {
+            &params.params
+        } else {
+            &[]
+        };
+
+        params
+            .iter()
+            .map(|(param, _punct)| param)
+            .filter(|param| GenericParam::is_ty(param))
+    }
+
+    pub fn get_const_params(&self) -> impl Iterator<Item = &GenericParam> {
+        let params: &[_] = if let Some(params) = self.generic_params.as_ref() {
+            &params.params
+        } else {
+            &[]
+        };
+
+        params
+            .iter()
+            .map(|(param, _punct)| param)
+            .filter(|param| GenericParam::is_const(param))
+    }
+
+    pub fn get_inline_generic_args(&self) -> Option<InlineGenericArgs<'_>> {
+        Some(self.generic_params.as_ref()?.as_inline_args())
+    }
+
+    pub fn create_derive_where_clause(&self, derived_trait: TokenStream) -> WhereClause {
+        let mut where_clause = self.where_clause.clone().unwrap_or_default();
+
+        for param in self.get_type_params() {
+            let item = WhereClauseItem {
+                left_side: vec![param.name.clone().into()],
+                bound: GenericBound {
+                    _colon: Punct::new(':', Spacing::Alone),
+                    tokens: derived_trait.clone().into_iter().collect(),
+                },
+            };
+
+            where_clause = where_clause.with_item(item);
+        }
+
+        where_clause
+    }
 }
 
 impl Enum {
@@ -55,12 +119,73 @@ impl Enum {
     }
 
     pub fn with_where_item(mut self, item: WhereClauseItem) -> Self {
-        if let Some(where_clause) = self.where_clauses {
-            self.where_clauses = Some(where_clause.with_item(item));
+        if let Some(where_clause) = self.where_clause {
+            self.where_clause = Some(where_clause.with_item(item));
         } else {
-            self.where_clauses = Some(WhereClause::from_item(item));
+            self.where_clause = Some(WhereClause::from_item(item));
         }
         self
+    }
+
+    pub fn get_lifetime_params(&self) -> impl Iterator<Item = &GenericParam> {
+        let params: &[_] = if let Some(params) = self.generic_params.as_ref() {
+            &params.params
+        } else {
+            &[]
+        };
+
+        params
+            .iter()
+            .map(|(param, _punct)| param)
+            .filter(|param| GenericParam::is_lifetime(param))
+    }
+
+    pub fn get_type_params(&self) -> impl Iterator<Item = &GenericParam> {
+        let params: &[_] = if let Some(params) = self.generic_params.as_ref() {
+            &params.params
+        } else {
+            &[]
+        };
+
+        params
+            .iter()
+            .map(|(param, _punct)| param)
+            .filter(|param| GenericParam::is_ty(param))
+    }
+
+    pub fn get_const_params(&self) -> impl Iterator<Item = &GenericParam> {
+        let params: &[_] = if let Some(params) = self.generic_params.as_ref() {
+            &params.params
+        } else {
+            &[]
+        };
+
+        params
+            .iter()
+            .map(|(param, _punct)| param)
+            .filter(|param| GenericParam::is_const(param))
+    }
+
+    pub fn get_inline_generic_args(&self) -> Option<InlineGenericArgs<'_>> {
+        Some(self.generic_params.as_ref()?.as_inline_args())
+    }
+
+    pub fn create_derive_where_clause(&self, derived_trait: TokenStream) -> WhereClause {
+        let mut where_clause = self.where_clause.clone().unwrap_or_default();
+
+        for param in self.get_type_params() {
+            let item = WhereClauseItem {
+                left_side: vec![param.name.clone().into()],
+                bound: GenericBound {
+                    _colon: Punct::new(':', Spacing::Alone),
+                    tokens: derived_trait.clone().into_iter().collect(),
+                },
+            };
+
+            where_clause = where_clause.with_item(item);
+        }
+
+        where_clause
     }
 }
 
@@ -73,12 +198,73 @@ impl Union {
     }
 
     pub fn with_where_item(mut self, item: WhereClauseItem) -> Self {
-        if let Some(where_clause) = self.where_clauses {
-            self.where_clauses = Some(where_clause.with_item(item));
+        if let Some(where_clause) = self.where_clause {
+            self.where_clause = Some(where_clause.with_item(item));
         } else {
-            self.where_clauses = Some(WhereClause::from_item(item));
+            self.where_clause = Some(WhereClause::from_item(item));
         }
         self
+    }
+
+    pub fn get_lifetime_params(&self) -> impl Iterator<Item = &GenericParam> {
+        let params: &[_] = if let Some(params) = self.generic_params.as_ref() {
+            &params.params
+        } else {
+            &[]
+        };
+
+        params
+            .iter()
+            .map(|(param, _punct)| param)
+            .filter(|param| GenericParam::is_lifetime(param))
+    }
+
+    pub fn get_type_params(&self) -> impl Iterator<Item = &GenericParam> {
+        let params: &[_] = if let Some(params) = self.generic_params.as_ref() {
+            &params.params
+        } else {
+            &[]
+        };
+
+        params
+            .iter()
+            .map(|(param, _punct)| param)
+            .filter(|param| GenericParam::is_ty(param))
+    }
+
+    pub fn get_const_params(&self) -> impl Iterator<Item = &GenericParam> {
+        let params: &[_] = if let Some(params) = self.generic_params.as_ref() {
+            &params.params
+        } else {
+            &[]
+        };
+
+        params
+            .iter()
+            .map(|(param, _punct)| param)
+            .filter(|param| GenericParam::is_const(param))
+    }
+
+    pub fn get_inline_generic_args(&self) -> Option<InlineGenericArgs<'_>> {
+        Some(self.generic_params.as_ref()?.as_inline_args())
+    }
+
+    pub fn create_derive_where_clause(&self, derived_trait: TokenStream) -> WhereClause {
+        let mut where_clause = self.where_clause.clone().unwrap_or_default();
+
+        for param in self.get_type_params() {
+            let item = WhereClauseItem {
+                left_side: vec![param.name.clone().into()],
+                bound: GenericBound {
+                    _colon: Punct::new(':', Spacing::Alone),
+                    tokens: derived_trait.clone().into_iter().collect(),
+                },
+            };
+
+            where_clause = where_clause.with_item(item);
+        }
+
+        where_clause
     }
 }
 
@@ -90,6 +276,10 @@ impl GenericParams {
             self.params.push(param, None);
         }
         self
+    }
+
+    pub fn as_inline_args(&self) -> InlineGenericArgs<'_> {
+        InlineGenericArgs(&self)
     }
 }
 
@@ -206,5 +396,3 @@ impl WhereClauseItem {
         }
     }
 }
-
-// TODO - as_inline_args -> InlineGenerics

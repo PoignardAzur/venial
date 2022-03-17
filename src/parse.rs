@@ -570,7 +570,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             let struct_name = parse_ident(tokens.next().unwrap()).unwrap();
 
             let generic_params = consume_generic_params(&mut tokens);
-            let mut where_clauses = consume_where_clause(&mut tokens);
+            let mut where_clause = consume_where_clause(&mut tokens);
 
             let next_token = tokens.peek().unwrap();
             let struct_fields = match next_token {
@@ -593,8 +593,8 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             };
 
             if matches!(struct_fields, StructFields::Tuple(_)) {
-                assert!(where_clauses.is_none());
-                where_clauses = consume_where_clause(&mut tokens);
+                assert!(where_clause.is_none());
+                where_clause = consume_where_clause(&mut tokens);
             }
 
             let semicolon = match tokens.peek() {
@@ -612,7 +612,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 _struct: ident.clone(),
                 name: struct_name,
                 generic_params,
-                where_clause: where_clauses,
+                where_clause,
                 fields: struct_fields,
                 _semicolon: semicolon,
             })
@@ -624,7 +624,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             let enum_name = parse_ident(next_token).unwrap();
 
             let generic_params = consume_generic_params(&mut tokens);
-            let where_clauses = consume_where_clause(&mut tokens);
+            let where_clause = consume_where_clause(&mut tokens);
 
             let next_token = tokens.next().unwrap();
             let (group, enum_variants) = match next_token {
@@ -640,7 +640,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 _enum: ident.clone(),
                 name: enum_name,
                 generic_params,
-                where_clauses,
+                where_clause,
                 tk_braces: group,
                 variants: enum_variants,
             })
@@ -652,7 +652,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             let union_name = parse_ident(next_token).unwrap();
 
             let generic_params = consume_generic_params(&mut tokens);
-            let where_clauses = consume_where_clause(&mut tokens);
+            let where_clause = consume_where_clause(&mut tokens);
 
             let next_token = tokens.next().unwrap();
             let (group, union_fields) = match next_token {
@@ -668,7 +668,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 _union: ident.clone(),
                 name: union_name,
                 generic_params,
-                where_clauses,
+                where_clause,
                 tk_braces: group,
                 fields: union_fields,
             })
@@ -695,7 +695,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
 
             let return_ty = consume_fn_return(&mut tokens);
 
-            let where_clauses = consume_where_clause(&mut tokens);
+            let where_clause = consume_where_clause(&mut tokens);
 
             let next_token = tokens.next().unwrap();
             let function_body = match &next_token {
@@ -713,7 +713,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 name: fn_name,
                 generic_params,
                 params,
-                where_clauses,
+                where_clause,
                 return_ty,
                 body: function_body,
             })
