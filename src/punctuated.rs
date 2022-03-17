@@ -6,9 +6,8 @@ use quote::{ToTokens, TokenStreamExt as _};
 /// Inspired by syn's `Punctuated` type.
 #[derive(Clone)]
 pub struct Punctuated<T> {
-    // TODO - pub
     pub inner: Vec<(T, Punct)>,
-    skip_last: bool,
+    pub skip_last: bool,
 }
 
 impl<T> Punctuated<T> {
@@ -40,6 +39,20 @@ impl<T> Punctuated<T> {
             self.inner
                 .insert(index, (value, Punct::new(',', Spacing::Alone)));
         }
+    }
+
+    pub fn items(&self) -> impl Iterator<Item = &T> {
+        self.inner.iter().map(|(item, _punct)| item)
+    }
+
+    pub fn punct(&self) -> impl Iterator<Item = &Punct> {
+        let len = self.inner.len();
+        let slice = if self.skip_last && len > 0 {
+            &self.inner[..len - 1]
+        } else {
+            &self.inner[..]
+        };
+        slice.iter().map(|(_item, punct)| punct)
     }
 
     pub fn len(&self) -> usize {
@@ -82,4 +95,10 @@ impl<T: ToTokens> ToTokens for Punctuated<T> {
     }
 }
 
-// TODO - impl Deref
+impl<T> std::ops::Deref for Punctuated<T> {
+    type Target = [(T, Punct)];
+
+    fn deref(&self) -> &Self::Target {
+        &self.inner
+    }
+}
