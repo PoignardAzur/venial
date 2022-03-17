@@ -4,7 +4,13 @@ use insta::assert_debug_snapshot;
 use proc_macro2::TokenStream;
 use quote::quote;
 
-// TODO - Include tests from loiclec's fuzzing run
+macro_rules! assert_quote_snapshot {
+    ($item:expr) => {{
+        use ::quote::ToTokens;
+        let tokens = ($item).to_token_stream();
+        ::insta::assert_display_snapshot!(tokens);
+    }};
+}
 
 fn parse_declaration_checked(tokens: TokenStream) -> Declaration {
     let initial_tokens = tokens.clone();
@@ -791,8 +797,6 @@ fn parse_struct_declaration(tokens: TokenStream) -> Struct {
     }
 }
 
-// TODO - assert_quote_snapshot
-
 #[test]
 fn add_lifetime() {
     let basic_type = parse_struct_declaration(quote!(
@@ -818,9 +822,9 @@ fn add_lifetime() {
     let type_with_args = type_with_args.with_param(GenericParam::lifetime("b"));
     let type_with_lifetime = type_with_lifetime.with_param(GenericParam::lifetime("b"));
 
-    assert_debug_snapshot!(basic_type);
-    assert_debug_snapshot!(type_with_args);
-    assert_debug_snapshot!(type_with_lifetime);
+    assert_quote_snapshot!(basic_type);
+    assert_quote_snapshot!(type_with_args);
+    assert_quote_snapshot!(type_with_lifetime);
 }
 
 #[test]
@@ -834,10 +838,10 @@ fn add_bounded_lifetime() {
 
     let basic_type = basic_type.with_param(GenericParam::bounded_lifetime(
         "b",
-        quote!("c + d").into_iter().collect(),
+        quote!(c + d).into_iter().collect(),
     ));
 
-    assert_debug_snapshot!(basic_type);
+    assert_quote_snapshot!(basic_type);
 }
 
 #[test]
@@ -858,8 +862,8 @@ fn add_ty_param() {
     let basic_type = basic_type.with_param(GenericParam::ty("T"));
     let type_with_args = type_with_args.with_param(GenericParam::ty("T"));
 
-    assert_debug_snapshot!(basic_type);
-    assert_debug_snapshot!(type_with_args);
+    assert_quote_snapshot!(basic_type);
+    assert_quote_snapshot!(type_with_args);
 }
 
 #[test]
@@ -873,10 +877,10 @@ fn add_bounded_ty_param() {
 
     let basic_type = basic_type.with_param(GenericParam::bounded_ty(
         "T",
-        quote!("Clone").into_iter().collect(),
+        quote!(Clone).into_iter().collect(),
     ));
 
-    assert_debug_snapshot!(basic_type);
+    assert_quote_snapshot!(basic_type);
 }
 
 #[test]
@@ -896,15 +900,15 @@ fn add_const_param() {
 
     let basic_type = basic_type.with_param(GenericParam::const_param(
         "N",
-        quote!("u32").into_iter().collect(),
+        quote!(u32).into_iter().collect(),
     ));
     let type_with_args = type_with_args.with_param(GenericParam::const_param(
         "N",
-        quote!("u32").into_iter().collect(),
+        quote!(u32).into_iter().collect(),
     ));
 
-    assert_debug_snapshot!(basic_type);
-    assert_debug_snapshot!(type_with_args);
+    assert_quote_snapshot!(basic_type);
+    assert_quote_snapshot!(type_with_args);
 }
 
 #[test]
@@ -930,6 +934,6 @@ fn add_where_item() {
     let type_with_args =
         type_with_args.with_where_item(WhereClauseItem::parse(quote!(Self: Sized)));
 
-    assert_debug_snapshot!(basic_type);
-    assert_debug_snapshot!(type_with_args);
+    assert_quote_snapshot!(basic_type);
+    assert_quote_snapshot!(type_with_args);
 }
