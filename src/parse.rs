@@ -185,7 +185,7 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
 
         let period = consume_period(tokens);
 
-        generic_params.push_with_period(
+        generic_params.push(
             GenericParam {
                 _prefix: prefix,
                 name,
@@ -241,7 +241,7 @@ fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
 
         let period = consume_period(tokens);
 
-        items.push_with_period(
+        items.push(
             WhereClauseItem {
                 left_side,
                 bound: GenericBound {
@@ -301,7 +301,7 @@ fn parse_tuple_fields(tokens: TokenStream) -> Punctuated<TupleField> {
         let ty_tokens = consume_field_type(&mut tokens);
         let period = consume_period(&mut tokens);
 
-        fields.push_with_period(
+        fields.push(
             TupleField {
                 attributes,
                 vis_marker,
@@ -337,7 +337,7 @@ fn parse_named_fields(tokens: TokenStream) -> Punctuated<NamedField> {
         let ty_tokens = consume_field_type(&mut tokens);
         let period = consume_period(&mut tokens);
 
-        fields.push_with_period(
+        fields.push(
             NamedField {
                 attributes,
                 vis_marker,
@@ -389,7 +389,7 @@ fn parse_enum_variants(tokens: TokenStream) -> Punctuated<EnumVariant> {
 
         let period = consume_period(&mut tokens);
 
-        variants.push_with_period(
+        variants.push(
             EnumVariant {
                 attributes,
                 vis_marker,
@@ -499,7 +499,7 @@ fn parse_fn_params(tokens: TokenStream) -> Punctuated<FunctionParameter> {
         let ty_tokens = consume_field_type(&mut tokens);
         let period = consume_period(&mut tokens);
 
-        fields.push_with_period(
+        fields.push(
             FunctionParameter {
                 attributes,
                 name: ident,

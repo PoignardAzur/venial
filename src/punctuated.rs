@@ -7,25 +7,19 @@ use quote::{ToTokens, TokenStreamExt as _};
 #[derive(Clone)]
 pub struct Punctuated<T> {
     inner: Vec<(T, Punct)>,
-    last: Option<Box<T>>,
+    skip_last: bool,
 }
 
 impl<T> Punctuated<T> {
     pub fn new() -> Self {
         Punctuated {
             inner: Vec::new(),
-            last: None,
+            skip_last: false,
         }
     }
 
-    pub fn push(&mut self, value: T) {
-        self.push_with_period(value, None);
-    }
-
-    pub fn push_with_period(&mut self, value: T, period: Option<Punct>) {
-        if let Some(item) = self.last.take() {
-            self.inner.push((*item, Punct::new(',', Spacing::Alone)))
-        }
+    pub fn push(&mut self, value: T, period: Option<Punct>) {
+        self.skip_last = period.is_some();
         let period = period.unwrap_or(Punct::new(',', Spacing::Alone));
         self.inner.push((value, period))
     }
@@ -36,11 +30,11 @@ impl<T> Punctuated<T> {
     ///
     /// Panics if `index` is greater than the number of elements previously in
     /// this punctuated sequence.
-    pub fn insert(&mut self, index: usize, value: T) {
+    pub fn insert(&mut self, index: usize, value: T, period: Option<Punct>) {
         assert!(index <= self.len());
 
         if index == self.len() {
-            self.push(value);
+            self.push(value, period);
         } else {
             self.inner
                 .insert(index, (value, Punct::new(',', Spacing::Alone)));
@@ -48,11 +42,7 @@ impl<T> Punctuated<T> {
     }
 
     pub fn len(&self) -> usize {
-        if self.last.is_some() {
-            self.inner.len() + 1
-        } else {
-            self.inner.len()
-        }
+        self.inner.len()
     }
 }
 
@@ -70,21 +60,23 @@ impl<T: std::fmt::Debug> std::fmt::Debug for Punctuated<T> {
         for (item, _) in &self.inner {
             list.entry(item);
         }
-        if let Some(item) = &self.last {
-            list.entry(item);
-        }
         list.finish()
     }
 }
 
 impl<T: ToTokens> ToTokens for Punctuated<T> {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        for (item, punct) in &self.inner {
+        if self.inner.is_empty() {
+            return;
+        }
+
+        for (item, punct) in &self.inner[..self.inner.len() - 1] {
             item.to_tokens(tokens);
             tokens.append(punct.clone());
         }
-        if let Some(item) = &self.last {
-            item.to_tokens(tokens);
+        self.inner.last().unwrap().0.to_tokens(tokens);
+        if !self.skip_last {
+            tokens.append(self.inner.last().unwrap().1.clone());
         }
     }
 }

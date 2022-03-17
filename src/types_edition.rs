@@ -85,9 +85,9 @@ impl Union {
 impl GenericParams {
     pub fn with_param(mut self, param: GenericParam) -> Self {
         if param.is_lifetime() {
-            self.params.insert(0, param);
+            self.params.insert(0, param, None);
         } else {
-            self.params.push(param);
+            self.params.push(param, None);
         }
         self
     }
@@ -176,7 +176,7 @@ impl WhereClause {
     }
 
     pub fn with_item(mut self, item: WhereClauseItem) -> Self {
-        self.items.push(item);
+        self.items.push(item, None);
         self
     }
 }
