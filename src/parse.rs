@@ -1,11 +1,9 @@
-use crate::{
-    types::{
-        Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Function, FunctionParameter,
-        FunctionQualifiers, GenericBound, GenericParam, GenericParams, NamedField,
-        NamedStructFields, Struct, StructFields, TupleField, TupleStructFields, TyExpr, Union,
-        VisMarker, WhereClause, WhereClauseItem,
-    },
-    Punctuated,
+use crate::punctuated::Punctuated;
+use crate::types::{
+    Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Function, FunctionParameter,
+    FunctionQualifiers, GenericBound, GenericParam, GenericParams, NamedField, NamedStructFields,
+    Struct, StructFields, TupleField, TupleStructFields, TyExpr, Union, VisMarker, WhereClause,
+    WhereClauseItem,
 };
 use proc_macro2::{Delimiter, Group, Ident, Punct, TokenStream, TokenTree};
 use std::iter::Peekable;

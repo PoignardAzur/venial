@@ -45,23 +45,25 @@
 //!     _ => unreachable!(),
 //! };
 //!
-//! assert_eq!(enum_type.variants[0].name, "Square");
-//! assert_eq!(enum_type.variants[1].name, "Circle");
-//! assert_eq!(enum_type.variants[2].name, "Triangle");
+//! assert_eq!(enum_type.variants[0].0.name, "Square");
+//! assert_eq!(enum_type.variants[1].0.name, "Circle");
+//! assert_eq!(enum_type.variants[2].0.name, "Triangle");
 //! ```
 
 // TODO - Add CI
 
-mod parse;
-mod types;
-mod types_edition;
-
-mod punctuated;
 #[cfg(test)]
 mod tests;
 
+mod error;
+mod parse;
+mod punctuated;
+mod types;
+mod types_edition;
+
 pub use parse::parse_declaration;
 
+pub use error::Error;
 pub use punctuated::Punctuated;
 pub use types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericBound, GenericParam,
