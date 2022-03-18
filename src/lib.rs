@@ -50,6 +50,12 @@
 //! assert_eq!(enum_type.variants[2].0.name, "Triangle");
 //! ```
 
+// Note: to get rust-analyzer to work within the `fuzz` module, add the following to .cargo/config.toml:
+// [build]
+// rustflags = ["--cfg", "fuzzing"]
+#[cfg(all(test, fuzzing))]
+pub mod fuzz;
+
 // TODO - Add CI
 
 #[cfg(test)]
@@ -61,9 +67,8 @@ mod punctuated;
 mod types;
 mod types_edition;
 
-pub use parse::parse_declaration;
-
 pub use error::Error;
+pub use parse::parse_declaration;
 pub use punctuated::Punctuated;
 pub use types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericBound, GenericParam,
