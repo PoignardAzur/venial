@@ -62,10 +62,47 @@ assert_eq!(enum_type.variants[1].name, "Circle");
 assert_eq!(enum_type.variants[2].name, "Triangle");
 ```
 
-## Benchmarks
+## Performance
 
-TODO.
+I haven't performed any kind of formal benchmark yet. That said, I compared [this fork of miniserde using venial](https://github.com/PoignardAzur/miniserde/tree/098bbbc3bac5812dc6613e334281d649fcbf88dc) to the [equivalent miniserde commit](https://github.com/dtolnay/miniserde/tree/4951a04384a69a3261e1a817ac4d146b119e953b), and got the following results:
 
+```sh
+$ cargo check -j1 # miniserde-venial, clean build
+    Finished dev [unoptimized + debuginfo] target(s) in 6.30s
+$ cargo check -j1 # miniserde, clean build
+    Finished dev [unoptimized + debuginfo] target(s) in 9.52s
+
+$ cargo check -j4 # miniserde-venial, clean build
+    Finished dev [unoptimized + debuginfo] target(s) in 3.17s
+$ cargo check -j4 # miniserde, clean build
+    Finished dev [unoptimized + debuginfo] target(s) in 4.79s
+```
+
+My machine is desktop computer with an AMD Ryzen 7 1800x (8 cores, 16 threads), I have 32GB of RAM and a 2.5TB SSD.
+
+As we can see, using venial instead of syn shaves about 3.2s off total build times in single-threaded builds, and 1.6s in 4-threaded builds.
+
+I'm not showing codegen builds, release mode builds, 16-threads builds and the like, but the trend stays roughly the same: for the miniserde project, switching to venial removes ~30% of the build time.
+
+### So... Is it worth it?
+
+That's a fairly complicated to answer. At the time I'm writing this section my answer is "Probably, but I'm less enthusiastic than when I started the project".
+
+If you take the most optimistic interpretation, this is great! Switching to the single-threaded version shaves three seconds off, a whole third of the build time!
+
+In reality, there are a lot of complicating factors:
+
+- Venial never improves incremental build times at all (since dependencies are cached, even when incremental compilation is off).
+- I have a fairly powerful computer. Laptops might get more of a benefit from venial.
+- The gap between syn and venial is shorter with any amount of multithreading.
+- In projects bigger than miniserde, syn is usually one of many libraries being compiled at the same time. In some cases that means the build time of syn doesn't matter that much since it's compiled in parallel with other libraries. In other cases syn is on the critical path.
+- In practice, most clean build are run by CI servers. To measure the usefulness of venial, you'd need to analyze the specs of the servers used in Github Actions / Gitlab CI / whatever [crater](https://github.com/rust-lang/crater) uses.
+
+All in all, it's questionable whether the benefits are worth porting your derive crate from syn to venial (though my experience so far has been that porting isn't that hard).
+
+Another thing to keep in mind is that this is a very young library. There has been very little effort to optimize it or profile it so far, and further versions may give a better build time reduction.
+
+**tl;dr:** You can probably shave off a few seconds off your clean builds with venial. Incremental builds see no benefits.
 
 ## Contributions
 
