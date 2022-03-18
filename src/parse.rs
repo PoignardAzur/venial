@@ -131,7 +131,7 @@ pub(crate) fn consume_stuff_until(
     output_tokens
 }
 
-fn consume_period(tokens: &mut TokenIter) -> Option<Punct> {
+fn consume_comma(tokens: &mut TokenIter) -> Option<Punct> {
     match tokens.peek() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => {
             let punct = punct.clone();
@@ -199,7 +199,7 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
             }
         };
 
-        let period = consume_period(tokens);
+        let comma = consume_comma(tokens);
 
         generic_params.push(
             GenericParam {
@@ -207,7 +207,7 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
                 name,
                 bound,
             },
-            period,
+            comma,
         );
     }
 
@@ -261,7 +261,7 @@ fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
             _ => false,
         });
 
-        let period = consume_period(tokens);
+        let comma = consume_comma(tokens);
 
         items.push(
             WhereClauseItem {
@@ -271,7 +271,7 @@ fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
                     tokens: bound_tokens,
                 },
             },
-            period,
+            comma,
         );
     }
 
@@ -287,7 +287,7 @@ fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
         _ => false,
     });
 
-    if field_type_tokens.is_empty() && consume_period(tokens).is_some() {
+    if field_type_tokens.is_empty() && consume_comma(tokens).is_some() {
         panic!("cannot parse type: unexpected token ','");
     } else if field_type_tokens.is_empty() {
         panic!("cannot parse type: expected tokens, found end-of-stream");
@@ -326,7 +326,7 @@ fn parse_tuple_fields(token_group: Group) -> TupleStructFields {
 
         let ty_tokens = consume_field_type(&mut tokens);
 
-        let period = consume_period(&mut tokens);
+        let comma = consume_comma(&mut tokens);
 
         fields.push(
             TupleField {
@@ -334,7 +334,7 @@ fn parse_tuple_fields(token_group: Group) -> TupleStructFields {
                 vis_marker,
                 ty: TyExpr { tokens: ty_tokens },
             },
-            period,
+            comma,
         );
     }
 
@@ -367,7 +367,7 @@ fn parse_named_fields(token_group: Group) -> NamedStructFields {
         };
 
         let ty_tokens = consume_field_type(&mut tokens);
-        let period = consume_period(&mut tokens);
+        let comma = consume_comma(&mut tokens);
 
         fields.push(
             NamedField {
@@ -377,7 +377,7 @@ fn parse_named_fields(token_group: Group) -> NamedStructFields {
                 _colon: colon,
                 ty: TyExpr { tokens: ty_tokens },
             },
-            period,
+            comma,
         );
     }
 
@@ -422,7 +422,7 @@ fn parse_enum_variants(tokens: TokenStream) -> Punctuated<EnumVariant> {
 
         let enum_discriminant = consume_enum_discriminant(&mut tokens);
 
-        let period = consume_period(&mut tokens);
+        let comma = consume_comma(&mut tokens);
 
         variants.push(
             EnumVariant {
@@ -432,7 +432,7 @@ fn parse_enum_variants(tokens: TokenStream) -> Punctuated<EnumVariant> {
                 contents,
                 discriminant: enum_discriminant,
             },
-            period,
+            comma,
         );
     }
 
@@ -536,7 +536,7 @@ fn parse_fn_params(tokens: TokenStream) -> Punctuated<FunctionParameter> {
         };
 
         let ty_tokens = consume_field_type(&mut tokens);
-        let period = consume_period(&mut tokens);
+        let comma = consume_comma(&mut tokens);
 
         fields.push(
             FunctionParameter {
@@ -544,7 +544,7 @@ fn parse_fn_params(tokens: TokenStream) -> Punctuated<FunctionParameter> {
                 name: ident,
                 ty: TyExpr { tokens: ty_tokens },
             },
-            period,
+            comma,
         );
     }
 

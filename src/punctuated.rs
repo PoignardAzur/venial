@@ -1,16 +1,19 @@
-#![allow(missing_docs)]
-
 use proc_macro2::{Punct, Spacing, TokenStream};
 use quote::{ToTokens, TokenStreamExt as _};
 
-/// Inspired by syn's `Punctuated` type.
+// Inspired by syn's `Punctuated` type.
+
+/// Comma-separated list of items.
 #[derive(Clone)]
 pub struct Punctuated<T> {
+    /// Vec of items and commas.
     pub inner: Vec<(T, Punct)>,
+    /// If true, the last comma shouldn't be printed or considered part of the list.
     pub skip_last: bool,
 }
 
 impl<T> Punctuated<T> {
+    /// Create a new list.
     pub fn new() -> Self {
         Punctuated {
             inner: Vec::new(),
@@ -18,10 +21,15 @@ impl<T> Punctuated<T> {
         }
     }
 
-    pub fn push(&mut self, value: T, period: Option<Punct>) {
-        self.skip_last = period.is_none();
-        let period = period.unwrap_or(Punct::new(',', Spacing::Alone));
-        self.inner.push((value, period))
+    /// Add an items at the end of the list.
+    ///
+    /// If `comma` is None, sets `self.skip_last` to true, and adds a comma
+    /// to the array with default values. That comma will be considered as the
+    /// item's comma if **push** is called again.
+    pub fn push(&mut self, value: T, comma: Option<Punct>) {
+        self.skip_last = comma.is_none();
+        let comma = comma.unwrap_or(Punct::new(',', Spacing::Alone));
+        self.inner.push((value, comma))
     }
 
     /// Inserts an element at position `index`.
@@ -30,21 +38,23 @@ impl<T> Punctuated<T> {
     ///
     /// Panics if `index` is greater than the number of elements previously in
     /// this punctuated sequence.
-    pub fn insert(&mut self, index: usize, value: T, period: Option<Punct>) {
+    pub fn insert(&mut self, index: usize, value: T, comma: Option<Punct>) {
         assert!(index <= self.len());
 
         if index == self.len() {
-            self.push(value, period);
+            self.push(value, comma);
         } else {
             self.inner
                 .insert(index, (value, Punct::new(',', Spacing::Alone)));
         }
     }
 
+    /// Return an interator that reads items.
     pub fn items(&self) -> impl Iterator<Item = &T> {
         self.inner.iter().map(|(item, _punct)| item)
     }
 
+    /// Return an interator that reads commas.
     pub fn punct(&self) -> impl Iterator<Item = &Punct> {
         let len = self.inner.len();
         let slice = if self.skip_last && len > 0 {
@@ -55,6 +65,7 @@ impl<T> Punctuated<T> {
         slice.iter().map(|(_item, punct)| punct)
     }
 
+    /// Return number of items.
     pub fn len(&self) -> usize {
         self.inner.len()
     }
