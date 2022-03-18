@@ -1,12 +1,11 @@
 #![allow(missing_docs)]
-#![allow(unused)]
+// TODO - document
 
 pub use crate::types::{
-    Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericBound, GenericParam,
-    GenericParams, NamedField, Struct, StructFields, TupleField, TyExpr, Union, VisMarker,
-    WhereClause, WhereClauseItem,
+    Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Function, GenericBound,
+    GenericParam, GenericParams, InlineGenericArgs, NamedField, Struct, StructFields, TupleField,
+    TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
-use crate::types::{Function, InlineGenericArgs};
 use proc_macro2::{Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
 impl Declaration {
@@ -69,8 +68,7 @@ impl Declaration {
 // TODO - use macros to remove copy-pasting
 
 impl Struct {
-    // TODO - document
-    fn field_names(&self) -> impl IntoIterator<Item = String> {
+    pub fn field_names(&self) -> impl IntoIterator<Item = String> {
         match &self.fields {
             StructFields::Unit => Vec::new(),
             StructFields::Tuple(tuple_fields) => {
@@ -85,8 +83,7 @@ impl Struct {
         }
     }
 
-    // TODO - document
-    fn field_tokens(&self) -> impl IntoIterator<Item = TokenTree> {
+    pub fn field_tokens(&self) -> impl IntoIterator<Item = TokenTree> {
         match &self.fields {
             StructFields::Unit => Vec::new(),
             StructFields::Tuple(tuple_fields) => {
@@ -101,8 +98,7 @@ impl Struct {
         }
     }
 
-    // TODO - document
-    fn field_types(&self) -> impl IntoIterator<Item = &TyExpr> {
+    pub fn field_types(&self) -> impl IntoIterator<Item = &TyExpr> {
         match &self.fields {
             StructFields::Unit => Vec::new(),
             StructFields::Tuple(tuple_fields) => {
@@ -193,7 +189,6 @@ impl Struct {
 }
 
 impl Enum {
-    // TODO - document
     pub fn is_c_enum(&self) -> bool {
         for variant in self.variants.items() {
             if !variant.is_empty_variant() {
@@ -361,16 +356,14 @@ impl Union {
 }
 
 impl EnumVariant {
-    // TODO - document
     pub fn is_empty_variant(&self) -> bool {
         matches!(self.contents, StructFields::Unit)
     }
 
-    // TODO - document
     pub fn get_single_type(&self) -> Option<&TupleField> {
         match &self.contents {
             StructFields::Tuple(fields) if fields.fields.len() == 1 => Some(&fields.fields[0].0),
-            StructFields::Tuple(fields) => None,
+            StructFields::Tuple(_fields) => None,
             StructFields::Unit => None,
             StructFields::Named(_) => None,
         }
