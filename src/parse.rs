@@ -118,11 +118,7 @@ pub(crate) fn consume_stuff_until(
             _ => false,
         };
 
-        // We're out of the brack group we were called in
-        // TODO - explain better
-        if bracket_count < 0 {
-            break;
-        }
+        assert!(bracket_count >= 0, "Unbalanced brackets in type expression");
 
         output_tokens.push(tokens.next().unwrap());
     }
