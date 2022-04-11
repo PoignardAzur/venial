@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 303
+assertion_line: 321
 expression: struct_type
 ---
 Struct(
@@ -9,7 +9,7 @@ Struct(
         vis_marker: Some(
             pub,
         ),
-        _struct: Ident(
+        tk_struct: Ident(
             struct,
         ),
         name: Ident(
@@ -63,7 +63,7 @@ Struct(
                 },
             ],
         ),
-        _semicolon: Some(
+        tk_semicolon: Some(
             Punct {
                 char: ';',
                 spacing: Alone,

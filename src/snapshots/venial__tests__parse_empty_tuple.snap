@@ -1,13 +1,13 @@
 ---
 source: src/tests.rs
-assertion_line: 83
+assertion_line: 101
 expression: struct_type
 ---
 Struct(
     Struct {
         attributes: [],
         vis_marker: None,
-        _struct: Ident(
+        tk_struct: Ident(
             struct,
         ),
         name: Ident(
@@ -18,7 +18,7 @@ Struct(
         fields: Tuple(
             [],
         ),
-        _semicolon: Some(
+        tk_semicolon: Some(
             Punct {
                 char: ';',
                 spacing: Alone,

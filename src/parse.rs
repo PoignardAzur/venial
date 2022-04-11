@@ -36,9 +36,9 @@ fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
         };
 
         attributes.push(Attribute {
-            _hashbang: hashbang,
+            tk_hashbang: hashbang,
             child_tokens: group.stream().into_iter().collect(),
-            _braces: GroupSpan::new(&group),
+            tk_braces: GroupSpan::new(&group),
         });
     }
 
@@ -54,19 +54,19 @@ fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {
             match tokens.peek() {
                 Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Parenthesis => {
                     Some(VisMarker {
-                        _token1: pub_token,
-                        _token2: Some(tokens.next().unwrap()),
+                        tk_token1: pub_token,
+                        tk_token2: Some(tokens.next().unwrap()),
                     })
                 }
                 _ => Some(VisMarker {
-                    _token1: pub_token,
-                    _token2: None,
+                    tk_token1: pub_token,
+                    tk_token2: None,
                 }),
             }
         }
         Some(TokenTree::Ident(ident)) if ident == "crate" => Some(VisMarker {
-            _token1: tokens.next().unwrap(),
-            _token2: None,
+            tk_token1: tokens.next().unwrap(),
+            tk_token2: None,
         }),
         _ => None,
     }
@@ -245,7 +245,7 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
                 });
 
                 Some(GenericBound {
-                    _colon: colon,
+                    tk_colon: colon,
                     tokens: bound_tokens,
                 })
             }
@@ -260,7 +260,7 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
 
         generic_params.push(
             GenericParam {
-                _prefix: prefix,
+                tk_prefix: prefix,
                 name,
                 bound,
             },
@@ -272,9 +272,9 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
     tokens.next();
 
     Some(GenericParams {
-        _l_bracket: gt,
+        tk_l_bracket: gt,
         params: generic_params,
-        _r_bracket: lt,
+        tk_r_bracket: lt,
     })
 }
 
@@ -324,7 +324,7 @@ fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
             WhereClauseItem {
                 left_side,
                 bound: GenericBound {
-                    _colon: colon,
+                    tk_colon: colon,
                     tokens: bound_tokens,
                 },
             },
@@ -333,7 +333,7 @@ fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
     }
 
     Some(WhereClause {
-        _where: where_token,
+        tk_where: where_token,
         items,
     })
 }
@@ -366,7 +366,7 @@ fn consume_enum_discriminant(tokens: &mut TokenIter) -> Option<EnumDiscriminant>
     tokens.next();
 
     Some(EnumDiscriminant {
-        _equal: equal,
+        tk_equal: equal,
         expression: consume_expression(tokens),
     })
 }
@@ -433,7 +433,7 @@ fn parse_named_fields(token_group: Group) -> NamedStructFields {
                 attributes,
                 vis_marker,
                 name: ident,
-                _colon: colon,
+                tk_colon: colon,
                 ty: TyExpr { tokens: ty_tokens },
             },
             comma,
@@ -717,12 +717,12 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             Declaration::Struct(Struct {
                 attributes,
                 vis_marker,
-                _struct: keyword,
+                tk_struct: keyword,
                 name: struct_name,
                 generic_params,
                 where_clause,
                 fields: struct_fields,
-                _semicolon: semicolon,
+                tk_semicolon: semicolon,
             })
         }
         Some(TokenTree::Ident(keyword)) if keyword == "enum" => {
@@ -743,7 +743,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             Declaration::Enum(Enum {
                 attributes,
                 vis_marker,
-                _enum: keyword,
+                tk_enum: keyword,
                 name: enum_name,
                 generic_params,
                 where_clause,
@@ -769,7 +769,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             Declaration::Union(Union {
                 attributes,
                 vis_marker,
-                _union: keyword,
+                tk_union: keyword,
                 name: union_name,
                 generic_params,
                 where_clause,

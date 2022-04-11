@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 72
+assertion_line: 92
 expression: union_type
 ---
 Union(
@@ -22,7 +22,7 @@ Union(
                 name: Ident(
                     a,
                 ),
-                _colon: Punct {
+                tk_colon: Punct {
                     char: ':',
                     spacing: Alone,
                 },
@@ -36,7 +36,7 @@ Union(
                 name: Ident(
                     b,
                 ),
-                _colon: Punct {
+                tk_colon: Punct {
                     char: ':',
                     spacing: Alone,
                 },

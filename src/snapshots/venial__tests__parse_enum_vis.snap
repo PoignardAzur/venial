@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 190
+assertion_line: 210
 expression: enum_type_pub
 ---
 Enum(
@@ -67,7 +67,7 @@ Enum(
                             name: Ident(
                                 foo,
                             ),
-                            _colon: Punct {
+                            tk_colon: Punct {
                                 char: ':',
                                 spacing: Alone,
                             },
@@ -81,7 +81,7 @@ Enum(
                             name: Ident(
                                 bar,
                             ),
-                            _colon: Punct {
+                            tk_colon: Punct {
                                 char: ':',
                                 spacing: Alone,
                             },

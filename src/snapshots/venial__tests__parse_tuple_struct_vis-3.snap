@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 139
+assertion_line: 157
 expression: struct_type_crate
 ---
 Struct(
@@ -9,7 +9,7 @@ Struct(
         vis_marker: Some(
             crate,
         ),
-        _struct: Ident(
+        tk_struct: Ident(
             struct,
         ),
         name: Ident(
@@ -35,7 +35,7 @@ Struct(
                 },
             ],
         ),
-        _semicolon: Some(
+        tk_semicolon: Some(
             Punct {
                 char: ';',
                 spacing: Alone,
