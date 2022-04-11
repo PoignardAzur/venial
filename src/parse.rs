@@ -5,6 +5,7 @@ use crate::types::{
     NamedStructFields, Struct, StructFields, TupleField, TupleStructFields, TyExpr, Union,
     VisMarker, WhereClause, WhereClauseItem,
 };
+use crate::types_edition::GroupSpan;
 use proc_macro2::{Delimiter, Group, Ident, Punct, Spacing, TokenStream, TokenTree};
 use std::iter::Peekable;
 
@@ -37,7 +38,7 @@ fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
         attributes.push(Attribute {
             _hashbang: hashbang,
             child_tokens: group.stream().into_iter().collect(),
-            _braces: group,
+            _braces: GroupSpan::new(&group),
         });
     }
 
@@ -398,7 +399,7 @@ fn parse_tuple_fields(token_group: Group) -> TupleStructFields {
 
     TupleStructFields {
         fields,
-        tk_parens: token_group,
+        tk_parens: GroupSpan::new(&token_group),
     }
 }
 
@@ -441,7 +442,7 @@ fn parse_named_fields(token_group: Group) -> NamedStructFields {
 
     NamedStructFields {
         fields,
-        tk_braces: token_group,
+        tk_braces: GroupSpan::new(&token_group),
     }
 }
 
@@ -734,7 +735,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 name: enum_name,
                 generic_params,
                 where_clause,
-                tk_braces: group,
+                tk_braces: GroupSpan::new(&group),
                 variants: enum_variants,
             })
         }
@@ -746,9 +747,9 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             let generic_params = consume_generic_params(&mut tokens);
             let where_clause = consume_where_clause(&mut tokens);
 
-            let (group, union_fields) = match tokens.next().unwrap() {
+            let union_fields = match tokens.next().unwrap() {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                    (group.clone(), parse_named_fields(group.clone()))
+                    parse_named_fields(group)
                 }
                 token => panic!("cannot parse union: unexpected token {:?}", token),
             };
@@ -760,7 +761,6 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 name: union_name,
                 generic_params,
                 where_clause,
-                tk_braces: group,
                 fields: union_fields,
             })
         }

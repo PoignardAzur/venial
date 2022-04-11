@@ -1,6 +1,6 @@
 #![allow(missing_docs)]
 
-use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt as _};
 
 use crate::Punctuated;
@@ -74,13 +74,13 @@ pub enum StructFields {
 #[derive(Clone)]
 pub struct TupleStructFields {
     pub fields: Punctuated<TupleField>,
-    pub tk_parens: Group,
+    pub tk_parens: GroupSpan,
 }
 
 #[derive(Clone)]
 pub struct NamedStructFields {
     pub fields: Punctuated<NamedField>,
-    pub tk_braces: Group,
+    pub tk_braces: GroupSpan,
 }
 
 /// Declaration of an enum.
@@ -100,7 +100,7 @@ pub struct Enum {
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub where_clause: Option<WhereClause>,
-    pub tk_braces: Group,
+    pub tk_braces: GroupSpan,
     pub variants: Punctuated<EnumVariant>,
 }
 
@@ -137,7 +137,6 @@ pub struct Union {
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub where_clause: Option<WhereClause>,
-    pub tk_braces: Group,
     pub fields: NamedStructFields,
 }
 
@@ -238,7 +237,7 @@ pub struct NamedField {
 #[derive(Clone)]
 pub struct Attribute {
     pub _hashbang: Punct,
-    pub _braces: Group,
+    pub _braces: GroupSpan,
     pub child_tokens: Vec<TokenTree>,
 }
 
@@ -347,6 +346,12 @@ pub struct TyExpr {
 pub struct EnumDiscriminant {
     pub _equal: Punct,
     pub expression: Expression,
+}
+
+#[derive(Clone)]
+pub struct GroupSpan {
+    pub delimiter: Delimiter,
+    pub span: Span,
 }
 
 // --- Debug impls ---
@@ -492,7 +497,28 @@ impl std::fmt::Debug for TyExpr {
     }
 }
 
+impl std::fmt::Debug for GroupSpan {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        match &self.delimiter {
+            Delimiter::Parenthesis => f.write_str("()"),
+            Delimiter::Brace => f.write_str("{}"),
+            Delimiter::Bracket => f.write_str("[]"),
+            Delimiter::None => f.write_str("Ø"),
+        }
+    }
+}
+
 // --- ToTokens impls ---
+
+impl GroupSpan {
+    fn quote_with(&self, tokens: &mut TokenStream, f: impl FnOnce(&mut TokenStream)) {
+        let mut inner = TokenStream::new();
+        f(&mut inner);
+        let mut g = Group::new(self.delimiter, inner);
+        g.set_span(self.span);
+        tokens.append(g);
+    }
+}
 
 impl ToTokens for Expression {
     fn to_tokens(&self, tokens: &mut TokenStream) {
@@ -546,13 +572,17 @@ impl ToTokens for StructFields {
 
 impl ToTokens for TupleStructFields {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        self.tk_parens.to_tokens(tokens);
+        self.tk_parens.quote_with(tokens, |tokens| {
+            self.fields.to_tokens(tokens);
+        });
     }
 }
 
 impl ToTokens for NamedStructFields {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        self.tk_braces.to_tokens(tokens);
+        self.tk_braces.quote_with(tokens, |tokens| {
+            self.fields.to_tokens(tokens);
+        });
     }
 }
 
@@ -566,7 +596,9 @@ impl ToTokens for Enum {
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
         self.where_clause.to_tokens(tokens);
-        self.tk_braces.to_tokens(tokens);
+        self.tk_braces.quote_with(tokens, |tokens| {
+            self.variants.to_tokens(tokens);
+        });
     }
 }
 
@@ -592,7 +624,7 @@ impl ToTokens for Union {
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
         self.where_clause.to_tokens(tokens);
-        self.tk_braces.to_tokens(tokens);
+        self.fields.to_tokens(tokens);
     }
 }
 
@@ -660,7 +692,11 @@ impl ToTokens for NamedField {
 impl ToTokens for Attribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.append(self._hashbang.clone());
-        tokens.append(self._braces.clone());
+        self._braces.quote_with(tokens, |tokens| {
+            for token in &self.child_tokens {
+                tokens.append(token.clone())
+            }
+        });
     }
 }
 

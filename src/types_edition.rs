@@ -3,10 +3,10 @@
 
 pub use crate::types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Function, GenericBound,
-    GenericParam, GenericParams, InlineGenericArgs, NamedField, Struct, StructFields, TupleField,
-    TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
+    GenericParam, GenericParams, GroupSpan, InlineGenericArgs, NamedField, Struct, StructFields,
+    TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
-use proc_macro2::{Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
+use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
 impl Declaration {
     pub fn generic_params(&self) -> Option<&GenericParams> {
@@ -495,6 +495,16 @@ impl WhereClauseItem {
                 _colon: colon,
                 tokens: bound_tokens,
             },
+        }
+    }
+}
+
+impl GroupSpan {
+    /// Create from proc_macro2 Group.
+    pub fn new(group: &Group) -> Self {
+        Self {
+            span: group.span(),
+            delimiter: group.delimiter(),
         }
     }
 }
