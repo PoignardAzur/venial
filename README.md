@@ -1,3 +1,7 @@
+[![crates.io](https://img.shields.io/crates/v/venial)](https://crates.io/crates/venial)
+[![docs.rs](https://docs.rs/venial/badge.svg)](https://docs.rs/venial/)
+[![license](https://img.shields.io/crates/l/venial)](https://github.com/PoignardAzur/venial/blob/main/LICENSE)
+
 ## Lightweight parsing for Rust proc macros
 
 Venial is a WIP parser for Rust [proc macros](https://doc.rust-lang.org/reference/procedural-macros.html).
