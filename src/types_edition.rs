@@ -38,28 +38,28 @@ impl Declaration {
 
     pub fn as_struct(&self) -> Option<&Struct> {
         match self {
-            Declaration::Struct(struct_decl) => Some(&struct_decl),
+            Declaration::Struct(struct_decl) => Some(struct_decl),
             _ => None,
         }
     }
 
     pub fn as_enum(&self) -> Option<&Enum> {
         match self {
-            Declaration::Enum(enum_decl) => Some(&enum_decl),
+            Declaration::Enum(enum_decl) => Some(enum_decl),
             _ => None,
         }
     }
 
     pub fn as_union(&self) -> Option<&Union> {
         match self {
-            Declaration::Union(union_decl) => Some(&union_decl),
+            Declaration::Union(union_decl) => Some(union_decl),
             _ => None,
         }
     }
 
     pub fn as_function(&self) -> Option<&Function> {
         match self {
-            Declaration::Function(function_decl) => Some(&function_decl),
+            Declaration::Function(function_decl) => Some(function_decl),
             _ => None,
         }
     }
@@ -381,7 +381,7 @@ impl GenericParams {
     }
 
     pub fn as_inline_args(&self) -> InlineGenericArgs<'_> {
-        InlineGenericArgs(&self)
+        InlineGenericArgs(self)
     }
 }
 
@@ -448,6 +448,7 @@ impl GenericParam {
     }
 
     pub fn is_ty(&self) -> bool {
+        #[allow(clippy::redundant_pattern_matching)]
         match &self._prefix {
             Some(_) => false,
             None => true,
@@ -474,6 +475,11 @@ impl WhereClause {
 }
 
 impl WhereClauseItem {
+    /// Helper method to create a WhereClauseItem from a quote.
+    ///
+    /// # Panics
+    ///
+    /// Panics if given a token stream that isn't a valid where-clause item.
     pub fn parse(tokens: TokenStream) -> Self {
         let mut tokens = tokens.into_iter().peekable();
 
@@ -483,7 +489,7 @@ impl WhereClauseItem {
         });
 
         let colon = match tokens.next().unwrap() {
-            TokenTree::Punct(punct) if punct.as_char() == ':' => punct.clone(),
+            TokenTree::Punct(punct) if punct.as_char() == ':' => punct,
             _ => panic!("cannot parse type"),
         };
 

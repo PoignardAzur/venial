@@ -499,9 +499,7 @@ fn parse_enum_variants(tokens: TokenStream) -> Punctuated<EnumVariant> {
 }
 
 fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FunctionQualifiers {
-    let mut qualifiers = FunctionQualifiers::default();
-
-    qualifiers.tk_default = match tokens.peek() {
+    let tk_default = match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "default" => {
             let ident = ident.clone();
             tokens.next();
@@ -509,7 +507,7 @@ fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FunctionQualifiers {
         }
         _ => None,
     };
-    qualifiers.tk_const = match tokens.peek() {
+    let tk_const = match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "const" => {
             let ident = ident.clone();
             tokens.next();
@@ -517,7 +515,7 @@ fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FunctionQualifiers {
         }
         _ => None,
     };
-    qualifiers.tk_async = match tokens.peek() {
+    let tk_async = match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "async" => {
             let ident = ident.clone();
             tokens.next();
@@ -525,7 +523,7 @@ fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FunctionQualifiers {
         }
         _ => None,
     };
-    qualifiers.tk_unsafe = match tokens.peek() {
+    let tk_unsafe = match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "unsafe" => {
             let ident = ident.clone();
             tokens.next();
@@ -534,23 +532,37 @@ fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FunctionQualifiers {
         _ => None,
     };
 
+    let tk_extern;
+    let extern_abi;
     match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "extern" => {
-            qualifiers.tk_extern = Some(ident.clone());
+            tk_extern = Some(ident.clone());
             tokens.next();
 
             match tokens.peek() {
                 Some(TokenTree::Literal(literal)) => {
-                    qualifiers.extern_abi = Some(literal.clone());
+                    extern_abi = Some(literal.clone());
                     tokens.next();
                 }
-                _ => (),
+                _ => {
+                    extern_abi = None;
+                }
             }
         }
-        _ => (),
+        _ => {
+            tk_extern = None;
+            extern_abi = None;
+        }
     };
 
-    qualifiers
+    FunctionQualifiers {
+        tk_default,
+        tk_const,
+        tk_async,
+        tk_unsafe,
+        tk_extern,
+        extern_abi,
+    }
 }
 
 fn consume_fn_return(tokens: &mut TokenIter) -> Option<TyExpr> {
@@ -677,13 +689,13 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                     let group = group.clone();
                     // Consume group
                     tokens.next();
-                    StructFields::Tuple(parse_tuple_fields(group.clone()))
+                    StructFields::Tuple(parse_tuple_fields(group))
                 }
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
                     let group = group.clone();
                     // Consume group
                     tokens.next();
-                    StructFields::Named(parse_named_fields(group.clone()))
+                    StructFields::Named(parse_named_fields(group))
                 }
                 token => panic!("cannot parse struct: unexpected token {:?}", token),
             };
@@ -705,7 +717,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             Declaration::Struct(Struct {
                 attributes,
                 vis_marker,
-                _struct: keyword.clone(),
+                _struct: keyword,
                 name: struct_name,
                 generic_params,
                 where_clause,
@@ -731,7 +743,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             Declaration::Enum(Enum {
                 attributes,
                 vis_marker,
-                _enum: keyword.clone(),
+                _enum: keyword,
                 name: enum_name,
                 generic_params,
                 where_clause,
@@ -757,7 +769,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
             Declaration::Union(Union {
                 attributes,
                 vis_marker,
-                _union: keyword.clone(),
+                _union: keyword,
                 name: union_name,
                 generic_params,
                 where_clause,

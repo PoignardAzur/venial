@@ -28,7 +28,7 @@ impl<T> Punctuated<T> {
     /// item's comma if **push** is called again.
     pub fn push(&mut self, value: T, comma: Option<Punct>) {
         self.skip_last = comma.is_none();
-        let comma = comma.unwrap_or(Punct::new(',', Spacing::Alone));
+        let comma = comma.unwrap_or_else(|| Punct::new(',', Spacing::Alone));
         self.inner.push((value, comma))
     }
 
@@ -68,6 +68,11 @@ impl<T> Punctuated<T> {
     /// Return number of items.
     pub fn len(&self) -> usize {
         self.inner.len()
+    }
+
+    /// Return true if collection has no items.
+    pub fn is_empty(&self) -> bool {
+        self.inner.is_empty()
     }
 }
 

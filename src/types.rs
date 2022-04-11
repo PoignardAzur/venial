@@ -373,7 +373,7 @@ impl std::fmt::Debug for Expression {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut list = f.debug_list();
         for token in &self.tokens {
-            list.entry(&TokenRef(&token));
+            list.entry(&TokenRef(token));
         }
         list.finish()
     }
@@ -424,7 +424,7 @@ impl std::fmt::Debug for Attribute {
         f.write_str("#")?;
         let mut list = f.debug_list();
         for token in &self.child_tokens {
-            list.entry(&TokenRef(&token));
+            list.entry(&TokenRef(token));
         }
         list.finish()
     }
@@ -465,7 +465,7 @@ impl std::fmt::Debug for GenericBound {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut list = f.debug_list();
         for token in &self.tokens {
-            list.entry(&TokenRef(&token));
+            list.entry(&TokenRef(token));
         }
         list.finish()
     }
@@ -491,7 +491,7 @@ impl std::fmt::Debug for TyExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut list = f.debug_list();
         for token in &self.tokens {
-            list.entry(&TokenRef(&token));
+            list.entry(&TokenRef(token));
         }
         list.finish()
     }
