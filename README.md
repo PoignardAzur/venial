@@ -82,19 +82,21 @@ My machine is desktop computer with an AMD Ryzen 7 1800x (8 cores, 16 threads), 
 
 As we can see, using venial instead of syn shaves about 3.2s off total build times in single-threaded builds, and 1.6s in 4-threaded builds.
 
+Most of the difference comes from syn and venial themselves: `cargo check --timings` shows that syn takes 2.11s to compile and venial takes 0.58s in 4-threaded builds.
+
 I'm not showing codegen builds, release mode builds, 16-threads builds and the like, but the trend stays roughly the same: for the miniserde project, switching to venial removes ~30% of the build time.
 
 ### So... Is it worth it?
 
 That's a fairly complicated to answer. At the time I'm writing this section my answer is "Probably, but I'm less enthusiastic than when I started the project".
 
-If you take the most optimistic interpretation, this is great! Switching to the single-threaded version shaves three seconds off, a whole third of the build time!
+If you take the most optimistic interpretation, this is great! On a single-threaded machine, switching shaves three seconds off, a whole third of the build time!
 
 In reality, there are a lot of complicating factors:
 
 - Venial never improves incremental build times at all (since dependencies are cached, even when incremental compilation is off).
-- I have a fairly powerful computer. Laptops might get more of a benefit from venial.
 - The gap between syn and venial is shorter with any amount of multithreading.
+- I have a fairly powerful computer. Laptops might get more of a benefit from venial.
 - In projects bigger than miniserde, syn is usually one of many libraries being compiled at the same time. In some cases that means the build time of syn doesn't matter that much since it's compiled in parallel with other libraries. In other cases syn is on the critical path.
 - In practice, most clean build are run by CI servers. To measure the usefulness of venial, you'd need to analyze the specs of the servers used in Github Actions / Gitlab CI / whatever [crater](https://github.com/rust-lang/crater) uses.
 
