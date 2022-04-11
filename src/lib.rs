@@ -3,6 +3,8 @@
 #![warn(clippy::missing_panics_doc)]
 #![warn(clippy::cargo)]
 #![allow(clippy::match_like_matches_macro)]
+#![allow(clippy::needless_late_init)]
+#![allow(clippy::large_enum_variant)]
 
 //! ## Lightweight parsing for Rust proc macros
 //!
