@@ -1,4 +1,7 @@
-use crate::{parse_declaration, Declaration, GenericParam, Struct, WhereClauseItem};
+use crate::{
+    parse_declaration, parse_expression_list, Declaration, Expression, GenericParam, Punctuated,
+    Struct, WhereClauseItem,
+};
 
 use insta::assert_debug_snapshot;
 use proc_macro2::TokenStream;
@@ -19,6 +22,15 @@ fn parse_declaration_checked(tokens: TokenStream) -> Declaration {
     similar_asserts::assert_str_eq!(quote!(#declaration), initial_tokens);
 
     declaration
+}
+
+fn parse_expression_list_checked(tokens: TokenStream) -> Punctuated<Expression> {
+    let initial_tokens = tokens.clone();
+    let expression = parse_expression_list(tokens);
+
+    similar_asserts::assert_str_eq!(quote!(#expression), initial_tokens);
+
+    expression
 }
 
 // =============
@@ -567,6 +579,54 @@ fn parse_macro_in_where_clause() {
     ));
 
     assert_debug_snapshot!(enum_type);
+}
+
+// ===========
+// EXPRESSIONS
+// ===========
+
+#[test]
+fn parse_basic_expression() {
+    let expressions = parse_expression_list_checked(quote!(a + b + c));
+
+    assert_debug_snapshot!(expressions);
+}
+
+#[test]
+fn parse_empty_expression_list() {
+    let expressions = parse_expression_list_checked(quote!());
+
+    assert_debug_snapshot!(expressions);
+}
+
+#[test]
+fn parse_expression_list_items() {
+    let expressions = parse_expression_list_checked(quote!(1 + 2, 3));
+
+    assert_debug_snapshot!(expressions);
+}
+
+#[test]
+fn parse_expression_list_turbofish() {
+    let expressions = parse_expression_list_checked(quote!(a::<b + c, d> + e, f));
+
+    assert_debug_snapshot!(expressions);
+}
+
+// FIXME
+#[test]
+#[should_panic]
+fn parse_closure_expression() {
+    let expressions = parse_expression_list_checked(quote!(|a, b| c));
+
+    assert_eq!(expressions.len(), 1);
+}
+
+#[test]
+fn parse_expression_binary_or() {
+    let expressions = parse_expression_list_checked(quote!(a | b, c | d));
+
+    assert_debug_snapshot!(expressions);
 }
 
 // =========

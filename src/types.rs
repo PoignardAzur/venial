@@ -5,6 +5,13 @@ use quote::{ToTokens, TokenStreamExt as _};
 
 use crate::Punctuated;
 
+// TODO - normalize naming convention of token fields
+
+#[derive(Clone)]
+pub struct Expression {
+    pub tokens: Vec<TokenTree>,
+}
+
 /// The declaration of a Rust type.
 ///
 /// **Example input:**
@@ -336,9 +343,10 @@ pub struct TyExpr {
 ///     B = (some + arbitrary.expression()),
 /// }
 /// ```
-#[derive(Clone)]
+#[derive(Clone, Debug)]
 pub struct EnumDiscriminant {
-    pub tokens: Vec<TokenTree>,
+    pub _equal: Punct,
+    pub expression: Expression,
 }
 
 // --- Debug impls ---
@@ -353,6 +361,16 @@ impl<'a> std::fmt::Debug for TokenRef<'a> {
             TokenTree::Punct(_punct) => write!(f, "\"{}\"", &self.0.to_string()),
             TokenTree::Literal(_literal) => f.write_str(&self.0.to_string()),
         }
+    }
+}
+
+impl std::fmt::Debug for Expression {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut list = f.debug_list();
+        for token in &self.tokens {
+            list.entry(&TokenRef(&token));
+        }
+        list.finish()
     }
 }
 
@@ -474,17 +492,15 @@ impl std::fmt::Debug for TyExpr {
     }
 }
 
-impl std::fmt::Debug for EnumDiscriminant {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut list = f.debug_list();
+// --- ToTokens impls ---
+
+impl ToTokens for Expression {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
         for token in &self.tokens {
-            list.entry(&TokenRef(&token));
+            tokens.append(token.clone());
         }
-        list.finish()
     }
 }
-
-// --- ToTokens impls ---
 
 impl ToTokens for Declaration {
     fn to_tokens(&self, tokens: &mut TokenStream) {
@@ -722,9 +738,8 @@ impl ToTokens for TyExpr {
 
 impl ToTokens for EnumDiscriminant {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        for token in &self.tokens {
-            tokens.append(token.clone());
-        }
+        self._equal.to_tokens(tokens);
+        self.expression.to_tokens(tokens);
     }
 }
 

@@ -68,10 +68,10 @@ mod types;
 mod types_edition;
 
 pub use error::Error;
-pub use parse::parse_declaration;
+pub use parse::{parse_declaration, parse_expression_list};
 pub use punctuated::Punctuated;
 pub use types::{
-    Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, GenericBound, GenericParam,
-    GenericParams, NamedField, NamedStructFields, Struct, StructFields, TupleField,
+    Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Expression, GenericBound,
+    GenericParam, GenericParams, NamedField, NamedStructFields, Struct, StructFields, TupleField,
     TupleStructFields, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };

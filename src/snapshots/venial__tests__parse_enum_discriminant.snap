@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 445
+assertion_line: 514
 expression: enum_type
 ---
 Enum(
@@ -24,10 +24,15 @@ Enum(
                 ),
                 contents: Unit,
                 discriminant: Some(
-                    [
-                        "=",
-                        1,
-                    ],
+                    EnumDiscriminant {
+                        _equal: Punct {
+                            char: '=',
+                            spacing: Alone,
+                        },
+                        expression: [
+                            1,
+                        ],
+                    },
                 ),
             },
             EnumVariant {
@@ -55,43 +60,48 @@ Enum(
                     ],
                 ),
                 discriminant: Some(
-                    [
-                        "=",
-                        call,
-                        ":",
-                        ":",
-                        some,
-                        ":",
-                        ":",
-                        function,
-                        Group {
-                            delimiter: Parenthesis,
-                            stream: TokenStream [
-                                Literal {
-                                    lit: 1,
-                                },
-                                Punct {
-                                    char: ',',
-                                    spacing: Alone,
-                                },
-                                Literal {
-                                    lit: 2,
-                                },
-                                Punct {
-                                    char: ',',
-                                    spacing: Alone,
-                                },
-                                Group {
-                                    delimiter: Brace,
-                                    stream: TokenStream [
-                                        Literal {
-                                            lit: 3,
-                                        },
-                                    ],
-                                },
-                            ],
+                    EnumDiscriminant {
+                        _equal: Punct {
+                            char: '=',
+                            spacing: Alone,
                         },
-                    ],
+                        expression: [
+                            call,
+                            ":",
+                            ":",
+                            some,
+                            ":",
+                            ":",
+                            function,
+                            Group {
+                                delimiter: Parenthesis,
+                                stream: TokenStream [
+                                    Literal {
+                                        lit: 1,
+                                    },
+                                    Punct {
+                                        char: ',',
+                                        spacing: Alone,
+                                    },
+                                    Literal {
+                                        lit: 2,
+                                    },
+                                    Punct {
+                                        char: ',',
+                                        spacing: Alone,
+                                    },
+                                    Group {
+                                        delimiter: Brace,
+                                        stream: TokenStream [
+                                            Literal {
+                                                lit: 3,
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        ],
+                    },
                 ),
             },
             EnumVariant {
@@ -133,30 +143,35 @@ Enum(
                     ],
                 ),
                 discriminant: Some(
-                    [
-                        "=",
-                        A,
-                        "<",
-                        B,
-                        ">",
-                        Group {
-                            delimiter: Parenthesis,
-                            stream: TokenStream [
-                                Ident {
-                                    sym: c,
-                                },
-                            ],
+                    EnumDiscriminant {
+                        _equal: Punct {
+                            char: '=',
+                            spacing: Alone,
                         },
-                        "+",
-                        Group {
-                            delimiter: Brace,
-                            stream: TokenStream [
-                                Ident {
-                                    sym: D,
-                                },
-                            ],
-                        },
-                    ],
+                        expression: [
+                            A,
+                            "<",
+                            B,
+                            ">",
+                            Group {
+                                delimiter: Parenthesis,
+                                stream: TokenStream [
+                                    Ident {
+                                        sym: c,
+                                    },
+                                ],
+                            },
+                            "+",
+                            Group {
+                                delimiter: Brace,
+                                stream: TokenStream [
+                                    Ident {
+                                        sym: D,
+                                    },
+                                ],
+                            },
+                        ],
+                    },
                 ),
             },
         ],

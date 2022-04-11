@@ -1,0 +1,24 @@
+---
+source: src/tests.rs
+assertion_line: 613
+expression: expressions
+---
+[
+    [
+        a,
+        ":",
+        ":",
+        "<",
+        b,
+        "+",
+        c,
+        ",",
+        d,
+        ">",
+        "+",
+        e,
+    ],
+    [
+        f,
+    ],
+]

@@ -1,11 +1,11 @@
 use crate::punctuated::Punctuated;
 use crate::types::{
-    Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Function, FunctionParameter,
-    FunctionQualifiers, GenericBound, GenericParam, GenericParams, NamedField, NamedStructFields,
-    Struct, StructFields, TupleField, TupleStructFields, TyExpr, Union, VisMarker, WhereClause,
-    WhereClauseItem,
+    Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Expression, Function,
+    FunctionParameter, FunctionQualifiers, GenericBound, GenericParam, GenericParams, NamedField,
+    NamedStructFields, Struct, StructFields, TupleField, TupleStructFields, TyExpr, Union,
+    VisMarker, WhereClause, WhereClauseItem,
 };
-use proc_macro2::{Delimiter, Group, Ident, Punct, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Group, Ident, Punct, Spacing, TokenStream, TokenTree};
 use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
@@ -85,7 +85,7 @@ fn consume_declaration_name(tokens: &mut TokenIter) -> Ident {
 
 // Consumes tokens until a separator is reached *unless* the
 // separator in between angle brackets
-// eg consume_stuff_until(..., ',') will consume all
+// eg consume_stuff_until(..., |token| token == ',') will consume all
 // of `Foobar<A, B>,` except for the last comma
 pub(crate) fn consume_stuff_until(
     tokens: &mut TokenIter,
@@ -95,8 +95,6 @@ pub(crate) fn consume_stuff_until(
     let mut bracket_count = 0;
     let mut predicate = predicate;
     let mut prev_token_is_dash = false;
-
-    // TODO - handle closures
 
     loop {
         let token = tokens.peek();
@@ -129,6 +127,64 @@ pub(crate) fn consume_stuff_until(
     }
 
     output_tokens
+}
+
+// Consumes tokens until a comma is reached, except in
+// various corner cases related to expression syntax.
+// eg consume_expression(...) will consume all
+// of `a + |b, c| d, e::<F, G>(), h,` except for the last comma
+pub(crate) fn consume_expression(tokens: &mut TokenIter) -> Expression {
+    let mut output_tokens = Vec::new();
+
+    // TODO - handle closures
+    // TODO - handle <T as Trait>::xxx syntax
+
+    // TODO - use matches instead?
+    #[derive(Debug, PartialEq)]
+    enum PrevToken {
+        Any,
+        FirstColon,
+        DoubleColon,
+    }
+    let mut prev_token = PrevToken::Any;
+
+    loop {
+        let token = tokens.peek();
+        prev_token = match &token {
+            Some(TokenTree::Punct(punct))
+                if punct.as_char() == ':' && punct.spacing() == Spacing::Joint =>
+            {
+                output_tokens.push(tokens.next().unwrap());
+                PrevToken::FirstColon
+            }
+            Some(TokenTree::Punct(punct))
+                if punct.as_char() == ':' && prev_token == PrevToken::FirstColon =>
+            {
+                output_tokens.push(tokens.next().unwrap());
+                PrevToken::DoubleColon
+            }
+
+            Some(TokenTree::Punct(punct))
+                if punct.as_char() == '<' && prev_token == PrevToken::DoubleColon =>
+            {
+                let mut turbofish_contents = consume_stuff_until(tokens, |_| true);
+                output_tokens.append(&mut turbofish_contents);
+                PrevToken::Any
+            }
+
+            Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => break,
+            None => break,
+
+            _ => {
+                output_tokens.push(tokens.next().unwrap());
+                PrevToken::Any
+            }
+        };
+    }
+
+    Expression {
+        tokens: output_tokens,
+    }
 }
 
 fn consume_comma(tokens: &mut TokenIter) -> Option<Punct> {
@@ -297,18 +353,20 @@ fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
 }
 
 fn consume_enum_discriminant(tokens: &mut TokenIter) -> Option<EnumDiscriminant> {
+    let equal: Punct;
     match tokens.peek() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => (),
+        Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => {
+            equal = punct.clone();
+        }
         _ => return None,
     };
 
-    let enum_discriminant_tokens = consume_stuff_until(tokens, |token| match token {
-        TokenTree::Punct(punct) if punct.as_char() == ',' => true,
-        _ => false,
-    });
+    // consume '='
+    tokens.next();
 
     Some(EnumDiscriminant {
-        tokens: enum_discriminant_tokens,
+        _equal: equal,
+        expression: consume_expression(tokens),
     })
 }
 
@@ -549,6 +607,23 @@ fn parse_fn_params(tokens: TokenStream) -> Punctuated<FunctionParameter> {
     }
 
     fields
+}
+
+#[doc(hidden)]
+pub fn parse_expression_list(tokens: TokenStream) -> Punctuated<Expression> {
+    let mut tokens = tokens.into_iter().peekable();
+    let mut expressions = Punctuated::new();
+
+    while tokens.peek().is_some() {
+        let expression = consume_expression(&mut tokens);
+        let expression = expression;
+
+        let comma = consume_comma(&mut tokens);
+
+        expressions.push(expression, comma);
+    }
+
+    expressions
 }
 
 // TODO - Return Result<...>, handle case where TokenStream is valid declaration,
