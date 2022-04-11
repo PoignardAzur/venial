@@ -176,7 +176,7 @@ impl Struct {
             let item = WhereClauseItem {
                 left_side: vec![param.name.clone().into()],
                 bound: GenericBound {
-                    _colon: Punct::new(':', Spacing::Alone),
+                    tk_colon: Punct::new(':', Spacing::Alone),
                     tokens: derived_trait.clone().into_iter().collect(),
                 },
             };
@@ -264,7 +264,7 @@ impl Enum {
             let item = WhereClauseItem {
                 left_side: vec![param.name.clone().into()],
                 bound: GenericBound {
-                    _colon: Punct::new(':', Spacing::Alone),
+                    tk_colon: Punct::new(':', Spacing::Alone),
                     tokens: derived_trait.clone().into_iter().collect(),
                 },
             };
@@ -343,7 +343,7 @@ impl Union {
             let item = WhereClauseItem {
                 left_side: vec![param.name.clone().into()],
                 bound: GenericBound {
-                    _colon: Punct::new(':', Spacing::Alone),
+                    tk_colon: Punct::new(':', Spacing::Alone),
                     tokens: derived_trait.clone().into_iter().collect(),
                 },
             };
@@ -389,7 +389,7 @@ impl GenericParam {
     pub fn lifetime(name: &str) -> Self {
         let lifetime_ident = Ident::new(name, Span::call_site());
         GenericParam {
-            _prefix: Some(Punct::new('\'', Spacing::Joint).into()),
+            tk_prefix: Some(Punct::new('\'', Spacing::Joint).into()),
             name: lifetime_ident,
             bound: None,
         }
@@ -398,10 +398,10 @@ impl GenericParam {
     pub fn bounded_lifetime(name: &str, bound: Vec<TokenTree>) -> Self {
         let lifetime_ident = Ident::new(name, Span::call_site());
         GenericParam {
-            _prefix: Some(Punct::new('\'', Spacing::Alone).into()),
+            tk_prefix: Some(Punct::new('\'', Spacing::Alone).into()),
             name: lifetime_ident,
             bound: Some(GenericBound {
-                _colon: Punct::new(':', Spacing::Alone),
+                tk_colon: Punct::new(':', Spacing::Alone),
                 tokens: bound,
             }),
         }
@@ -410,7 +410,7 @@ impl GenericParam {
     pub fn ty(name: &str) -> Self {
         let ty_ident = Ident::new(name, Span::call_site());
         GenericParam {
-            _prefix: None,
+            tk_prefix: None,
             name: ty_ident,
             bound: None,
         }
@@ -419,10 +419,10 @@ impl GenericParam {
     pub fn bounded_ty(name: &str, bound: Vec<TokenTree>) -> Self {
         let ty_ident = Ident::new(name, Span::call_site());
         GenericParam {
-            _prefix: None,
+            tk_prefix: None,
             name: ty_ident,
             bound: Some(GenericBound {
-                _colon: Punct::new(':', Spacing::Alone),
+                tk_colon: Punct::new(':', Spacing::Alone),
                 tokens: bound,
             }),
         }
@@ -431,17 +431,17 @@ impl GenericParam {
     pub fn const_param(name: &str, ty: Vec<TokenTree>) -> Self {
         let lifetime_ident = Ident::new(name, Span::call_site());
         GenericParam {
-            _prefix: Some(Ident::new("const", Span::call_site()).into()),
+            tk_prefix: Some(Ident::new("const", Span::call_site()).into()),
             name: lifetime_ident,
             bound: Some(GenericBound {
-                _colon: Punct::new(':', Spacing::Alone),
+                tk_colon: Punct::new(':', Spacing::Alone),
                 tokens: ty,
             }),
         }
     }
 
     pub fn is_lifetime(&self) -> bool {
-        match &self._prefix {
+        match &self.tk_prefix {
             Some(TokenTree::Punct(punct)) if punct.as_char() == '\'' => true,
             _ => false,
         }
@@ -449,14 +449,14 @@ impl GenericParam {
 
     pub fn is_ty(&self) -> bool {
         #[allow(clippy::redundant_pattern_matching)]
-        match &self._prefix {
+        match &self.tk_prefix {
             Some(_) => false,
             None => true,
         }
     }
 
     pub fn is_const(&self) -> bool {
-        match &self._prefix {
+        match &self.tk_prefix {
             Some(TokenTree::Ident(ident)) if ident == "const" => true,
             _ => false,
         }
@@ -498,7 +498,7 @@ impl WhereClauseItem {
         WhereClauseItem {
             left_side,
             bound: GenericBound {
-                _colon: colon,
+                tk_colon: colon,
                 tokens: bound_tokens,
             },
         }

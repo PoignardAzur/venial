@@ -5,8 +5,6 @@ use quote::{ToTokens, TokenStreamExt as _};
 
 use crate::Punctuated;
 
-// TODO - normalize naming convention of token fields
-
 #[derive(Clone)]
 pub struct Expression {
     pub tokens: Vec<TokenTree>,
@@ -55,12 +53,12 @@ pub enum Declaration {
 pub struct Struct {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
-    pub _struct: Ident,
+    pub tk_struct: Ident,
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub where_clause: Option<WhereClause>,
     pub fields: StructFields,
-    pub _semicolon: Option<Punct>,
+    pub tk_semicolon: Option<Punct>,
 }
 
 /// Fields of a [`Struct`] or an [`EnumVariant`].
@@ -96,7 +94,7 @@ pub struct NamedStructFields {
 pub struct Enum {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
-    pub _enum: Ident,
+    pub tk_enum: Ident,
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub where_clause: Option<WhereClause>,
@@ -133,7 +131,7 @@ pub struct EnumVariant {
 pub struct Union {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
-    pub _union: Ident,
+    pub tk_union: Ident,
     pub name: Ident,
     pub generic_params: Option<GenericParams>,
     pub where_clause: Option<WhereClause>,
@@ -216,7 +214,7 @@ pub struct NamedField {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
     pub name: Ident,
-    pub _colon: Punct,
+    pub tk_colon: Punct,
     pub ty: TyExpr,
 }
 
@@ -236,8 +234,8 @@ pub struct NamedField {
 /// ```
 #[derive(Clone)]
 pub struct Attribute {
-    pub _hashbang: Punct,
-    pub _braces: GroupSpan,
+    pub tk_hashbang: Punct,
+    pub tk_braces: GroupSpan,
     pub child_tokens: Vec<TokenTree>,
 }
 
@@ -245,9 +243,9 @@ pub struct Attribute {
 #[derive(Clone)]
 pub struct VisMarker {
     /// `pub` token.
-    pub _token1: TokenTree,
+    pub tk_token1: TokenTree,
     /// `(...)` token, if any.
-    pub _token2: Option<TokenTree>,
+    pub tk_token2: Option<TokenTree>,
 }
 
 /// The generic parameters declared right after your type's name.
@@ -259,9 +257,9 @@ pub struct VisMarker {
 /// ```
 #[derive(Clone)]
 pub struct GenericParams {
-    pub _l_bracket: Punct,
+    pub tk_l_bracket: Punct,
     pub params: Punctuated<GenericParam>,
-    pub _r_bracket: Punct,
+    pub tk_r_bracket: Punct,
 }
 
 /// A parameter in a type's generic list.
@@ -276,7 +274,7 @@ pub struct GenericParams {
 #[derive(Clone)]
 pub struct GenericParam {
     /// Either `'` for lifetimes, `const` for const parameters, or None for type parameters.
-    pub _prefix: Option<TokenTree>,
+    pub tk_prefix: Option<TokenTree>,
     pub name: Ident,
     pub bound: Option<GenericBound>,
 }
@@ -286,7 +284,7 @@ pub struct GenericParam {
 /// For instance, this is the `: Clone` in `struct MyStruct <T: Clone>(T);`
 #[derive(Clone)]
 pub struct GenericBound {
-    pub _colon: Punct,
+    pub tk_colon: Punct,
     pub tokens: Vec<TokenTree>,
 }
 
@@ -299,7 +297,7 @@ pub struct InlineGenericArgs<'a>(pub(crate) &'a GenericParams);
 /// All the stuff that comes after the `where` keyword.
 #[derive(Clone)]
 pub struct WhereClause {
-    pub _where: Ident,
+    pub tk_where: Ident,
     pub items: Punctuated<WhereClauseItem>,
 }
 
@@ -344,7 +342,7 @@ pub struct TyExpr {
 /// ```
 #[derive(Clone, Debug)]
 pub struct EnumDiscriminant {
-    pub _equal: Punct,
+    pub tk_equal: Punct,
     pub expression: Expression,
 }
 
@@ -396,7 +394,7 @@ impl std::fmt::Debug for Enum {
         f.debug_struct("Enum")
             .field("attributes", &self.attributes)
             .field("vis_marker", &self.vis_marker)
-            .field("_enum", &self._enum)
+            .field("_enum", &self.tk_enum)
             .field("name", &self.name)
             .field("generic_params", &self.generic_params)
             .field("where_clauses", &self.where_clause)
@@ -410,7 +408,7 @@ impl std::fmt::Debug for Union {
         f.debug_struct("Union")
             .field("attributes", &self.attributes)
             .field("vis_marker", &self.vis_marker)
-            .field("_union", &self._union)
+            .field("_union", &self.tk_union)
             .field("name", &self.name)
             .field("generic_params", &self.generic_params)
             .field("where_clauses", &self.where_clause)
@@ -432,10 +430,10 @@ impl std::fmt::Debug for Attribute {
 
 impl std::fmt::Debug for VisMarker {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        match &self._token2 {
-            None => f.write_str(&self._token1.to_string()),
+        match &self.tk_token2 {
+            None => f.write_str(&self.tk_token1.to_string()),
             Some(TokenTree::Group(group)) => {
-                let mut list = f.debug_tuple(&self._token1.to_string());
+                let mut list = f.debug_tuple(&self.tk_token1.to_string());
                 for token in group.stream() {
                     list.field(&TokenRef(&token));
                 }
@@ -545,7 +543,7 @@ impl ToTokens for Struct {
             attribute.to_tokens(tokens);
         }
         self.vis_marker.to_tokens(tokens);
-        self._struct.to_tokens(tokens);
+        self.tk_struct.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
 
@@ -555,7 +553,7 @@ impl ToTokens for Struct {
         } else {
             self.fields.to_tokens(tokens);
             self.where_clause.to_tokens(tokens);
-            self._semicolon.to_tokens(tokens);
+            self.tk_semicolon.to_tokens(tokens);
         }
     }
 }
@@ -592,7 +590,7 @@ impl ToTokens for Enum {
             attribute.to_tokens(tokens);
         }
         self.vis_marker.to_tokens(tokens);
-        self._enum.to_tokens(tokens);
+        self.tk_enum.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
         self.where_clause.to_tokens(tokens);
@@ -620,7 +618,7 @@ impl ToTokens for Union {
             attribute.to_tokens(tokens);
         }
         self.vis_marker.to_tokens(tokens);
-        self._union.to_tokens(tokens);
+        self.tk_union.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
         self.where_clause.to_tokens(tokens);
@@ -684,15 +682,15 @@ impl ToTokens for NamedField {
         }
         self.vis_marker.to_tokens(tokens);
         self.name.to_tokens(tokens);
-        self._colon.to_tokens(tokens);
+        self.tk_colon.to_tokens(tokens);
         self.ty.to_tokens(tokens);
     }
 }
 
 impl ToTokens for Attribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        tokens.append(self._hashbang.clone());
-        self._braces.quote_with(tokens, |tokens| {
+        tokens.append(self.tk_hashbang.clone());
+        self.tk_braces.quote_with(tokens, |tokens| {
             for token in &self.child_tokens {
                 tokens.append(token.clone())
             }
@@ -702,22 +700,22 @@ impl ToTokens for Attribute {
 
 impl ToTokens for VisMarker {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        self._token1.to_tokens(tokens);
-        self._token2.to_tokens(tokens);
+        self.tk_token1.to_tokens(tokens);
+        self.tk_token2.to_tokens(tokens);
     }
 }
 
 impl ToTokens for GenericParams {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        tokens.append(self._l_bracket.clone());
+        tokens.append(self.tk_l_bracket.clone());
         self.params.to_tokens(tokens);
-        tokens.append(self._r_bracket.clone());
+        tokens.append(self.tk_r_bracket.clone());
     }
 }
 
 impl ToTokens for GenericParam {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        self._prefix.to_tokens(tokens);
+        self.tk_prefix.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.bound.to_tokens(tokens);
     }
@@ -725,7 +723,7 @@ impl ToTokens for GenericParam {
 
 impl ToTokens for GenericBound {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        self._colon.to_tokens(tokens);
+        self.tk_colon.to_tokens(tokens);
         for token in &self.tokens {
             tokens.append(token.clone());
         }
@@ -738,7 +736,7 @@ impl ToTokens for InlineGenericArgs<'_> {
 
         for param in &self.0.params.inner {
             if param.0.is_lifetime() {
-                param.0._prefix.to_tokens(tokens);
+                param.0.tk_prefix.to_tokens(tokens);
             }
             tokens.append(param.0.name.clone());
             tokens.append(Punct::new(',', Spacing::Alone));
@@ -750,7 +748,7 @@ impl ToTokens for InlineGenericArgs<'_> {
 
 impl ToTokens for WhereClause {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        tokens.append(self._where.clone());
+        tokens.append(self.tk_where.clone());
         self.items.to_tokens(tokens);
     }
 }
@@ -774,7 +772,7 @@ impl ToTokens for TyExpr {
 
 impl ToTokens for EnumDiscriminant {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        self._equal.to_tokens(tokens);
+        self.tk_equal.to_tokens(tokens);
         self.expression.to_tokens(tokens);
     }
 }
@@ -784,9 +782,9 @@ impl ToTokens for EnumDiscriminant {
 impl Default for GenericParams {
     fn default() -> Self {
         Self {
-            _l_bracket: Punct::new('<', Spacing::Alone),
+            tk_l_bracket: Punct::new('<', Spacing::Alone),
             params: Punctuated::new(),
-            _r_bracket: Punct::new('>', Spacing::Alone),
+            tk_r_bracket: Punct::new('>', Spacing::Alone),
         }
     }
 }
@@ -795,7 +793,7 @@ impl Default for WhereClause {
     fn default() -> Self {
         // Note that an empty where clause is perfectly valid syntax
         Self {
-            _where: Ident::new("where", Span::call_site()),
+            tk_where: Ident::new("where", Span::call_site()),
             items: Punctuated::new(),
         }
     }

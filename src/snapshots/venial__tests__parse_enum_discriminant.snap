@@ -25,7 +25,7 @@ Enum(
                 contents: Unit,
                 discriminant: Some(
                     EnumDiscriminant {
-                        _equal: Punct {
+                        tk_equal: Punct {
                             char: '=',
                             spacing: Alone,
                         },
@@ -61,7 +61,7 @@ Enum(
                 ),
                 discriminant: Some(
                     EnumDiscriminant {
-                        _equal: Punct {
+                        tk_equal: Punct {
                             char: '=',
                             spacing: Alone,
                         },
@@ -118,7 +118,7 @@ Enum(
                             name: Ident(
                                 foo,
                             ),
-                            _colon: Punct {
+                            tk_colon: Punct {
                                 char: ':',
                                 spacing: Alone,
                             },
@@ -132,7 +132,7 @@ Enum(
                             name: Ident(
                                 bar,
                             ),
-                            _colon: Punct {
+                            tk_colon: Punct {
                                 char: ':',
                                 spacing: Alone,
                             },
@@ -144,7 +144,7 @@ Enum(
                 ),
                 discriminant: Some(
                     EnumDiscriminant {
-                        _equal: Punct {
+                        tk_equal: Punct {
                             char: '=',
                             spacing: Alone,
                         },

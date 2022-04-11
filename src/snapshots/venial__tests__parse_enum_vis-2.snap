@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 191
+assertion_line: 211
 expression: enum_type_pub_crate
 ---
 Enum(
@@ -69,7 +69,7 @@ Enum(
                             name: Ident(
                                 foo,
                             ),
-                            _colon: Punct {
+                            tk_colon: Punct {
                                 char: ':',
                                 spacing: Alone,
                             },
@@ -83,7 +83,7 @@ Enum(
                             name: Ident(
                                 bar,
                             ),
-                            _colon: Punct {
+                            tk_colon: Punct {
                                 char: ':',
                                 spacing: Alone,
                             },

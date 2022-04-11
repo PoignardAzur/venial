@@ -1,13 +1,13 @@
 ---
 source: src/tests.rs
-assertion_line: 49
+assertion_line: 67
 expression: struct_type
 ---
 Struct(
     Struct {
         attributes: [],
         vis_marker: None,
-        _struct: Ident(
+        tk_struct: Ident(
             struct,
         ),
         name: Ident(
@@ -23,7 +23,7 @@ Struct(
                     name: Ident(
                         a,
                     ),
-                    _colon: Punct {
+                    tk_colon: Punct {
                         char: ':',
                         spacing: Alone,
                     },
@@ -37,7 +37,7 @@ Struct(
                     name: Ident(
                         b,
                     ),
-                    _colon: Punct {
+                    tk_colon: Punct {
                         char: ':',
                         spacing: Alone,
                     },
@@ -47,6 +47,6 @@ Struct(
                 },
             ],
         ),
-        _semicolon: None,
+        tk_semicolon: None,
     },
 )

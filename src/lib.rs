@@ -58,8 +58,6 @@
 #[cfg(all(test, fuzzing))]
 pub mod fuzz;
 
-// TODO - Add CI
-
 #[cfg(test)]
 mod tests;
 
