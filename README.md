@@ -41,7 +41,7 @@ Note though that venial will accept any syntactically valid declaration, even if
 ## Example
 
 ```rust
-use venial::{parse_declaration, TypeDeclaration};
+use venial::{parse_declaration, Declaration};
 use quote::quote;
 
 let enum_type = parse_declaration(quote!(
@@ -53,13 +53,13 @@ let enum_type = parse_declaration(quote!(
 ));
 
 let enum_type = match enum_type {
-    TypeDeclaration::Enum(enum_type) => enum_type,
+    Declaration::Enum(enum_type) => enum_type,
     _ => unreachable!(),
 };
 
-assert_eq!(enum_type.variants[0].name, "Square");
-assert_eq!(enum_type.variants[1].name, "Circle");
-assert_eq!(enum_type.variants[2].name, "Triangle");
+assert_eq!(enum_type.variants[0].0.name, "Square");
+assert_eq!(enum_type.variants[1].0.name, "Circle");
+assert_eq!(enum_type.variants[2].0.name, "Triangle");
 ```
 
 ## Performance
