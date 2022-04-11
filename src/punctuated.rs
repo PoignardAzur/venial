@@ -113,3 +113,9 @@ impl<T> std::ops::Deref for Punctuated<T> {
         &self.inner
     }
 }
+
+impl<T> std::ops::DerefMut for Punctuated<T> {
+    fn deref_mut(&mut self) -> &mut <Self as std::ops::Deref>::Target {
+        &mut self.inner
+    }
+}
