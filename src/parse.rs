@@ -1,9 +1,9 @@
 use crate::punctuated::Punctuated;
 use crate::types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Expression, Function,
-    FunctionParameter, FunctionQualifiers, GenericBound, GenericParam, GenericParams, NamedField,
-    NamedStructFields, Struct, StructFields, TupleField, TupleStructFields, TyExpr, Union,
-    VisMarker, WhereClause, WhereClauseItem,
+    FunctionParameter, FunctionQualifiers, GenericBound, GenericParam, GenericParamList,
+    NamedField, NamedStructFields, Struct, StructFields, TupleField, TupleStructFields, TyExpr,
+    Union, VisMarker, WhereClause, WhereClauseItem,
 };
 use crate::types_edition::GroupSpan;
 use proc_macro2::{Delimiter, Group, Ident, Punct, Spacing, TokenStream, TokenTree};
@@ -195,7 +195,7 @@ fn consume_comma(tokens: &mut TokenIter) -> Option<Punct> {
     }
 }
 
-fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
+fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParamList> {
     let gt: Punct;
     let mut generic_params = Punctuated::new();
     let lt: Punct;
@@ -267,7 +267,7 @@ fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParams> {
     // consume '>'
     tokens.next();
 
-    Some(GenericParams {
+    Some(GenericParamList {
         tk_l_bracket: gt,
         params: generic_params,
         tk_r_bracket: lt,
