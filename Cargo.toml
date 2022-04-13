@@ -1,6 +1,6 @@
 [package]
 name = "venial"
-version = "0.2.1"
+version = "0.3.0"
 authors = ["Olivier Faure <olivier.cj.faure@gmail.com>"]
 edition = "2021"
 description = "A very small syn"
