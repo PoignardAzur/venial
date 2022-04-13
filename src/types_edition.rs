@@ -1,16 +1,16 @@
 pub use crate::types::{
     Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Function, GenericBound,
-    GenericParam, GenericParams, GroupSpan, InlineGenericArgs, NamedField, Struct, StructFields,
+    GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, NamedField, Struct, StructFields,
     TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
 use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
 impl Declaration {
-    /// Returns the [`GenericParams`], if any, of the declaration.
+    /// Returns the [`GenericParamList`], if any, of the declaration.
     ///
     /// For instance, this will return Some for `struct MyStruct<A, B, C> { ... }`
     /// and None for `enum MyEnum { ... }`.
-    pub fn generic_params(&self) -> Option<&GenericParams> {
+    pub fn generic_params(&self) -> Option<&GenericParamList> {
         match self {
             Declaration::Struct(struct_decl) => struct_decl.generic_params.as_ref(),
             Declaration::Enum(enum_decl) => enum_decl.generic_params.as_ref(),
@@ -19,8 +19,8 @@ impl Declaration {
         }
     }
 
-    /// Returns the [`GenericParams`], if any, of the declaration.
-    pub fn generic_params_mut(&mut self) -> Option<&mut GenericParams> {
+    /// Returns the [`GenericParamList`], if any, of the declaration.
+    pub fn generic_params_mut(&mut self) -> Option<&mut GenericParamList> {
         match self {
             Declaration::Struct(struct_decl) => struct_decl.generic_params.as_mut(),
             Declaration::Enum(enum_decl) => enum_decl.generic_params.as_mut(),
@@ -186,7 +186,7 @@ macro_rules! implement_common_methods {
         impl $Kind {
             /// Builder method, add a [`GenericParam`] to `self.generic_params`.
             ///
-            /// Creates a default [`GenericParams`] if `self.generic_params` is None.
+            /// Creates a default [`GenericParamList`] if `self.generic_params` is None.
             pub fn with_param(mut self, param: GenericParam) -> Self {
                 let params = self.generic_params.take().unwrap_or_default();
                 let params = params.with_param(param);
@@ -318,7 +318,7 @@ impl EnumVariant {
     }
 }
 
-impl GenericParams {
+impl GenericParamList {
     /// Builder method, add a [`GenericParam`].
     ///
     /// Add lifetime params to the beginning of the list.

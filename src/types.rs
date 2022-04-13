@@ -55,7 +55,7 @@ pub struct Struct {
     pub vis_marker: Option<VisMarker>,
     pub tk_struct: Ident,
     pub name: Ident,
-    pub generic_params: Option<GenericParams>,
+    pub generic_params: Option<GenericParamList>,
     pub where_clause: Option<WhereClause>,
     pub fields: StructFields,
     pub tk_semicolon: Option<Punct>,
@@ -96,7 +96,7 @@ pub struct Enum {
     pub vis_marker: Option<VisMarker>,
     pub tk_enum: Ident,
     pub name: Ident,
-    pub generic_params: Option<GenericParams>,
+    pub generic_params: Option<GenericParamList>,
     pub where_clause: Option<WhereClause>,
     pub tk_braces: GroupSpan,
     pub variants: Punctuated<EnumVariant>,
@@ -133,7 +133,7 @@ pub struct Union {
     pub vis_marker: Option<VisMarker>,
     pub tk_union: Ident,
     pub name: Ident,
-    pub generic_params: Option<GenericParams>,
+    pub generic_params: Option<GenericParamList>,
     pub where_clause: Option<WhereClause>,
     pub fields: NamedStructFields,
 }
@@ -154,7 +154,7 @@ pub struct Function {
     pub vis_marker: Option<VisMarker>,
     pub qualifiers: FunctionQualifiers,
     pub name: Ident,
-    pub generic_params: Option<GenericParams>,
+    pub generic_params: Option<GenericParamList>,
     pub params: Punctuated<FunctionParameter>,
     pub where_clause: Option<WhereClause>,
     pub return_ty: Option<TyExpr>,
@@ -256,8 +256,7 @@ pub struct VisMarker {
 /// struct MyUnitStruct<A, B, C>(A, B, C);
 /// ```
 #[derive(Clone)]
-// TODO - rename
-pub struct GenericParams {
+pub struct GenericParamList {
     pub tk_l_bracket: Punct,
     pub params: Punctuated<GenericParam>,
     pub tk_r_bracket: Punct,
@@ -289,15 +288,15 @@ pub struct GenericBound {
     pub tokens: Vec<TokenTree>,
 }
 
-/// Generic arguments deduced from a type's [GenericParams].
+/// Generic arguments deduced from a type's [GenericParamList].
 ///
 /// For instance, `<'a: 'static, T, U: Clone, const N: usize>` becomes `<'a, T, U, N>`.
 /// This is useful when creating wrapper types in derive macros.
 ///
 /// Note: this is a thin reference type. Creating this type doesn't inherently modify
-/// the underlying [GenericParams]; this is just a wrapper that is processed differently
-/// when passed to quote macros.
-pub struct InlineGenericArgs<'a>(pub(crate) &'a GenericParams);
+/// the underlying [GenericParamList]; this is just a wrapper that is processed
+/// differently when passed to quote macros.
+pub struct InlineGenericArgs<'a>(pub(crate) &'a GenericParamList);
 
 /// All the stuff that comes after the `where` keyword.
 #[derive(Clone)]
@@ -452,7 +451,7 @@ impl std::fmt::Debug for VisMarker {
     }
 }
 
-impl std::fmt::Debug for GenericParams {
+impl std::fmt::Debug for GenericParamList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.params.fmt(f)
     }
@@ -713,7 +712,7 @@ impl ToTokens for VisMarker {
     }
 }
 
-impl ToTokens for GenericParams {
+impl ToTokens for GenericParamList {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.append(self.tk_l_bracket.clone());
         self.params.to_tokens(tokens);
@@ -787,7 +786,7 @@ impl ToTokens for EnumDiscriminant {
 
 // --- Default impls ---
 
-impl Default for GenericParams {
+impl Default for GenericParamList {
     fn default() -> Self {
         Self {
             tk_l_bracket: Punct::new('<', Spacing::Alone),
