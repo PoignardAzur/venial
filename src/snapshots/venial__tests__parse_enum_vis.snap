@@ -9,7 +9,7 @@ Enum(
         vis_marker: Some(
             pub,
         ),
-        _enum: Ident(
+        tk_enum: Ident(
             enum,
         ),
         name: Ident(

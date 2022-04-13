@@ -7,7 +7,7 @@ Union(
     Union {
         attributes: [],
         vis_marker: None,
-        _union: Ident(
+        tk_union: Ident(
             union,
         ),
         name: Ident(

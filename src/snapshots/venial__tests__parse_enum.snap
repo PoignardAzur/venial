@@ -7,7 +7,7 @@ Enum(
     Enum {
         attributes: [],
         vis_marker: None,
-        _enum: Ident(
+        tk_enum: Ident(
             enum,
         ),
         name: Ident(

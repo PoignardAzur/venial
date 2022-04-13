@@ -1,13 +1,13 @@
 ---
 source: src/tests.rs
-assertion_line: 99
+assertion_line: 119
 expression: enum_type
 ---
 Enum(
     Enum {
         attributes: [],
         vis_marker: None,
-        _enum: Ident(
+        tk_enum: Ident(
             enum,
         ),
         name: Ident(
