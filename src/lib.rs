@@ -63,6 +63,10 @@ mod tests;
 
 mod error;
 mod parse;
+mod parse_expr;
+mod parse_fn;
+mod parse_type;
+mod parse_utils;
 mod punctuated;
 mod types;
 mod types_edition;
