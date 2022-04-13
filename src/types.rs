@@ -256,6 +256,7 @@ pub struct VisMarker {
 /// struct MyUnitStruct<A, B, C>(A, B, C);
 /// ```
 #[derive(Clone)]
+// TODO - rename
 pub struct GenericParams {
     pub tk_l_bracket: Punct,
     pub params: Punctuated<GenericParam>,
@@ -292,6 +293,10 @@ pub struct GenericBound {
 ///
 /// For instance, `<'a: 'static, T, U: Clone, const N: usize>` becomes `<'a, T, U, N>`.
 /// This is useful when creating wrapper types in derive macros.
+///
+/// Note: this is a thin reference type. Creating this type doesn't inherently modify
+/// the underlying [GenericParams]; this is just a wrapper that is processed differently
+/// when passed to quote macros.
 pub struct InlineGenericArgs<'a>(pub(crate) &'a GenericParams);
 
 /// All the stuff that comes after the `where` keyword.
@@ -346,6 +351,9 @@ pub struct EnumDiscriminant {
     pub expression: Expression,
 }
 
+/// Information about a [`Group`]. This can be used to recreate the group
+/// from its inner token sequence, or to create a new group with a
+/// modified token sequence but the original group's span information.
 #[derive(Clone)]
 pub struct GroupSpan {
     pub delimiter: Delimiter,
