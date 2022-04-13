@@ -518,7 +518,7 @@ impl WhereClauseItem {
     pub fn parse(tokens: TokenStream) -> Self {
         let mut tokens = tokens.into_iter().peekable();
 
-        let left_side = crate::parse::consume_stuff_until(&mut tokens, |token| match token {
+        let left_side = crate::parse_utils::consume_stuff_until(&mut tokens, |token| match token {
             TokenTree::Punct(punct) if punct.as_char() == ':' => true,
             _ => false,
         });
