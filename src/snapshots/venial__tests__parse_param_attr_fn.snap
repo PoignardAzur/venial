@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 680
+assertion_line: 770
 expression: func
 ---
 Function(
@@ -28,9 +28,19 @@ Function(
         params: [
             FunctionParameter {
                 attributes: [
-                    #[
-                        my_attr,
-                    ],
+                    Attribute {
+                        tk_hashbang: Punct {
+                            char: '#',
+                            spacing: Alone,
+                        },
+                        tk_braces: [],
+                        path: [
+                            my_attr,
+                        ],
+                        tk_equals: None,
+                        tk_group: None,
+                        value: None,
+                    },
                 ],
                 name: Ident(
                     b,

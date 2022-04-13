@@ -1,0 +1,10 @@
+---
+source: src/tests.rs
+assertion_line: 338
+expression: "struct_type.attributes()[1].get_single_path_segment()"
+---
+Some(
+    Ident(
+        hello,
+    ),
+)

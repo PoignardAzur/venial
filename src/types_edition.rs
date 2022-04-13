@@ -6,6 +6,26 @@ pub use crate::types::{
 use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
 impl Declaration {
+    /// Returns the [`Vec<Attribute>`] of the declaration.
+    pub fn attributes(&self) -> &Vec<Attribute> {
+        match self {
+            Declaration::Struct(struct_decl) => &struct_decl.attributes,
+            Declaration::Enum(enum_decl) => &enum_decl.attributes,
+            Declaration::Union(union_decl) => &union_decl.attributes,
+            Declaration::Function(function_decl) => &function_decl.attributes,
+        }
+    }
+
+    /// Returns the [`Vec<Attribute>`] of the declaration.
+    pub fn attributes_mut(&mut self) -> &mut Vec<Attribute> {
+        match self {
+            Declaration::Struct(struct_decl) => &mut struct_decl.attributes,
+            Declaration::Enum(enum_decl) => &mut enum_decl.attributes,
+            Declaration::Union(union_decl) => &mut union_decl.attributes,
+            Declaration::Function(function_decl) => &mut function_decl.attributes,
+        }
+    }
+
     /// Returns the [`GenericParamList`], if any, of the declaration.
     ///
     /// For instance, this will return Some for `struct MyStruct<A, B, C> { ... }`
@@ -299,6 +319,26 @@ macro_rules! implement_common_methods {
 implement_common_methods! { Struct }
 implement_common_methods! { Enum }
 implement_common_methods! { Union }
+
+impl Attribute {
+    /// Returns Some if the attribute has a single path segment, eg `#[hello(...)]`.
+    /// Returns None if the attribute has multiple segments, eg `#[hello::world(...)]`.
+    pub fn get_single_path_segment(&self) -> Option<&Ident> {
+        let mut segments: Vec<_> = self
+            .path
+            .iter()
+            .filter_map(|segment| match segment {
+                TokenTree::Ident(ident) => Some(ident),
+                _ => None,
+            })
+            .collect();
+        if segments.len() == 1 {
+            segments.pop()
+        } else {
+            None
+        }
+    }
+}
 
 impl EnumVariant {
     /// Returns true if the variant doesn't store a type.

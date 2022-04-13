@@ -220,9 +220,6 @@ pub struct NamedField {
 
 // --- Token groups ---
 
-// TODO - parse better
-// see https://doc.rust-lang.org/reference/attributes.html
-
 /// An outer attribute.
 ///
 /// **Example input:**
@@ -236,7 +233,17 @@ pub struct NamedField {
 pub struct Attribute {
     pub tk_hashbang: Punct,
     pub tk_braces: GroupSpan,
-    pub child_tokens: Vec<TokenTree>,
+
+    /// The `hello` in `#[hello(world)]`. May be an arbitrary path, eg `a::b::c`.
+    pub path: Vec<TokenTree>,
+    /// Is Some if the attribute is of the form `#[hello = world]`
+    pub tk_equals: Option<Punct>,
+    /// Is Some if the attribute is of the form `#[hello(world)]`. The group
+    /// type may also be `[]` or `{}`, though it's virtually never done.
+    pub tk_group: Option<GroupSpan>,
+    /// Either an expression after the `=`, or an arbitrary token sequence inside
+    /// the group, or None for "unit" attributes, eg `#[foobar]`.
+    pub value: Option<Vec<TokenTree>>,
 }
 
 /// Visibility marker, eg `pub`, `pub(crate)`, `pub(super)`, etc.
@@ -412,6 +419,7 @@ impl std::fmt::Debug for Enum {
 
 impl std::fmt::Debug for Union {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        // TODO - Fix incorrect field names
         f.debug_struct("Union")
             .field("attributes", &self.attributes)
             .field("vis_marker", &self.vis_marker)
@@ -426,12 +434,24 @@ impl std::fmt::Debug for Union {
 
 impl std::fmt::Debug for Attribute {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        f.write_str("#")?;
-        let mut list = f.debug_list();
-        for token in &self.child_tokens {
-            list.entry(&TokenRef(token));
-        }
-        list.finish()
+        let mut f = f.debug_struct("Attribute");
+
+        f.field("tk_hashbang", &self.tk_hashbang);
+        f.field("tk_braces", &self.tk_braces);
+
+        let path_token_refs: Vec<_> = self.path.iter().map(TokenRef).collect();
+        f.field("path", &path_token_refs);
+
+        f.field("tk_equals", &self.tk_equals);
+        f.field("tk_group", &self.tk_group);
+
+        let value_token_refs: Option<Vec<_>> = self
+            .value
+            .as_ref()
+            .map(|value| value.iter().map(TokenRef).collect());
+        f.field("value", &value_token_refs);
+
+        f.finish()
     }
 }
 
@@ -696,10 +716,27 @@ impl ToTokens for NamedField {
 
 impl ToTokens for Attribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        tokens.append(self.tk_hashbang.clone());
+        self.tk_hashbang.to_tokens(tokens);
         self.tk_braces.quote_with(tokens, |tokens| {
-            for token in &self.child_tokens {
-                tokens.append(token.clone())
+            for token in &self.path {
+                token.to_tokens(tokens);
+            }
+
+            if let Some(group) = &self.tk_group {
+                group.quote_with(tokens, |tokens| {
+                    if let Some(value_tokens) = &self.value {
+                        for token in value_tokens {
+                            token.to_tokens(tokens);
+                        }
+                    }
+                });
+            } else {
+                self.tk_equals.to_tokens(tokens);
+                if let Some(value_tokens) = &self.value {
+                    for token in value_tokens {
+                        token.to_tokens(tokens);
+                    }
+                }
             }
         });
     }

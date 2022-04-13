@@ -321,6 +321,23 @@ fn parse_tuple_fields_attributes() {
     assert_debug_snapshot!(struct_type);
 }
 
+#[test]
+fn parse_complex_attributes() {
+    let struct_type = parse_declaration_checked(quote!(
+        #[hello::world]
+        #[hello = a + b]
+        #[hello::world = a + b]
+        #[hello(a b c)]
+        #[hello::world(a b c)]
+        pub struct Hello;
+    ));
+
+    assert_debug_snapshot!(struct_type);
+
+    assert_debug_snapshot!(struct_type.attributes()[0].get_single_path_segment());
+    assert_debug_snapshot!(struct_type.attributes()[1].get_single_path_segment());
+}
+
 // =============
 // WHERE CLAUSES
 // =============

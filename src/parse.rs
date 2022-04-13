@@ -35,10 +35,46 @@ fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
             _ => panic!("cannot parse attribute: expected '[' after '#' token"),
         };
 
+        let tk_braces = GroupSpan::new(&group);
+        let mut attribute_tokens = group.stream().into_iter().peekable();
+
+        let mut path = Vec::new();
+        loop {
+            match attribute_tokens.peek() {
+                None => break,
+                Some(TokenTree::Group(_)) => break,
+                Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => break,
+                Some(TokenTree::Ident(_)) => (),
+                Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => (),
+                Some(token) => panic!("cannot parse attribute: expected one of `(`, `::`, `=`, `[`, `]`, or `{{`, found {:?}", token),
+            };
+            path.push(attribute_tokens.next().unwrap());
+        }
+
+        let mut tk_equals = None;
+        let mut tk_group = None;
+        let mut value = None;
+        match attribute_tokens.peek() {
+            None => (),
+            Some(TokenTree::Group(group)) => {
+                tk_group = Some(GroupSpan::new(group));
+                value = Some(group.stream().into_iter().collect());
+            }
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => {
+                tk_equals = Some(punct.clone());
+                attribute_tokens.next();
+                value = Some(attribute_tokens.into_iter().collect());
+            }
+            _ => unreachable!(),
+        };
+
         attributes.push(Attribute {
             tk_hashbang: hashbang,
-            child_tokens: group.stream().into_iter().collect(),
-            tk_braces: GroupSpan::new(&group),
+            tk_braces,
+            path,
+            tk_equals,
+            tk_group,
+            value,
         });
     }
 
