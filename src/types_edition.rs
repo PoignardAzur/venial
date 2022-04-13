@@ -181,11 +181,12 @@ impl Enum {
     }
 }
 
-macro_rules! implement_type_setters {
+macro_rules! implement_common_methods {
     ($Kind:ident) => {
-        #[allow(missing_docs)]
-        // TODO - document
         impl $Kind {
+            /// Builder method, add a [`GenericParam`] to `self.generic_params`.
+            ///
+            /// Creates a default [`GenericParams`] if `self.generic_params` is None.
             pub fn with_param(mut self, param: GenericParam) -> Self {
                 let params = self.generic_params.take().unwrap_or_default();
                 let params = params.with_param(param);
@@ -193,6 +194,9 @@ macro_rules! implement_type_setters {
                 self
             }
 
+            /// Builder method, add a [`WhereClauseItem`] to `self.where_clause`.
+            ///
+            /// Creates a default [`WhereClause`] if `self.where_clause` is None.
             pub fn with_where_item(mut self, item: WhereClauseItem) -> Self {
                 if let Some(where_clause) = self.where_clause {
                     self.where_clause = Some(where_clause.with_item(item));
@@ -202,6 +206,7 @@ macro_rules! implement_type_setters {
                 self
             }
 
+            /// Returns a collection of references to declared lifetime params, if any.
             pub fn get_lifetime_params(&self) -> impl Iterator<Item = &GenericParam> {
                 let params: &[_] = if let Some(params) = self.generic_params.as_ref() {
                     &params.params
@@ -215,6 +220,7 @@ macro_rules! implement_type_setters {
                     .filter(|param| GenericParam::is_lifetime(param))
             }
 
+            /// Returns a collection of references to declared type params, if any.
             pub fn get_type_params(&self) -> impl Iterator<Item = &GenericParam> {
                 let params: &[_] = if let Some(params) = self.generic_params.as_ref() {
                     &params.params
@@ -228,6 +234,7 @@ macro_rules! implement_type_setters {
                     .filter(|param| GenericParam::is_ty(param))
             }
 
+            /// Returns a collection of references to declared const generic params, if any.
             pub fn get_const_params(&self) -> impl Iterator<Item = &GenericParam> {
                 let params: &[_] = if let Some(params) = self.generic_params.as_ref() {
                     &params.params
@@ -241,10 +248,33 @@ macro_rules! implement_type_setters {
                     .filter(|param| GenericParam::is_const(param))
             }
 
+            /// See [`InlineGenericArgs`] for details.
             pub fn get_inline_generic_args(&self) -> Option<InlineGenericArgs<'_>> {
                 Some(self.generic_params.as_ref()?.as_inline_args())
             }
 
+            /// Returns a where clause that can be quoted to form
+            /// a `impl TRAIT for TYPE where ... { ... }` trait implementation.
+            ///
+            /// This takes the bounds of the current declaration and adds one bound
+            /// to `derived_trait` for every generic argument. For instance:
+            ///
+            /// ```no_run
+            /// struct MyStruct<T, U> where T: Clone {
+            ///     t: T,
+            ///     u: U
+            /// }
+            ///
+            /// // my_struct_decl.create_derive_where_clause(quote!(SomeTrait))
+            ///
+            /// # trait SomeTrait {}
+            /// impl<T, U> SomeTrait for MyStruct<T, U>
+            ///     // GENERATED WHERE CLAUSE
+            ///     where T: SomeTrait, U: SomeTrait, T: Clone
+            /// {
+            ///     // ...
+            /// }
+            /// ```
             pub fn create_derive_where_clause(&self, derived_trait: TokenStream) -> WhereClause {
                 let mut where_clause = self.where_clause.clone().unwrap_or_default();
 
@@ -266,9 +296,9 @@ macro_rules! implement_type_setters {
     };
 }
 
-implement_type_setters! { Struct }
-implement_type_setters! { Enum }
-implement_type_setters! { Union }
+implement_common_methods! { Struct }
+implement_common_methods! { Enum }
+implement_common_methods! { Union }
 
 impl EnumVariant {
     /// Returns true if the variant doesn't store a type.
@@ -288,9 +318,10 @@ impl EnumVariant {
     }
 }
 
-#[allow(missing_docs)]
-// TODO - document
 impl GenericParams {
+    /// Builder method, add a [`GenericParam`].
+    ///
+    /// Add lifetime params to the beginning of the list.
     pub fn with_param(mut self, param: GenericParam) -> Self {
         if param.is_lifetime() {
             self.params.insert(0, param, None);
@@ -300,6 +331,7 @@ impl GenericParams {
         self
     }
 
+    /// See [`InlineGenericArgs`] for details.
     pub fn as_inline_args(&self) -> InlineGenericArgs<'_> {
         InlineGenericArgs(self)
     }
