@@ -1,0 +1,6 @@
+---
+source: src/tests.rs
+assertion_line: 337
+expression: "struct_type.attributes()[0].get_single_path_segment()"
+---
+None

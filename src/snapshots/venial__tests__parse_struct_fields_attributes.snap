@@ -21,9 +21,19 @@ Struct(
             [
                 NamedField {
                     attributes: [
-                        #[
-                            hello,
-                        ],
+                        Attribute {
+                            tk_hashbang: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_braces: [],
+                            path: [
+                                hello,
+                            ],
+                            tk_equals: None,
+                            tk_group: None,
+                            value: None,
+                        },
                     ],
                     vis_marker: None,
                     name: Ident(
@@ -53,15 +63,45 @@ Struct(
                 },
                 NamedField {
                     attributes: [
-                        #[
-                            hello,
-                        ],
-                        #[
-                            hello,
-                        ],
-                        #[
-                            hello,
-                        ],
+                        Attribute {
+                            tk_hashbang: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_braces: [],
+                            path: [
+                                hello,
+                            ],
+                            tk_equals: None,
+                            tk_group: None,
+                            value: None,
+                        },
+                        Attribute {
+                            tk_hashbang: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_braces: [],
+                            path: [
+                                hello,
+                            ],
+                            tk_equals: None,
+                            tk_group: None,
+                            value: None,
+                        },
+                        Attribute {
+                            tk_hashbang: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_braces: [],
+                            path: [
+                                hello,
+                            ],
+                            tk_equals: None,
+                            tk_group: None,
+                            value: None,
+                        },
                     ],
                     vis_marker: None,
                     name: Ident(

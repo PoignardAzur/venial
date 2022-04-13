@@ -1,14 +1,24 @@
 ---
 source: src/tests.rs
-assertion_line: 599
+assertion_line: 689
 expression: func
 ---
 Function(
     Function {
         attributes: [
-            #[
-                my_attr,
-            ],
+            Attribute {
+                tk_hashbang: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_braces: [],
+                path: [
+                    my_attr,
+                ],
+                tk_equals: None,
+                tk_group: None,
+                value: None,
+            },
         ],
         vis_marker: None,
         qualifiers: FunctionQualifiers {

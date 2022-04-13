@@ -21,9 +21,19 @@ Struct(
             [
                 TupleField {
                     attributes: [
-                        #[
-                            hello,
-                        ],
+                        Attribute {
+                            tk_hashbang: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_braces: [],
+                            path: [
+                                hello,
+                            ],
+                            tk_equals: None,
+                            tk_group: None,
+                            value: None,
+                        },
                     ],
                     vis_marker: None,
                     ty: [
@@ -39,15 +49,45 @@ Struct(
                 },
                 TupleField {
                     attributes: [
-                        #[
-                            hello,
-                        ],
-                        #[
-                            hello,
-                        ],
-                        #[
-                            hello,
-                        ],
+                        Attribute {
+                            tk_hashbang: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_braces: [],
+                            path: [
+                                hello,
+                            ],
+                            tk_equals: None,
+                            tk_group: None,
+                            value: None,
+                        },
+                        Attribute {
+                            tk_hashbang: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_braces: [],
+                            path: [
+                                hello,
+                            ],
+                            tk_equals: None,
+                            tk_group: None,
+                            value: None,
+                        },
+                        Attribute {
+                            tk_hashbang: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_braces: [],
+                            path: [
+                                hello,
+                            ],
+                            tk_equals: None,
+                            tk_group: None,
+                            value: None,
+                        },
                     ],
                     vis_marker: None,
                     ty: [

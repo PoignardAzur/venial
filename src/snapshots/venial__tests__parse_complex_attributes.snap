@@ -1,0 +1,141 @@
+---
+source: src/tests.rs
+assertion_line: 335
+expression: struct_type
+---
+Struct(
+    Struct {
+        attributes: [
+            Attribute {
+                tk_hashbang: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_braces: [],
+                path: [
+                    hello,
+                    ":",
+                    ":",
+                    world,
+                ],
+                tk_equals: None,
+                tk_group: None,
+                value: None,
+            },
+            Attribute {
+                tk_hashbang: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_braces: [],
+                path: [
+                    hello,
+                ],
+                tk_equals: Some(
+                    Punct {
+                        char: '=',
+                        spacing: Alone,
+                    },
+                ),
+                tk_group: None,
+                value: Some(
+                    [
+                        a,
+                        "+",
+                        b,
+                    ],
+                ),
+            },
+            Attribute {
+                tk_hashbang: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_braces: [],
+                path: [
+                    hello,
+                    ":",
+                    ":",
+                    world,
+                ],
+                tk_equals: Some(
+                    Punct {
+                        char: '=',
+                        spacing: Alone,
+                    },
+                ),
+                tk_group: None,
+                value: Some(
+                    [
+                        a,
+                        "+",
+                        b,
+                    ],
+                ),
+            },
+            Attribute {
+                tk_hashbang: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_braces: [],
+                path: [
+                    hello,
+                ],
+                tk_equals: None,
+                tk_group: Some(
+                    (),
+                ),
+                value: Some(
+                    [
+                        a,
+                        b,
+                        c,
+                    ],
+                ),
+            },
+            Attribute {
+                tk_hashbang: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_braces: [],
+                path: [
+                    hello,
+                    ":",
+                    ":",
+                    world,
+                ],
+                tk_equals: None,
+                tk_group: Some(
+                    (),
+                ),
+                value: Some(
+                    [
+                        a,
+                        b,
+                        c,
+                    ],
+                ),
+            },
+        ],
+        vis_marker: Some(
+            pub,
+        ),
+        tk_struct: Ident(
+            struct,
+        ),
+        name: Ident(
+            Hello,
+        ),
+        generic_params: None,
+        where_clause: None,
+        fields: Unit,
+        tk_semicolon: Some(
+            Punct {
+                char: ';',
+                spacing: Alone,
+            },
+        ),
+    },
+)
