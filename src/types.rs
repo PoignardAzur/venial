@@ -408,7 +408,7 @@ impl std::fmt::Debug for Enum {
         f.debug_struct("Enum")
             .field("attributes", &self.attributes)
             .field("vis_marker", &self.vis_marker)
-            .field("_enum", &self.tk_enum)
+            .field("tk_enum", &self.tk_enum)
             .field("name", &self.name)
             .field("generic_params", &self.generic_params)
             .field("where_clauses", &self.where_clause)
@@ -419,11 +419,10 @@ impl std::fmt::Debug for Enum {
 
 impl std::fmt::Debug for Union {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        // TODO - Fix incorrect field names
         f.debug_struct("Union")
             .field("attributes", &self.attributes)
             .field("vis_marker", &self.vis_marker)
-            .field("_union", &self.tk_union)
+            .field("tk_union", &self.tk_union)
             .field("name", &self.name)
             .field("generic_params", &self.generic_params)
             .field("where_clauses", &self.where_clause)
