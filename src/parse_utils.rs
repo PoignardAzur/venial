@@ -1,4 +1,4 @@
-use crate::types::{Attribute, VisMarker};
+use crate::types::{Attribute, AttributeValue, VisMarker};
 use crate::types_edition::GroupSpan;
 use proc_macro2::{Delimiter, Ident, Punct, TokenTree};
 use std::iter::Peekable;
@@ -45,29 +45,26 @@ pub(crate) fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
             path.push(attribute_tokens.next().unwrap());
         }
 
-        let mut tk_equals = None;
-        let mut tk_group = None;
-        let mut value = None;
-        match attribute_tokens.peek() {
-            None => (),
+        let value = match attribute_tokens.peek() {
+            None => AttributeValue::Empty,
             Some(TokenTree::Group(group)) => {
-                tk_group = Some(GroupSpan::new(group));
-                value = Some(group.stream().into_iter().collect());
+                let tk_group = GroupSpan::new(group);
+                let value = group.stream().into_iter().collect();
+                AttributeValue::Group(tk_group, value)
             }
             Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => {
-                tk_equals = Some(punct.clone());
+                let tk_equals = punct.clone();
                 attribute_tokens.next();
-                value = Some(attribute_tokens.into_iter().collect());
+                let value = attribute_tokens.into_iter().collect();
+                AttributeValue::Equals(tk_equals, value)
             }
             _ => unreachable!(),
         };
 
         attributes.push(Attribute {
             tk_hashbang: hashbang,
-            tk_braces,
+            tk_brackets: tk_braces,
             path,
-            tk_equals,
-            tk_group,
             value,
         });
     }

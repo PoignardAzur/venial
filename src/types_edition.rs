@@ -1,7 +1,7 @@
 pub use crate::types::{
-    Attribute, Declaration, Enum, EnumDiscriminant, EnumVariant, Function, GenericBound,
-    GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, NamedField, Struct, StructFields,
-    TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
+    Attribute, AttributeValue, Declaration, Enum, EnumDiscriminant, EnumVariant, Function,
+    GenericBound, GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, NamedField, Struct,
+    StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
 use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
@@ -336,6 +336,24 @@ impl Attribute {
             segments.pop()
         } else {
             None
+        }
+    }
+
+    /// Returns `foo + bar` for `#[hello = foo + bar]` and `#[hello(foo + bar)]`.
+    /// Returns an empty slice for `#[hello]`.
+    pub fn get_value_tokens(&self) -> &[TokenTree] {
+        self.value.get_value_tokens()
+    }
+}
+
+impl AttributeValue {
+    /// Returns `foo + bar` for `#[hello = foo + bar]` and `#[hello(foo + bar)]`.
+    /// Returns an empty slice for `#[hello]`.
+    pub fn get_value_tokens(&self) -> &[TokenTree] {
+        match self {
+            AttributeValue::Group(_, tokens) => tokens,
+            AttributeValue::Equals(_, tokens) => tokens,
+            AttributeValue::Empty => &[],
         }
     }
 }
