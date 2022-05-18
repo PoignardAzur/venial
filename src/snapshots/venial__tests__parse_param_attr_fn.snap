@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 770
+assertion_line: 798
 expression: func
 ---
 Function(
@@ -33,13 +33,11 @@ Function(
                             char: '#',
                             spacing: Alone,
                         },
-                        tk_braces: [],
+                        tk_brackets: [],
                         path: [
                             my_attr,
                         ],
-                        tk_equals: None,
-                        tk_group: None,
-                        value: None,
+                        value: Empty,
                     },
                 ],
                 name: Ident(

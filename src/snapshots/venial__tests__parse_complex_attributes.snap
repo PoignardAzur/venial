@@ -11,111 +11,97 @@ Struct(
                     char: '#',
                     spacing: Alone,
                 },
-                tk_braces: [],
+                tk_brackets: [],
                 path: [
                     hello,
                     ":",
                     ":",
                     world,
                 ],
-                tk_equals: None,
-                tk_group: None,
-                value: None,
+                value: Empty,
             },
             Attribute {
                 tk_hashbang: Punct {
                     char: '#',
                     spacing: Alone,
                 },
-                tk_braces: [],
+                tk_brackets: [],
                 path: [
                     hello,
                 ],
-                tk_equals: Some(
-                    Punct {
-                        char: '=',
-                        spacing: Alone,
-                    },
-                ),
-                tk_group: None,
-                value: Some(
+                value: Equals(
                     [
                         a,
                         "+",
                         b,
                     ],
-                ),
-            },
-            Attribute {
-                tk_hashbang: Punct {
-                    char: '#',
-                    spacing: Alone,
-                },
-                tk_braces: [],
-                path: [
-                    hello,
-                    ":",
-                    ":",
-                    world,
-                ],
-                tk_equals: Some(
                     Punct {
                         char: '=',
                         spacing: Alone,
                     },
                 ),
-                tk_group: None,
-                value: Some(
-                    [
-                        a,
-                        "+",
-                        b,
-                    ],
-                ),
             },
             Attribute {
                 tk_hashbang: Punct {
                     char: '#',
                     spacing: Alone,
                 },
-                tk_braces: [],
-                path: [
-                    hello,
-                ],
-                tk_equals: None,
-                tk_group: Some(
-                    (),
-                ),
-                value: Some(
-                    [
-                        a,
-                        b,
-                        c,
-                    ],
-                ),
-            },
-            Attribute {
-                tk_hashbang: Punct {
-                    char: '#',
-                    spacing: Alone,
-                },
-                tk_braces: [],
+                tk_brackets: [],
                 path: [
                     hello,
                     ":",
                     ":",
                     world,
                 ],
-                tk_equals: None,
-                tk_group: Some(
-                    (),
+                value: Equals(
+                    [
+                        a,
+                        "+",
+                        b,
+                    ],
+                    Punct {
+                        char: '=',
+                        spacing: Alone,
+                    },
                 ),
-                value: Some(
+            },
+            Attribute {
+                tk_hashbang: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_brackets: [],
+                path: [
+                    hello,
+                ],
+                value: Group(
                     [
                         a,
                         b,
                         c,
                     ],
+                    (),
+                ),
+            },
+            Attribute {
+                tk_hashbang: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_brackets: [],
+                path: [
+                    hello,
+                    ":",
+                    ":",
+                    world,
+                ],
+                value: Group(
+                    [
+                        a,
+                        b,
+                        c,
+                    ],
+                    (),
                 ),
             },
         ],

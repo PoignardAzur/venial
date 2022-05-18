@@ -11,13 +11,11 @@ Enum(
                     char: '#',
                     spacing: Alone,
                 },
-                tk_braces: [],
+                tk_brackets: [],
                 path: [
                     hello,
                 ],
-                tk_equals: None,
-                tk_group: None,
-                value: None,
+                value: Empty,
             },
         ],
         vis_marker: Some(

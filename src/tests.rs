@@ -7,6 +7,8 @@ use insta::assert_debug_snapshot;
 use proc_macro2::TokenStream;
 use quote::quote;
 
+// TODO - check test coverage
+
 macro_rules! assert_quote_snapshot {
     ($item:expr) => {{
         use ::quote::ToTokens;
