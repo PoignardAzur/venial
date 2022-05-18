@@ -66,10 +66,14 @@ pub(crate) fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericPa
                 // consume ':'
                 tokens.next();
 
-                let bound_tokens = consume_stuff_until(tokens, |token| match token {
-                    TokenTree::Punct(punct) if punct.as_char() == ',' => true,
-                    _ => false,
-                });
+                let bound_tokens = consume_stuff_until(
+                    tokens,
+                    |token| match token {
+                        TokenTree::Punct(punct) if punct.as_char() == ',' => true,
+                        _ => false,
+                    },
+                    false,
+                );
 
                 Some(GenericBound {
                     tk_colon: colon,
@@ -126,24 +130,35 @@ pub(crate) fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause
             _ => (),
         };
 
-        let left_side = consume_stuff_until(tokens, |token| match token {
-            TokenTree::Punct(punct) if punct.as_char() == ':' => true,
-            _ => false,
-        });
+        let left_side = consume_stuff_until(
+            tokens,
+            |token| match token {
+                TokenTree::Punct(punct) if punct.as_char() == ':' => true,
+                _ => false,
+            },
+            false,
+        );
 
-        let colon = match tokens.next().unwrap() {
-            TokenTree::Punct(punct) if punct.as_char() == ':' => punct.clone(),
-            token => panic!(
-                "cannot parse where clause: expected colon, found token {:?}",
+        let colon = match tokens.next() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct.clone(),
+            Some(token) => panic!(
+                "cannot parse where clause: expected ':', found token {:?}",
                 token
             ),
+            None => {
+                panic!("cannot parse where clause: expected colon, found end of stream")
+            }
         };
-        let bound_tokens = consume_stuff_until(tokens, |token| match token {
-            TokenTree::Punct(punct) if punct.as_char() == ',' => true,
-            TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
-            TokenTree::Punct(punct) if punct.as_char() == ';' => true,
-            _ => false,
-        });
+        let bound_tokens = consume_stuff_until(
+            tokens,
+            |token| match token {
+                TokenTree::Punct(punct) if punct.as_char() == ',' => true,
+                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
+                TokenTree::Punct(punct) if punct.as_char() == ';' => true,
+                _ => false,
+            },
+            true,
+        );
 
         let comma = consume_comma(tokens);
 
@@ -166,10 +181,14 @@ pub(crate) fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause
 }
 
 pub(crate) fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
-    let field_type_tokens = consume_stuff_until(tokens, |token| match token {
-        TokenTree::Punct(punct) if punct.as_char() == ',' => true,
-        _ => false,
-    });
+    let field_type_tokens = consume_stuff_until(
+        tokens,
+        |token| match token {
+            TokenTree::Punct(punct) if punct.as_char() == ',' => true,
+            _ => false,
+        },
+        false,
+    );
 
     if field_type_tokens.is_empty() && consume_comma(tokens).is_some() {
         panic!("cannot parse type: unexpected token ','");

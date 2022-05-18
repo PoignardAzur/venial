@@ -87,12 +87,16 @@ pub(crate) fn consume_fn_return(tokens: &mut TokenIter) -> Option<TyExpr> {
     };
 
     Some(TyExpr {
-        tokens: (consume_stuff_until(tokens, |token| match token {
-            TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
-            TokenTree::Ident(i) if i == &Ident::new("where", i.span()) => true,
-            TokenTree::Punct(punct) if punct.as_char() == ';' => true,
-            _ => false,
-        })),
+        tokens: (consume_stuff_until(
+            tokens,
+            |token| match token {
+                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
+                TokenTree::Ident(i) if i == &Ident::new("where", i.span()) => true,
+                TokenTree::Punct(punct) if punct.as_char() == ';' => true,
+                _ => false,
+            },
+            true,
+        )),
     })
 }
 

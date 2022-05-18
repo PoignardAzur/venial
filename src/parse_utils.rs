@@ -109,10 +109,12 @@ pub(crate) fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {
 pub(crate) fn consume_stuff_until(
     tokens: &mut TokenIter,
     predicate: impl FnMut(&TokenTree) -> bool,
+    must_find_predicate: bool,
 ) -> Vec<TokenTree> {
     let mut output_tokens = Vec::new();
     let mut bracket_count = 0;
     let mut predicate = predicate;
+    let mut predicate_met = false;
     let mut prev_token_is_dash = false;
 
     loop {
@@ -128,6 +130,7 @@ pub(crate) fn consume_stuff_until(
             }
             Some(TokenTree::Punct(punct)) if punct.as_char() == '-' => true,
             Some(token) if predicate(token) && bracket_count == 0 => {
+                predicate_met = true;
                 break;
             }
             None => {
@@ -136,9 +139,25 @@ pub(crate) fn consume_stuff_until(
             _ => false,
         };
 
-        assert!(bracket_count >= 0, "Unbalanced brackets in type expression");
+        // If we imagine angle brackets as a token group, this is equivalent to reaching
+        // the end of the group's token stream.
+        if bracket_count < 0 {
+            break;
+        }
 
         output_tokens.push(tokens.next().unwrap());
+    }
+
+    if must_find_predicate && !predicate_met {
+        match tokens.next() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '>' => {
+                panic!("unbalanced angle brackets in type expression");
+            }
+            None => {
+                panic!("unexpected end of token stream in type expression");
+            }
+            _ => unreachable!(),
+        }
     }
 
     output_tokens
