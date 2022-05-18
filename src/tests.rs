@@ -570,6 +570,17 @@ fn parse_multiple_brackets() {
     assert_debug_snapshot!(struct_type);
 }
 
+#[test]
+fn parse_bounded_type_param_no_comma() {
+    let struct_type = parse_declaration_checked(quote!(
+        struct Example<A: Clone> {
+            _test: A,
+        }
+    ));
+
+    assert_debug_snapshot!(struct_type);
+}
+
 // FIXME
 #[test]
 #[should_panic = "cannot parse enum variant"]
@@ -592,7 +603,7 @@ fn parse_macro_in_where_clause() {
     let enum_type = parse_declaration_checked(quote!(
         enum A
         where
-            b: c! { : }:, {}
+            b: c! { : }, {}
     ));
 
     assert_debug_snapshot!(enum_type);

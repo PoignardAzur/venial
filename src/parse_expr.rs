@@ -43,7 +43,7 @@ pub(crate) fn consume_expression(tokens: &mut TokenIter) -> Expression {
             Some(TokenTree::Punct(punct))
                 if punct.as_char() == '<' && prev_token == PrevToken::DoubleColon =>
             {
-                let mut turbofish_contents = consume_stuff_until(tokens, |_| true);
+                let mut turbofish_contents = consume_stuff_until(tokens, |_| true, false);
                 output_tokens.append(&mut turbofish_contents);
                 PrevToken::Any
             }

@@ -1,0 +1,49 @@
+---
+source: src/tests.rs
+assertion_line: 581
+expression: struct_type
+---
+Struct(
+    Struct {
+        attributes: [],
+        vis_marker: None,
+        tk_struct: Ident(
+            struct,
+        ),
+        name: Ident(
+            Example,
+        ),
+        generic_params: Some(
+            [
+                GenericParam {
+                    name: "A",
+                    bound: Some(
+                        [
+                            Clone,
+                        ],
+                    ),
+                },
+            ],
+        ),
+        where_clause: None,
+        fields: Named(
+            [
+                NamedField {
+                    attributes: [],
+                    vis_marker: None,
+                    name: Ident(
+                        _test,
+                    ),
+                    tk_colon: Punct {
+                        char: ':',
+                        spacing: Alone,
+                    },
+                    ty: [
+                        A,
+                    ],
+                },
+            ],
+        ),
+        tk_semicolon: None,
+    },
+)

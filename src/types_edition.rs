@@ -518,14 +518,24 @@ impl WhereClauseItem {
     pub fn parse(tokens: TokenStream) -> Self {
         let mut tokens = tokens.into_iter().peekable();
 
-        let left_side = crate::parse_utils::consume_stuff_until(&mut tokens, |token| match token {
-            TokenTree::Punct(punct) if punct.as_char() == ':' => true,
-            _ => false,
-        });
+        let left_side = crate::parse_utils::consume_stuff_until(
+            &mut tokens,
+            |token| match token {
+                TokenTree::Punct(punct) if punct.as_char() == ':' => true,
+                _ => false,
+            },
+            false,
+        );
 
-        let colon = match tokens.next().unwrap() {
-            TokenTree::Punct(punct) if punct.as_char() == ':' => punct,
-            _ => panic!("cannot parse type"),
+        let colon = match tokens.next() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct,
+            Some(token) => panic!(
+                "cannot parse where-clause item: expected ':', found token {:?}",
+                token
+            ),
+            None => {
+                panic!("cannot parse where-clause item: expected colon, found end of stream")
+            }
         };
 
         let bound_tokens = tokens.collect();
