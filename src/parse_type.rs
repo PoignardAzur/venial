@@ -1,10 +1,10 @@
-use crate::parse_expr::consume_expression;
+use crate::error::Error;
 use crate::parse_utils::{
     consume_attributes, consume_comma, consume_stuff_until, consume_vis_marker, parse_ident,
 };
 use crate::punctuated::Punctuated;
 use crate::types::{
-    EnumDiscriminant, EnumVariant, GenericBound, GenericParam, GenericParamList, NamedField,
+    EnumVariant, EnumVariantValue, GenericBound, GenericParam, GenericParamList, NamedField,
     NamedStructFields, StructFields, TupleField, TupleStructFields, TyExpr, WhereClause,
     WhereClauseItem,
 };
@@ -199,22 +199,33 @@ pub(crate) fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
     field_type_tokens
 }
 
-pub(crate) fn consume_enum_discriminant(tokens: &mut TokenIter) -> Option<EnumDiscriminant> {
+pub(crate) fn consume_enum_discriminant(
+    tokens: &mut TokenIter,
+) -> Result<Option<EnumVariantValue>, Error> {
     let equal: Punct;
     match tokens.peek() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => {
             equal = punct.clone();
         }
-        _ => return None,
+        _ => return Ok(None),
     };
 
     // consume '='
     tokens.next();
 
-    Some(EnumDiscriminant {
+    let value_token = tokens.next().unwrap();
+
+    // If the value expression has more than one token, we output an error.
+    match tokens.peek() {
+        None => (),
+        Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => (),
+        Some(_token) => return Err(Error::new("Complex values for enum variants are not supported unless they are between parentheses.")),
+    }
+
+    Ok(Some(EnumVariantValue {
         tk_equal: equal,
-        expression: consume_expression(tokens),
-    })
+        value: value_token,
+    }))
 }
 
 pub(crate) fn parse_tuple_fields(token_group: Group) -> TupleStructFields {
@@ -292,7 +303,7 @@ pub(crate) fn parse_named_fields(token_group: Group) -> NamedStructFields {
     }
 }
 
-pub(crate) fn parse_enum_variants(tokens: TokenStream) -> Punctuated<EnumVariant> {
+pub(crate) fn parse_enum_variants(tokens: TokenStream) -> Result<Punctuated<EnumVariant>, Error> {
     let mut variants = Punctuated::new();
 
     let mut tokens = tokens.into_iter().peekable();
@@ -335,11 +346,11 @@ pub(crate) fn parse_enum_variants(tokens: TokenStream) -> Punctuated<EnumVariant
                 vis_marker,
                 name: ident,
                 contents,
-                discriminant: enum_discriminant,
+                value: enum_discriminant?,
             },
             comma,
         );
     }
 
-    variants
+    Ok(variants)
 }

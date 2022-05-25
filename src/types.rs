@@ -5,11 +5,6 @@ use quote::{ToTokens, TokenStreamExt as _};
 
 use crate::Punctuated;
 
-#[derive(Clone)]
-pub struct Expression {
-    pub tokens: Vec<TokenTree>,
-}
-
 /// The declaration of a Rust type.
 ///
 /// **Example input:**
@@ -114,7 +109,7 @@ pub struct EnumVariant {
     pub contents: StructFields,
 
     /// The value of the variant, normally for c-like enums.
-    pub discriminant: Option<EnumDiscriminant>,
+    pub value: Option<EnumVariantValue>,
 }
 
 /// Declaration of an union.
@@ -359,9 +354,9 @@ pub struct TyExpr {
 /// }
 /// ```
 #[derive(Clone, Debug)]
-pub struct EnumDiscriminant {
+pub struct EnumVariantValue {
     pub tk_equal: Punct,
-    pub expression: Expression,
+    pub value: TokenTree,
 }
 
 /// Information about a [`Group`]. This can be used to recreate the group
@@ -385,16 +380,6 @@ impl<'a> std::fmt::Debug for TokenRef<'a> {
             TokenTree::Punct(_punct) => write!(f, "\"{}\"", &self.0.to_string()),
             TokenTree::Literal(_literal) => f.write_str(&self.0.to_string()),
         }
-    }
-}
-
-impl std::fmt::Debug for Expression {
-    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut list = f.debug_list();
-        for token in &self.tokens {
-            list.entry(&TokenRef(token));
-        }
-        list.finish()
     }
 }
 
@@ -566,14 +551,6 @@ impl GroupSpan {
     }
 }
 
-impl ToTokens for Expression {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
-        for token in &self.tokens {
-            tokens.append(token.clone());
-        }
-    }
-}
-
 impl ToTokens for Declaration {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
@@ -656,7 +633,7 @@ impl ToTokens for EnumVariant {
         self.vis_marker.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.contents.to_tokens(tokens);
-        self.discriminant.to_tokens(tokens);
+        self.value.to_tokens(tokens);
     }
 }
 
@@ -841,10 +818,10 @@ impl ToTokens for TyExpr {
     }
 }
 
-impl ToTokens for EnumDiscriminant {
+impl ToTokens for EnumVariantValue {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.tk_equal.to_tokens(tokens);
-        self.expression.to_tokens(tokens);
+        self.value.to_tokens(tokens);
     }
 }
 

@@ -1,31 +1,13 @@
-use crate::parse_expr::consume_expression;
+use crate::error::Error;
 use crate::parse_fn::{consume_fn_qualifiers, consume_fn_return, parse_fn_params};
 use crate::parse_type::{
     consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
 };
-use crate::parse_utils::{consume_attributes, consume_comma, consume_vis_marker};
-use crate::punctuated::Punctuated;
-use crate::types::{Declaration, Enum, Expression, Function, Struct, StructFields, Union};
+use crate::parse_utils::{consume_attributes, consume_vis_marker};
+use crate::types::{Declaration, Enum, Function, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
-
-#[doc(hidden)]
-pub fn parse_expression_list(tokens: TokenStream) -> Punctuated<Expression> {
-    let mut tokens = tokens.into_iter().peekable();
-    let mut expressions = Punctuated::new();
-
-    while tokens.peek().is_some() {
-        let expression = consume_expression(&mut tokens);
-        let expression = expression;
-
-        let comma = consume_comma(&mut tokens);
-
-        expressions.push(expression, comma);
-    }
-
-    expressions
-}
 
 // TODO - Return Result<...>, handle case where TokenStream is valid declaration,
 // but not a type or function.
@@ -53,16 +35,31 @@ pub fn parse_expression_list(tokens: TokenStream) -> Punctuated<Expression> {
 ///         bar: Bar,
 ///     }
 /// ));
-/// assert!(matches!(struct_type, Declaration::Struct(_)));
+/// assert!(matches!(struct_type, Ok(Declaration::Struct(_))));
 /// ```
 ///
-pub fn parse_declaration(tokens: TokenStream) -> Declaration {
+/// ## Errors
+///
+/// Venial doesn't support enum discriminants with multiple non-grouped tokens. Eg:
+///
+/// ```rust
+/// # #[cfg(FALSE)]
+/// enum MyEnum {
+///     A = 42,           // Ok
+///     B = "hello",      // Ok
+///     C = CONSTANT,     // Ok
+///     D = FOO + BAR,    // MACRO ERROR
+///     E = (FOO + BAR),  // Ok
+/// }
+/// ```
+
+pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
     let mut tokens = tokens.into_iter().peekable();
 
     let attributes = consume_attributes(&mut tokens);
     let vis_marker = consume_vis_marker(&mut tokens);
 
-    match tokens.peek().cloned() {
+    let declaration = match tokens.peek().cloned() {
         Some(TokenTree::Ident(keyword)) if keyword == "struct" => {
             // struct keyword
             tokens.next().unwrap();
@@ -136,7 +133,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
                 generic_params,
                 where_clause,
                 tk_braces: GroupSpan::new(&group),
-                variants: enum_variants,
+                variants: enum_variants?,
             })
         }
         Some(TokenTree::Ident(keyword)) if keyword == "union" => {
@@ -218,5 +215,6 @@ pub fn parse_declaration(tokens: TokenStream) -> Declaration {
         None => {
             panic!("cannot parse type: expected keyword struct/enum/union/fn, found end-of-stream");
         }
-    }
+    };
+    Ok(declaration)
 }

@@ -1,0 +1,10 @@
+---
+source: src/tests.rs
+assertion_line: 534
+expression: enum_type_2
+---
+Err(
+    Error(
+        "Complex values for enum variants are not supported unless they are between parentheses.",
+    ),
+)

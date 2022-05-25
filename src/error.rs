@@ -14,7 +14,7 @@ use std::fmt::{Debug, Display};
 /// message than simply panicking the macro.
 ///
 /// This type provides a convenient [`.to_compile_error()`] method that returns
-/// `compile_error!("You error message")` in TokenStream form.
+/// `compile_error!("Your error message")` in TokenStream form.
 ///
 /// [`compile_error!`]: std::compile_error!
 ///
@@ -30,10 +30,10 @@ use std::fmt::{Debug, Display};
 /// pub fn my_derive(input: TokenStream) -> TokenStream {
 ///     let input = parse_declaration(input);
 ///
-///     let parse_res = if let Declaration::Struct(struct_decl) = input {
-///         parse_my_struct(struct_decl)
-///     } else {
-///         Err(Error::new("Error in my_derive macro: only structs are accepted"))
+///     let parse_res = match input {
+///         Err(error) => Err(error),
+///         Ok(Declaration::Struct(struct_decl)) => parse_my_struct(struct_decl),
+///         Ok(_) => Err(Error::new("Error in my_derive macro: only structs are accepted")),
 ///     };
 ///
 ///     parse_res

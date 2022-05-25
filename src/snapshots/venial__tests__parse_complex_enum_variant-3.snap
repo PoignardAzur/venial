@@ -1,0 +1,160 @@
+---
+source: src/tests.rs
+assertion_line: 535
+expression: enum_type_3
+---
+Ok(
+    Enum(
+        Enum {
+            attributes: [],
+            vis_marker: None,
+            tk_enum: Ident(
+                enum,
+            ),
+            name: Ident(
+                Hello,
+            ),
+            generic_params: None,
+            where_clauses: None,
+            variants: [
+                EnumVariant {
+                    attributes: [],
+                    vis_marker: None,
+                    name: Ident(
+                        A,
+                    ),
+                    contents: Unit,
+                    value: Some(
+                        EnumVariantValue {
+                            tk_equal: Punct {
+                                char: '=',
+                                spacing: Alone,
+                            },
+                            value: Literal {
+                                lit: 1,
+                            },
+                        },
+                    ),
+                },
+                EnumVariant {
+                    attributes: [],
+                    vis_marker: None,
+                    name: Ident(
+                        B,
+                    ),
+                    contents: Tuple(
+                        [
+                            TupleField {
+                                attributes: [],
+                                vis_marker: None,
+                                ty: [
+                                    Foo,
+                                ],
+                            },
+                            TupleField {
+                                attributes: [],
+                                vis_marker: None,
+                                ty: [
+                                    Bar,
+                                ],
+                            },
+                        ],
+                    ),
+                    value: Some(
+                        EnumVariantValue {
+                            tk_equal: Punct {
+                                char: '=',
+                                spacing: Alone,
+                            },
+                            value: Group {
+                                delimiter: Bracket,
+                                stream: TokenStream [
+                                    Literal {
+                                        lit: 1,
+                                    },
+                                    Punct {
+                                        char: '+',
+                                        spacing: Alone,
+                                    },
+                                    Literal {
+                                        lit: 2,
+                                    },
+                                    Punct {
+                                        char: '+',
+                                        spacing: Alone,
+                                    },
+                                    Literal {
+                                        lit: 3,
+                                    },
+                                ],
+                            },
+                        },
+                    ),
+                },
+                EnumVariant {
+                    attributes: [],
+                    vis_marker: None,
+                    name: Ident(
+                        C,
+                    ),
+                    contents: Named(
+                        [
+                            NamedField {
+                                attributes: [],
+                                vis_marker: None,
+                                name: Ident(
+                                    foo,
+                                ),
+                                tk_colon: Punct {
+                                    char: ':',
+                                    spacing: Alone,
+                                },
+                                ty: [
+                                    Foo,
+                                ],
+                            },
+                            NamedField {
+                                attributes: [],
+                                vis_marker: None,
+                                name: Ident(
+                                    bar,
+                                ),
+                                tk_colon: Punct {
+                                    char: ':',
+                                    spacing: Alone,
+                                },
+                                ty: [
+                                    Bar,
+                                ],
+                            },
+                        ],
+                    ),
+                    value: Some(
+                        EnumVariantValue {
+                            tk_equal: Punct {
+                                char: '=',
+                                spacing: Alone,
+                            },
+                            value: Group {
+                                delimiter: Parenthesis,
+                                stream: TokenStream [
+                                    Ident {
+                                        sym: foo,
+                                    },
+                                    Group {
+                                        delimiter: Parenthesis,
+                                        stream: TokenStream [
+                                            Ident {
+                                                sym: bar,
+                                            },
+                                        ],
+                                    },
+                                ],
+                            },
+                        },
+                    ),
+                },
+            ],
+        },
+    ),
+)

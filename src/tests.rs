@@ -1,7 +1,4 @@
-use crate::{
-    parse_declaration, parse_expression_list, Declaration, Expression, GenericParam, Punctuated,
-    Struct, WhereClauseItem,
-};
+use crate::{parse_declaration, Declaration, GenericParam, Struct, WhereClauseItem};
 
 use insta::assert_debug_snapshot;
 use proc_macro2::TokenStream;
@@ -19,20 +16,11 @@ macro_rules! assert_quote_snapshot {
 
 fn parse_declaration_checked(tokens: TokenStream) -> Declaration {
     let initial_tokens = tokens.clone();
-    let declaration = parse_declaration(tokens);
+    let declaration = parse_declaration(tokens).unwrap();
 
     similar_asserts::assert_str_eq!(quote!(#declaration), initial_tokens);
 
     declaration
-}
-
-fn parse_expression_list_checked(tokens: TokenStream) -> Punctuated<Expression> {
-    let initial_tokens = tokens.clone();
-    let expression = parse_expression_list(tokens);
-
-    similar_asserts::assert_str_eq!(quote!(#expression), initial_tokens);
-
-    expression
 }
 
 // =============
@@ -516,21 +504,35 @@ fn parse_enum_empty_generic_params() {
     assert_debug_snapshot!(enum_type);
 }
 
-// =================
-// ENUM DISCRIMINANT
-// =================
+// ==================
+// ENUM VARIANT VALUE
+// ==================
 
 #[test]
-fn parse_enum_discriminant() {
-    let enum_type = parse_declaration_checked(quote!(
+fn parse_complex_enum_variant() {
+    let enum_type_1 = parse_declaration(quote!(
         enum Hello {
             A = 1,
-            B(Foo, Bar) = call::some::function(1, 2, { 3 }),
-            C { foo: Foo, bar: Bar } = A<B>(c) + { D },
+            B(Foo, Bar) = 1 + 2 + 3,
+        }
+    ));
+    let enum_type_2 = parse_declaration(quote!(
+        enum Hello {
+            A = 1,
+            B { foo: Foo, bar: Bar } = foo(bar),
+        }
+    ));
+    let enum_type_3 = parse_declaration(quote!(
+        enum Hello {
+            A = 1,
+            B(Foo, Bar) = [1 + 2 + 3],
+            C { foo: Foo, bar: Bar } = (foo(bar)),
         }
     ));
 
-    assert_debug_snapshot!(enum_type);
+    assert_debug_snapshot!(enum_type_1);
+    assert_debug_snapshot!(enum_type_2);
+    assert_debug_snapshot!(enum_type_3);
 }
 
 // =================
@@ -585,19 +587,6 @@ fn parse_bounded_type_param_no_comma() {
 
 // FIXME
 #[test]
-#[should_panic = "cannot parse enum variant"]
-fn parse_closure_as_discriminant() {
-    let enum_type = parse_declaration_checked(quote!(
-        enum Hello {
-            A = |b, c| b + c,
-        };
-    ));
-
-    assert_debug_snapshot!(enum_type);
-}
-
-// FIXME
-#[test]
 #[should_panic]
 fn parse_macro_in_where_clause() {
     // venial thinks the content of the macro is the content of the enum
@@ -611,54 +600,6 @@ fn parse_macro_in_where_clause() {
     assert_debug_snapshot!(enum_type);
 }
 
-// ===========
-// EXPRESSIONS
-// ===========
-
-#[test]
-fn parse_basic_expression() {
-    let expressions = parse_expression_list_checked(quote!(a + b + c));
-
-    assert_debug_snapshot!(expressions);
-}
-
-#[test]
-fn parse_empty_expression_list() {
-    let expressions = parse_expression_list_checked(quote!());
-
-    assert_debug_snapshot!(expressions);
-}
-
-#[test]
-fn parse_expression_list_items() {
-    let expressions = parse_expression_list_checked(quote!(1 + 2, 3));
-
-    assert_debug_snapshot!(expressions);
-}
-
-#[test]
-fn parse_expression_list_turbofish() {
-    let expressions = parse_expression_list_checked(quote!(a::<b + c, d> + e, f));
-
-    assert_debug_snapshot!(expressions);
-}
-
-// FIXME
-#[test]
-#[should_panic]
-fn parse_closure_expression() {
-    let expressions = parse_expression_list_checked(quote!(|a, b| c));
-
-    assert_eq!(expressions.len(), 1);
-}
-
-#[test]
-fn parse_expression_binary_or() {
-    let expressions = parse_expression_list_checked(quote!(a | b, c | d));
-
-    assert_debug_snapshot!(expressions);
-}
-
 // =========
 // FUNCTIONS
 // =========
@@ -667,7 +608,8 @@ fn parse_expression_binary_or() {
 fn parse_fn() {
     let func = parse_declaration(quote! {
         fn hello(a: i32, b: f32) -> String {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -676,7 +618,8 @@ fn parse_fn() {
 fn parse_empty_fn() {
     let func = parse_declaration(quote! {
         fn test_me() {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -685,7 +628,8 @@ fn parse_empty_fn() {
 fn parse_generic_fn() {
     let func = parse_declaration(quote! {
         fn generic<T, B>(a: T) -> B {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -697,13 +641,15 @@ fn parse_where_fn() {
         where
             T: Debug
         {}
-    });
+    })
+    .unwrap();
     let func_2 = parse_declaration(quote! {
         fn where_clause<T>()
         where
             T: Debug
         {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
     assert_debug_snapshot!(func_2);
@@ -714,7 +660,8 @@ fn parse_attr_fn() {
     let func = parse_declaration(quote! {
         #[my_attr]
         fn my_attr_fn(a: i32) {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -723,7 +670,8 @@ fn parse_attr_fn() {
 fn parse_visi_fn() {
     let func = parse_declaration(quote! {
         pub fn visibility(b: f32) {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -732,7 +680,8 @@ fn parse_visi_fn() {
 fn parse_default_fn() {
     let func = parse_declaration(quote! {
         pub default fn default_fn(b: f32) {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -741,7 +690,8 @@ fn parse_default_fn() {
 fn parse_const_fn() {
     let func = parse_declaration(quote! {
         pub const fn const_fn(b: f32) {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -750,7 +700,8 @@ fn parse_const_fn() {
 fn parse_async_fn() {
     let func = parse_declaration(quote! {
         pub async fn async_fn(b: f32) {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -759,7 +710,8 @@ fn parse_async_fn() {
 fn parse_unsafe_fn() {
     let func = parse_declaration(quote! {
         pub unsafe fn unsafe_fn(b: f32) {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -768,7 +720,8 @@ fn parse_unsafe_fn() {
 fn parse_extern_abi_fn() {
     let func = parse_declaration(quote! {
         pub extern "C" fn extern_fn(b: f32) {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -777,7 +730,8 @@ fn parse_extern_abi_fn() {
 fn parse_extern_fn() {
     let func = parse_declaration(quote! {
         pub extern fn extern_fn(b: f32) {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -786,7 +740,8 @@ fn parse_extern_fn() {
 fn parse_all_kw_fn() {
     let func = parse_declaration(quote! {
         pub default const async unsafe extern "C" fn all_kw(b: f32) {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -795,7 +750,8 @@ fn parse_all_kw_fn() {
 fn parse_param_attr_fn() {
     let func = parse_declaration(quote! {
         pub async fn visibility(#[my_attr] b: f32) {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -806,7 +762,8 @@ fn parse_fn_body() {
         fn hello_world(a: i32, b: f32) -> String {
             println!("hello world")
         }
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -815,7 +772,8 @@ fn parse_fn_body() {
 fn parse_fn_prototype() {
     let func = parse_declaration(quote! {
         fn prototype(a: i32, b: f32) -> String;
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -826,7 +784,8 @@ fn parse_fn_prototype() {
 fn parse_fn_pattern_arg() {
     let func = parse_declaration(quote! {
         fn foobar((a, b): (i32, i32)) {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -837,7 +796,8 @@ fn parse_fn_pattern_arg() {
 fn parse_fn_c_variadics() {
     let func = parse_declaration(quote! {
         fn foobar(a: i32, ...) {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -848,7 +808,8 @@ fn parse_fn_c_variadics() {
 fn parse_fn_no_pattern() {
     let func = parse_declaration(quote! {
         fn foobar(i32) {}
-    });
+    })
+    .unwrap();
 
     assert_debug_snapshot!(func);
 }
@@ -881,7 +842,7 @@ fn parse_fn_self_param() {
 // ============
 
 fn parse_struct_declaration(tokens: TokenStream) -> Struct {
-    match parse_declaration(tokens) {
+    match parse_declaration(tokens).unwrap() {
         Declaration::Struct(struct_decl) => struct_decl,
         _ => panic!("not a struct"),
     }

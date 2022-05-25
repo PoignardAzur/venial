@@ -43,7 +43,7 @@
 //! ));
 //!
 //! let enum_type = match enum_type {
-//!     Declaration::Enum(enum_type) => enum_type,
+//!     Ok(Declaration::Enum(enum_type)) => enum_type,
 //!     _ => unreachable!(),
 //! };
 //!
@@ -63,7 +63,6 @@ mod tests;
 
 mod error;
 mod parse;
-mod parse_expr;
 mod parse_fn;
 mod parse_type;
 mod parse_utils;
@@ -72,11 +71,10 @@ mod types;
 mod types_edition;
 
 pub use error::Error;
-pub use parse::{parse_declaration, parse_expression_list};
+pub use parse::parse_declaration;
 pub use punctuated::Punctuated;
 pub use types::{
-    Attribute, AttributeValue, Declaration, Enum, EnumDiscriminant, EnumVariant, Expression,
-    GenericBound, GenericParam, GenericParamList, NamedField, NamedStructFields, Struct,
-    StructFields, TupleField, TupleStructFields, TyExpr, Union, VisMarker, WhereClause,
-    WhereClauseItem,
+    Attribute, AttributeValue, Declaration, Enum, EnumVariant, EnumVariantValue, GenericBound,
+    GenericParam, GenericParamList, NamedField, NamedStructFields, Struct, StructFields,
+    TupleField, TupleStructFields, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
