@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-assertion_line: 286
+assertion_line: 276
 expression: enum_type
 ---
 Enum(
@@ -37,7 +37,7 @@ Enum(
                     A,
                 ),
                 contents: Unit,
-                discriminant: None,
+                value: None,
             },
             EnumVariant {
                 attributes: [],
@@ -63,7 +63,7 @@ Enum(
                         },
                     ],
                 ),
-                discriminant: None,
+                value: None,
             },
             EnumVariant {
                 attributes: [],
@@ -103,7 +103,7 @@ Enum(
                         },
                     ],
                 ),
-                discriminant: None,
+                value: None,
             },
         ],
     },

@@ -35,11 +35,25 @@ To achieve this simplicity, venial makes several trade-offs:
 
 - It can only parse declarations (eg `struct MyStruct {}`). It can't parse expressions or statements. For now, only types and functions are supported.
 - It doesn't try to parse inside type expressions. For instance, if your struct includes a field like `foo_bar: &mut Foo<Bar, dyn Foobariser>`, venial will dutifully give you this type as a sequence of tokens and let you interpret it.
-- It doesn't attempt to recover gracefully from errors. Venial assumes you're running inside a derive macro, and thus that your input is statically guaranteed to be a valid type declaration. If it isn't, venial will summarily panic.
+- It doesn't attempt to recover gracefully from errors. Venial assumes you're running inside a derive or attribute macro, and thus that your input is statically guaranteed to be a valid type declaration. If it isn't, venial will summarily panic.
 
 Note though that venial will accept any syntactically valid declaration, even if it isn't semantically valid. The rule of thumb is "if it compiles under a `#[cfg(FALSE)]`, venial will parse it without panicking".
 
-(Note: The above sentence is a lie; venial currently panics on unsupported declarations, eg traits, aliases, etc.)
+The only exception is enum discriminants. Venial only supports enum discriminants with a single token, or a token-group. Eg:
+
+```rust
+enum MyEnum {
+    A = 42,           // Ok
+    B = "hello",      // Ok
+    C = CONSTANT,     // Ok
+    D = FOO + BAR,    // MACRO ERROR
+    E = (FOO + BAR),  // Ok
+}
+```
+
+This is because parsing complex discriminants requires arbitrary expression parsing, which is beyond the scope of this crate.
+
+(Note: venial currently panics on unsupported declarations, eg traits, aliases, etc. Also, function support is incomplete.)
 
 
 ## Example

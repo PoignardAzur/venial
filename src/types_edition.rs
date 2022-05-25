@@ -1,5 +1,5 @@
 pub use crate::types::{
-    Attribute, AttributeValue, Declaration, Enum, EnumDiscriminant, EnumVariant, Function,
+    Attribute, AttributeValue, Declaration, Enum, EnumVariant, EnumVariantValue, Function,
     GenericBound, GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, NamedField, Struct,
     StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
@@ -56,7 +56,7 @@ impl Declaration {
     /// # use quote::quote;
     /// let struct_type = parse_declaration(quote!(
     ///     struct Hello(A, B);
-    /// ));
+    /// )).unwrap();
     /// assert_eq!(struct_type.name().to_string(), "Hello");
     /// ```
     pub fn name(&self) -> Ident {
@@ -115,7 +115,7 @@ impl Struct {
     ///         a: Foo,
     ///         b: Bar,
     ///     }
-    /// ));
+    /// )).unwrap();
     /// let struct_type = struct_type.as_struct().unwrap();
     /// let field_names: Vec<_> = struct_type.field_names().into_iter().collect();
     /// assert_eq!(field_names, ["a", "b"]);
@@ -126,7 +126,7 @@ impl Struct {
     /// # use quote::quote;
     /// let tuple_type = parse_declaration(quote!(
     ///     struct Hello(Foo, Bar);
-    /// ));
+    /// )).unwrap();
     /// let tuple_type = tuple_type.as_struct().unwrap();
     /// let field_names: Vec<_> = tuple_type.field_names().into_iter().collect();
     /// assert_eq!(field_names, ["0", "1"]);
@@ -187,7 +187,7 @@ impl Enum {
     /// # use quote::quote;
     /// let enum_type = parse_declaration(quote!(
     ///     enum MyEnum { A, B, C, D }
-    /// ));
+    /// )).unwrap();
     /// let enum_type = enum_type.as_enum().unwrap();
     /// assert!(enum_type.is_c_enum());
     /// ```
