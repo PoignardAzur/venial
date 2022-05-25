@@ -128,15 +128,12 @@ Another thing to keep in mind is that this is a very young library. There has be
 
 Pull requests are welcome.
 
-My current roadmap is:
+I have no intention to work on venial in the near future myself, but I will still merge PRs.
 
-- Find any bugs there might be and fix them.
-- Port other projects from syn to venial and compare compile times.
-- Add Github Actions
+Some possible improvements:
 
-On the long term, I'd also like to add parsing for more use cases, while keeping the crate lightweight:
-
+- Fixing the function declaration parser.
+- Finding and fixing any eventual bugs.
+- Porting other projects from syn to venial and comparing compile times.
 - Parsing traits.
-- Parsing comma-separated expression lists.
-
-With those, I believe venial would cover virtually all use cases that popular libraries use syn for.
+- Parsing all possible declarations.
