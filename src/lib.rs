@@ -52,12 +52,6 @@
 //! assert_eq!(enum_type.variants[2].0.name, "Triangle");
 //! ```
 
-// Note: to get rust-analyzer to work within the `fuzz` module, add the following to .cargo/config.toml:
-// [build]
-// rustflags = ["--cfg", "fuzzing"]
-#[cfg(all(test, fuzzing))]
-pub mod fuzz;
-
 #[cfg(test)]
 mod tests;
 
