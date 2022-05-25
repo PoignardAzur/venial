@@ -17,16 +17,3 @@ quote = "1.0.15"
 [dev-dependencies]
 insta = "1.12.0"
 similar-asserts = "1.2.0"
-
-# fuzzcheck and syn are heavy, so only import them when `cfg(fuzzing)` is set
-[target.'cfg(fuzzing)'.dev-dependencies]
-fuzzcheck = { git = "https://github.com/loiclec/fuzzcheck-rs", default-features = false }
-fuzzcheck_proc_macro2 = { git = "https://github.com/loiclec/fuzzcheck_proc_macro2" }
-syn = { version = "1.0.89", features = ["full", "visit"] }
-
-# not stricly necessary, but it is good for the fuzzer to run as fast as possible
-[profile.fuzzing]
-inherits = "release"
-codegen-units = 1
-lto = "thin"
-debug = false
