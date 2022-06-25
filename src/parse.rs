@@ -1,11 +1,11 @@
 use crate::error::Error;
-use crate::parse_fn::{consume_fn_qualifiers, consume_fn_return, parse_fn_params};
+use crate::parse_fn::consume_fn;
 use crate::parse_type::{
     consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
 };
 use crate::parse_utils::{consume_attributes, consume_vis_marker};
-use crate::types::{Declaration, Enum, Function, Struct, StructFields, Union};
+use crate::types::{Declaration, Enum, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
 
@@ -162,58 +162,23 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
             })
         }
         Some(TokenTree::Ident(keyword))
+            // Note: fn qualifiers appear always in this order in Rust
             if matches!(
                 keyword.to_string().as_str(),
-                "default" | "const" | "async" | "unsafe" | "extern" | "fn"
+               "default" | "const" | "async" | "unsafe" | "extern" | "fn"
             ) =>
         {
-            let qualifiers = consume_fn_qualifiers(&mut tokens);
-
-            // fn keyword
-            tokens.next().unwrap();
-
-            let fn_name = consume_declaration_name(&mut tokens);
-            let generic_params = consume_generic_params(&mut tokens);
-
-            let params = match tokens.next().unwrap() {
-                TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
-                    parse_fn_params(group.stream())
-                }
-                _ => panic!("cannot parse function"),
-            };
-
-            let return_ty = consume_fn_return(&mut tokens);
-
-            let where_clause = consume_where_clause(&mut tokens);
-
-            let function_body = match &tokens.next().unwrap() {
-                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                    Some(group.clone())
-                }
-                TokenTree::Punct(punct) if punct.as_char() == ';' => None,
-                _ => panic!("cannot parse function"),
-            };
-
-            Declaration::Function(Function {
-                attributes,
-                vis_marker,
-                qualifiers,
-                name: fn_name,
-                generic_params,
-                params,
-                where_clause,
-                return_ty,
-                body: function_body,
-            })
+            let function = consume_fn(&mut tokens, attributes, vis_marker);
+            Declaration::Function(function)
         }
         Some(token) => {
             panic!(
-                "cannot parse declaration: expected keyword struct/enum/union/fn, found token {:?}",
+                "cannot parse declaration: expected keyword struct/enum/union/default/const/async/unsafe/extern/fn, found token {:?}",
                 token
             );
         }
         None => {
-            panic!("cannot parse type: expected keyword struct/enum/union/fn, found end-of-stream");
+            panic!("cannot parse type: expected keyword struct/enum/union/default/const/async/unsafe/extern/fn, found end-of-stream");
         }
     };
     Ok(declaration)

@@ -1,11 +1,57 @@
-use crate::parse_type::consume_field_type;
+use crate::parse_type::{
+    consume_declaration_name, consume_field_type, consume_generic_params, consume_where_clause,
+};
 use crate::parse_utils::{consume_attributes, consume_comma, consume_stuff_until, parse_ident};
 use crate::punctuated::Punctuated;
-use crate::types::{FunctionParameter, FunctionQualifiers, TyExpr};
+use crate::types::{Function, FunctionParameter, FunctionQualifiers, TyExpr};
+use crate::{Attribute, VisMarker};
 use proc_macro2::{Delimiter, Ident, TokenStream, TokenTree};
 use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
+
+pub(crate) fn consume_fn(
+    tokens: &mut TokenIter,
+    attributes: Vec<Attribute>,
+    vis_marker: Option<VisMarker>,
+) -> Function {
+    let qualifiers = consume_fn_qualifiers(tokens);
+
+    // fn keyword
+    tokens.next().unwrap();
+
+    let fn_name = consume_declaration_name(tokens);
+    let generic_params = consume_generic_params(tokens);
+
+    let params = match tokens.next().unwrap() {
+        TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
+            parse_fn_params(group.stream())
+        }
+        _ => panic!("cannot parse function"),
+    };
+
+    let return_ty = consume_fn_return(tokens);
+
+    let where_clause = consume_where_clause(tokens);
+
+    let function_body = match &tokens.next().unwrap() {
+        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => Some(group.clone()),
+        TokenTree::Punct(punct) if punct.as_char() == ';' => None,
+        _ => panic!("cannot parse function"),
+    };
+
+    Function {
+        attributes,
+        vis_marker,
+        qualifiers,
+        name: fn_name,
+        generic_params,
+        params,
+        where_clause,
+        return_ty,
+        body: function_body,
+    }
+}
 
 pub(crate) fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FunctionQualifiers {
     let tk_default = match tokens.peek() {
