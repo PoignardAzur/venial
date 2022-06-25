@@ -150,8 +150,10 @@ pub struct Function {
     pub qualifiers: FunctionQualifiers,
     pub name: Ident,
     pub generic_params: Option<GenericParamList>,
+    pub tk_params_parens: GroupSpan,
     pub params: Punctuated<FunctionParameter>,
     pub where_clause: Option<WhereClause>,
+    pub tk_return_arrow: Option<[Punct; 2]>,
     pub return_ty: Option<TyExpr>,
     pub body: Option<Group>,
 }
@@ -181,6 +183,7 @@ pub struct FunctionQualifiers {
 pub struct FunctionParameter {
     pub attributes: Vec<Attribute>,
     pub name: Ident,
+    pub tk_colon: Punct,
     pub ty: TyExpr,
 }
 
@@ -651,7 +654,6 @@ impl ToTokens for Union {
     }
 }
 
-// FIXME
 impl ToTokens for Function {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for attribute in &self.attributes {
@@ -659,12 +661,24 @@ impl ToTokens for Function {
         }
         self.vis_marker.to_tokens(tokens);
         self.qualifiers.to_tokens(tokens);
+        tokens.append(Ident::new("fn", Span::call_site()));
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
-        self.params.to_tokens(tokens);
+        self.tk_params_parens.quote_with(tokens, |tokens| {
+            self.params.to_tokens(tokens);
+        });
+        if let Some([dash, tip]) = self.tk_return_arrow.as_ref() {
+            dash.to_tokens(tokens);
+            tip.to_tokens(tokens);
+        }
+        self.return_ty.to_tokens(tokens);
         self.where_clause.to_tokens(tokens);
-        //self.return_ty.to_tokens(tokens);
-        //self.body.to_tokens(tokens);
+
+        if let Some(body) = self.body.as_ref() {
+            body.to_tokens(tokens);
+        } else {
+            tokens.append(Punct::new(';', Spacing::Alone))
+        }
     }
 }
 
@@ -679,13 +693,13 @@ impl ToTokens for FunctionQualifiers {
     }
 }
 
-// FIXME
 impl ToTokens for FunctionParameter {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for attribute in &self.attributes {
             attribute.to_tokens(tokens);
         }
         self.name.to_tokens(tokens);
+        self.tk_colon.to_tokens(tokens);
         self.ty.to_tokens(tokens);
     }
 }

@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 691
 expression: func
 ---
 Function(
@@ -19,12 +18,17 @@ Function(
             hello_world,
         ),
         generic_params: None,
+        tk_params_parens: (),
         params: [
             FunctionParameter {
                 attributes: [],
                 name: Ident(
                     a,
                 ),
+                tk_colon: Punct {
+                    char: ':',
+                    spacing: Alone,
+                },
                 ty: [
                     i32,
                 ],
@@ -34,12 +38,28 @@ Function(
                 name: Ident(
                     b,
                 ),
+                tk_colon: Punct {
+                    char: ':',
+                    spacing: Alone,
+                },
                 ty: [
                     f32,
                 ],
             },
         ],
         where_clause: None,
+        tk_return_arrow: Some(
+            [
+                Punct {
+                    char: '-',
+                    spacing: Joint,
+                },
+                Punct {
+                    char: '>',
+                    spacing: Alone,
+                },
+            ],
+        ),
         return_ty: Some(
             [
                 String,
