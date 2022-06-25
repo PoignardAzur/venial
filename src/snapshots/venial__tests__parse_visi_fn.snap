@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 608
 expression: func
 ---
 Function(
@@ -21,18 +20,24 @@ Function(
             visibility,
         ),
         generic_params: None,
+        tk_params_parens: (),
         params: [
             FunctionParameter {
                 attributes: [],
                 name: Ident(
                     b,
                 ),
+                tk_colon: Punct {
+                    char: ':',
+                    spacing: Alone,
+                },
                 ty: [
                     f32,
                 ],
             },
         ],
         where_clause: None,
+        tk_return_arrow: None,
         return_ty: None,
         body: Some(
             Group {

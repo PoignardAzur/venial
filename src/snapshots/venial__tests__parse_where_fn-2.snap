@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 589
 expression: func_2
 ---
 Function(
@@ -26,6 +25,7 @@ Function(
                 },
             ],
         ),
+        tk_params_parens: (),
         params: [],
         where_clause: Some(
             [
@@ -36,6 +36,7 @@ Function(
                 ],
             ],
         ),
+        tk_return_arrow: None,
         return_ty: None,
         body: Some(
             Group {

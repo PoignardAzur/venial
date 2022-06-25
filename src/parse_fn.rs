@@ -3,9 +3,9 @@ use crate::parse_type::{
 };
 use crate::parse_utils::{consume_attributes, consume_comma, consume_stuff_until, parse_ident};
 use crate::punctuated::Punctuated;
-use crate::types::{Function, FunctionParameter, FunctionQualifiers, TyExpr};
+use crate::types::{Function, FunctionParameter, FunctionQualifiers, GroupSpan, TyExpr};
 use crate::{Attribute, VisMarker};
-use proc_macro2::{Delimiter, Ident, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Ident, Punct, TokenStream, TokenTree};
 use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
@@ -23,14 +23,18 @@ pub(crate) fn consume_fn(
     let fn_name = consume_declaration_name(tokens);
     let generic_params = consume_generic_params(tokens);
 
-    let params = match tokens.next().unwrap() {
+    let (params, tk_params_parens) = match tokens.next().unwrap() {
         TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
-            parse_fn_params(group.stream())
+            (parse_fn_params(group.stream()), GroupSpan::new(&group))
         }
         _ => panic!("cannot parse function"),
     };
 
-    let return_ty = consume_fn_return(tokens);
+    let (tk_return_arrow, return_ty) = if let Some((arrow, ty)) = consume_fn_return(tokens) {
+        (Some(arrow), Some(ty))
+    } else {
+        (None, None)
+    };
 
     let where_clause = consume_where_clause(tokens);
 
@@ -46,8 +50,10 @@ pub(crate) fn consume_fn(
         qualifiers,
         name: fn_name,
         generic_params,
+        tk_params_parens,
         params,
         where_clause,
+        tk_return_arrow,
         return_ty,
         body: function_body,
     }
@@ -120,30 +126,33 @@ pub(crate) fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FunctionQualifier
     }
 }
 
-pub(crate) fn consume_fn_return(tokens: &mut TokenIter) -> Option<TyExpr> {
-    match tokens.peek() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == '-' => (),
+pub(crate) fn consume_fn_return(tokens: &mut TokenIter) -> Option<([Punct; 2], TyExpr)> {
+    let dash = match tokens.peek() {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == '-' => punct.clone(),
         _ => return None,
     };
-    let _dash = tokens.next().unwrap();
+    tokens.next().unwrap();
 
-    match tokens.next() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == '>' => (),
+    let tip = match tokens.next() {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == '>' => punct,
         _ => panic!("cannot parse fn return: expected '>' after '-' token"),
     };
 
-    Some(TyExpr {
-        tokens: (consume_stuff_until(
-            tokens,
-            |token| match token {
-                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
-                TokenTree::Ident(i) if i == &Ident::new("where", i.span()) => true,
-                TokenTree::Punct(punct) if punct.as_char() == ';' => true,
-                _ => false,
-            },
-            true,
-        )),
-    })
+    Some((
+        [dash, tip],
+        TyExpr {
+            tokens: (consume_stuff_until(
+                tokens,
+                |token| match token {
+                    TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
+                    TokenTree::Ident(i) if i == &Ident::new("where", i.span()) => true,
+                    TokenTree::Punct(punct) if punct.as_char() == ';' => true,
+                    _ => false,
+                },
+                true,
+            )),
+        },
+    ))
 }
 
 pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FunctionParameter> {
@@ -160,8 +169,8 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FunctionParamet
         let ident = parse_ident(tokens.next().unwrap()).unwrap();
 
         // TODO - Handle self parameter
-        match tokens.next() {
-            Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => (),
+        let tk_colon = match tokens.next() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct.clone(),
             _ => panic!("cannot parse fn params"),
         };
 
@@ -172,6 +181,7 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FunctionParamet
             FunctionParameter {
                 attributes,
                 name: ident,
+                tk_colon,
                 ty: TyExpr { tokens: ty_tokens },
             },
             comma,

@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 561
 expression: func
 ---
 Function(
@@ -19,8 +18,10 @@ Function(
             test_me,
         ),
         generic_params: None,
+        tk_params_parens: (),
         params: [],
         where_clause: None,
+        tk_return_arrow: None,
         return_ty: None,
         body: Some(
             Group {

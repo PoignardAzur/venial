@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 570
 expression: func
 ---
 Function(
@@ -30,18 +29,35 @@ Function(
                 },
             ],
         ),
+        tk_params_parens: (),
         params: [
             FunctionParameter {
                 attributes: [],
                 name: Ident(
                     a,
                 ),
+                tk_colon: Punct {
+                    char: ':',
+                    spacing: Alone,
+                },
                 ty: [
                     T,
                 ],
             },
         ],
         where_clause: None,
+        tk_return_arrow: Some(
+            [
+                Punct {
+                    char: '-',
+                    spacing: Joint,
+                },
+                Punct {
+                    char: '>',
+                    spacing: Alone,
+                },
+            ],
+        ),
         return_ty: Some(
             [
                 B,
