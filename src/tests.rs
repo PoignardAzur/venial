@@ -814,27 +814,25 @@ fn parse_fn_no_pattern() {
     assert_debug_snapshot!(func);
 }
 
-// FIXME
 #[test]
-#[should_panic]
 fn parse_fn_self_param() {
-    let func_0 = parse_declaration(quote! {
+    let func_self = parse_declaration(quote! {
         fn foobar(self) {}
     });
-    let func_1 = parse_declaration(quote! {
+    let func_ref_self = parse_declaration(quote! {
         fn foobar(&self) {}
     });
-    let func_2 = parse_declaration(quote! {
+    let func_mut_self = parse_declaration(quote! {
         fn foobar(mut self) {}
     });
-    let func_3 = parse_declaration(quote! {
+    let func_ref_mut_self = parse_declaration(quote! {
         fn foobar(&mut self) {}
     });
 
-    assert_debug_snapshot!(func_0);
-    assert_debug_snapshot!(func_1);
-    assert_debug_snapshot!(func_2);
-    assert_debug_snapshot!(func_3);
+    assert_debug_snapshot!(func_self);
+    assert_debug_snapshot!(func_ref_self);
+    assert_debug_snapshot!(func_mut_self);
+    assert_debug_snapshot!(func_ref_mut_self);
 }
 
 // ============

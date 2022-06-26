@@ -174,14 +174,46 @@ pub struct FunctionQualifiers {
 
 /// A parameter of a [`Function`]
 ///
-/// In the following code, the function parameters captured are `a: i32` and `b: f32`
+/// Function parameters can either be receivers (`self` variations) or typed parameters (`name: type` form).
 ///
+/// In the following code, the parameters captured are `&self`, `a: i32` and `b: f32`:
 /// ```no_run
-/// pub fn hello_world(a: i32, b: f32) {}
+/// # struct S; impl S {
+/// pub fn hello_world(&self, a: i32, b: f32) {}
+/// # }
 /// ```
 #[derive(Clone, Debug)]
-pub struct FunctionParameter {
+pub enum FunctionParameter {
+    Receiver(FunctionReceiverParameter),
+    Typed(FunctionTypedParameter),
+}
+
+/// A [`Function`] parameter which refers to `self` in some way.
+///
+/// Possible parameters captures by this are `self`, `mut self`, `&self` or `&mut self`.
+/// Reference lifetimes are not yet supported.
+///
+/// Parameters of the form `self: Pin<&mut Self>` are recognized as [`FunctionTypedParameter`].
+#[derive(Clone, Debug)]
+pub struct FunctionReceiverParameter {
     pub attributes: Vec<Attribute>,
+    pub tk_ref: Option<Punct>,
+    // TODO ref lifetime (update doc)
+    pub tk_mut: Option<Ident>,
+    pub tk_self: Ident,
+}
+
+/// A parameter of a [`Function`]
+///
+/// In the following code, the function parameters captured are `a: i32` and `mut b: f32`
+///
+/// ```no_run
+/// pub fn hello_world(a: i32, mut b: f32) {}
+/// ```
+#[derive(Clone, Debug)]
+pub struct FunctionTypedParameter {
+    pub attributes: Vec<Attribute>,
+    pub tk_mut: Option<Ident>,
     pub name: Ident,
     pub tk_colon: Punct,
     pub ty: TyExpr,
@@ -695,9 +727,30 @@ impl ToTokens for FunctionQualifiers {
 
 impl ToTokens for FunctionParameter {
     fn to_tokens(&self, tokens: &mut TokenStream) {
+        match self {
+            FunctionParameter::Receiver(param) => param.to_tokens(tokens),
+            FunctionParameter::Typed(param) => param.to_tokens(tokens),
+        }
+    }
+}
+
+impl ToTokens for FunctionReceiverParameter {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
         for attribute in &self.attributes {
             attribute.to_tokens(tokens);
         }
+        self.tk_ref.to_tokens(tokens);
+        self.tk_mut.to_tokens(tokens);
+        self.tk_self.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for FunctionTypedParameter {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.tk_mut.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.tk_colon.to_tokens(tokens);
         self.ty.to_tokens(tokens);

@@ -32,19 +32,22 @@ Function(
         generic_params: None,
         tk_params_parens: (),
         params: [
-            FunctionParameter {
-                attributes: [],
-                name: Ident(
-                    a,
-                ),
-                tk_colon: Punct {
-                    char: ':',
-                    spacing: Alone,
+            Typed(
+                FunctionTypedParameter {
+                    attributes: [],
+                    tk_mut: None,
+                    name: Ident(
+                        a,
+                    ),
+                    tk_colon: Punct {
+                        char: ':',
+                        spacing: Alone,
+                    },
+                    ty: [
+                        i32,
+                    ],
                 },
-                ty: [
-                    i32,
-                ],
-            },
+            ),
         ],
         where_clause: None,
         tk_return_arrow: None,

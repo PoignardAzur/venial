@@ -1,0 +1,51 @@
+---
+source: src/tests.rs
+expression: func_ref_self
+---
+Ok(
+    Function(
+        Function {
+            attributes: [],
+            vis_marker: None,
+            qualifiers: FunctionQualifiers {
+                tk_default: None,
+                tk_const: None,
+                tk_async: None,
+                tk_unsafe: None,
+                tk_extern: None,
+                extern_abi: None,
+            },
+            name: Ident(
+                foobar,
+            ),
+            generic_params: None,
+            tk_params_parens: (),
+            params: [
+                Receiver(
+                    FunctionReceiverParameter {
+                        attributes: [],
+                        tk_ref: Some(
+                            Punct {
+                                char: '&',
+                                spacing: Alone,
+                            },
+                        ),
+                        tk_mut: None,
+                        tk_self: Ident(
+                            self,
+                        ),
+                    },
+                ),
+            ],
+            where_clause: None,
+            tk_return_arrow: None,
+            return_ty: None,
+            body: Some(
+                Group {
+                    delimiter: Brace,
+                    stream: TokenStream [],
+                },
+            ),
+        },
+    ),
+)
