@@ -26,31 +26,34 @@ Function(
         generic_params: None,
         tk_params_parens: (),
         params: [
-            FunctionParameter {
-                attributes: [
-                    Attribute {
-                        tk_hashbang: Punct {
-                            char: '#',
-                            spacing: Alone,
+            Typed(
+                FunctionTypedParameter {
+                    attributes: [
+                        Attribute {
+                            tk_hashbang: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_brackets: [],
+                            path: [
+                                my_attr,
+                            ],
+                            value: Empty,
                         },
-                        tk_brackets: [],
-                        path: [
-                            my_attr,
-                        ],
-                        value: Empty,
+                    ],
+                    tk_mut: None,
+                    name: Ident(
+                        b,
+                    ),
+                    tk_colon: Punct {
+                        char: ':',
+                        spacing: Alone,
                     },
-                ],
-                name: Ident(
-                    b,
-                ),
-                tk_colon: Punct {
-                    char: ':',
-                    spacing: Alone,
+                    ty: [
+                        f32,
+                    ],
                 },
-                ty: [
-                    f32,
-                ],
-            },
+            ),
         ],
         where_clause: None,
         tk_return_arrow: None,

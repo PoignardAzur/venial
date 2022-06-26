@@ -3,7 +3,10 @@ use crate::parse_type::{
 };
 use crate::parse_utils::{consume_attributes, consume_comma, consume_stuff_until, parse_ident};
 use crate::punctuated::Punctuated;
-use crate::types::{Function, FunctionParameter, FunctionQualifiers, GroupSpan, TyExpr};
+use crate::types::{
+    Function, FunctionParameter, FunctionQualifiers, FunctionReceiverParameter,
+    FunctionTypedParameter, GroupSpan, TyExpr,
+};
 use crate::{Attribute, VisMarker};
 use proc_macro2::{Delimiter, Ident, Punct, TokenStream, TokenTree};
 use std::iter::Peekable;
@@ -165,27 +168,58 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FunctionParamet
         }
         let attributes = consume_attributes(&mut tokens);
 
-        // TODO - handle non-ident argument names
-        let ident = parse_ident(tokens.next().unwrap()).unwrap();
-
-        // TODO - Handle self parameter
-        let tk_colon = match tokens.next() {
-            Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct.clone(),
-            _ => panic!("cannot parse fn params"),
+        let tk_ref = match tokens.peek() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '&' => {
+                let ref_symbol = punct.clone();
+                tokens.next();
+                Some(ref_symbol)
+            }
+            _ => None,
+        };
+        let tk_mut = match tokens.peek() {
+            Some(TokenTree::Ident(ident)) if ident == "mut" => {
+                let mut_ident = ident.clone();
+                tokens.next();
+                Some(mut_ident)
+            }
+            _ => None,
+        };
+        let tk_self = match tokens.peek() {
+            Some(TokenTree::Ident(ident)) if ident == "self" => {
+                let self_ident = ident.clone();
+                tokens.next();
+                Some(self_ident)
+            }
+            _ => None,
         };
 
-        let ty_tokens = consume_field_type(&mut tokens);
-        let comma = consume_comma(&mut tokens);
-
-        fields.push(
-            FunctionParameter {
+        let param = if let Some(tk_self) = tk_self {
+            FunctionParameter::Receiver(FunctionReceiverParameter {
                 attributes,
+                tk_ref,
+                tk_mut,
+                tk_self,
+            })
+        } else {
+            // TODO - handle non-ident argument names
+            let ident = parse_ident(tokens.next().unwrap()).unwrap();
+            let tk_colon = match tokens.next() {
+                Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct.clone(),
+                _ => panic!("cannot parse fn params"),
+            };
+            let ty_tokens = consume_field_type(&mut tokens);
+            FunctionParameter::Typed(FunctionTypedParameter {
+                attributes,
+                tk_mut,
                 name: ident,
                 tk_colon,
                 ty: TyExpr { tokens: ty_tokens },
-            },
-            comma,
-        );
+            })
+        };
+
+        let comma = consume_comma(&mut tokens);
+
+        fields.push(param, comma);
     }
 
     fields
