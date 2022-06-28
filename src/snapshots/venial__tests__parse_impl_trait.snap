@@ -1,0 +1,261 @@
+---
+source: src/tests.rs
+expression: impl_decl
+---
+Impl(
+    Impl {
+        attributes: [],
+        tk_impl: Ident(
+            impl,
+        ),
+        impl_generic_params: None,
+        trait_ty: Some(
+            [
+                MyTrait,
+            ],
+        ),
+        tk_for: Some(
+            Ident(
+                for,
+            ),
+        ),
+        self_ty: [
+            MyStruct,
+        ],
+        where_clause: None,
+        body: ImplBody {
+            members: [
+                AssocTy(
+                    TypeDefinition {
+                        attributes: [],
+                        vis_marker: Some(
+                            pub,
+                        ),
+                        tk_type: Ident(
+                            type,
+                        ),
+                        name: Ident(
+                            MyType,
+                        ),
+                        tk_equals: Punct {
+                            char: '=',
+                            spacing: Alone,
+                        },
+                        initializer_ty: [
+                            std,
+                            ":",
+                            ":",
+                            string,
+                            ":",
+                            ":",
+                            String,
+                        ],
+                        tk_semicolon: Punct {
+                            char: ';',
+                            spacing: Alone,
+                        },
+                    },
+                ),
+                Method(
+                    Function {
+                        attributes: [],
+                        vis_marker: None,
+                        qualifiers: FunctionQualifiers {
+                            tk_default: None,
+                            tk_const: None,
+                            tk_async: None,
+                            tk_unsafe: None,
+                            tk_extern: None,
+                            extern_abi: None,
+                        },
+                        name: Ident(
+                            new,
+                        ),
+                        generic_params: None,
+                        tk_params_parens: (),
+                        params: [
+                            Typed(
+                                FunctionTypedParameter {
+                                    attributes: [],
+                                    tk_mut: None,
+                                    name: Ident(
+                                        i,
+                                    ),
+                                    tk_colon: Punct {
+                                        char: ':',
+                                        spacing: Alone,
+                                    },
+                                    ty: [
+                                        i32,
+                                    ],
+                                },
+                            ),
+                            Typed(
+                                FunctionTypedParameter {
+                                    attributes: [],
+                                    tk_mut: None,
+                                    name: Ident(
+                                        b,
+                                    ),
+                                    tk_colon: Punct {
+                                        char: ':',
+                                        spacing: Alone,
+                                    },
+                                    ty: [
+                                        bool,
+                                    ],
+                                },
+                            ),
+                        ],
+                        where_clause: None,
+                        tk_return_arrow: Some(
+                            [
+                                Punct {
+                                    char: '-',
+                                    spacing: Joint,
+                                },
+                                Punct {
+                                    char: '>',
+                                    spacing: Alone,
+                                },
+                            ],
+                        ),
+                        return_ty: Some(
+                            [
+                                Self,
+                            ],
+                        ),
+                        body: Some(
+                            Group {
+                                delimiter: Brace,
+                                stream: TokenStream [
+                                    Ident {
+                                        sym: Self,
+                                    },
+                                    Group {
+                                        delimiter: Brace,
+                                        stream: TokenStream [],
+                                    },
+                                ],
+                            },
+                        ),
+                    },
+                ),
+                Method(
+                    Function {
+                        attributes: [
+                            Attribute {
+                                tk_hashbang: Punct {
+                                    char: '#',
+                                    spacing: Alone,
+                                },
+                                tk_brackets: [],
+                                path: [
+                                    attr,
+                                ],
+                                value: Empty,
+                            },
+                        ],
+                        vis_marker: None,
+                        qualifiers: FunctionQualifiers {
+                            tk_default: None,
+                            tk_const: Some(
+                                Ident(
+                                    const,
+                                ),
+                            ),
+                            tk_async: None,
+                            tk_unsafe: None,
+                            tk_extern: None,
+                            extern_abi: None,
+                        },
+                        name: Ident(
+                            set_value,
+                        ),
+                        generic_params: None,
+                        tk_params_parens: (),
+                        params: [
+                            Receiver(
+                                FunctionReceiverParameter {
+                                    attributes: [],
+                                    tk_ref: Some(
+                                        Punct {
+                                            char: '&',
+                                            spacing: Alone,
+                                        },
+                                    ),
+                                    tk_mut: Some(
+                                        Ident(
+                                            mut,
+                                        ),
+                                    ),
+                                    tk_self: Ident(
+                                        self,
+                                    ),
+                                },
+                            ),
+                            Typed(
+                                FunctionTypedParameter {
+                                    attributes: [],
+                                    tk_mut: None,
+                                    name: Ident(
+                                        s,
+                                    ),
+                                    tk_colon: Punct {
+                                        char: ':',
+                                        spacing: Alone,
+                                    },
+                                    ty: [
+                                        String,
+                                    ],
+                                },
+                            ),
+                        ],
+                        where_clause: None,
+                        tk_return_arrow: None,
+                        return_ty: None,
+                        body: Some(
+                            Group {
+                                delimiter: Brace,
+                                stream: TokenStream [],
+                            },
+                        ),
+                    },
+                ),
+                Constant(
+                    Constant {
+                        attributes: [],
+                        vis_marker: None,
+                        tk_const: Ident(
+                            const,
+                        ),
+                        name: Ident(
+                            CONSTANT,
+                        ),
+                        tk_colon: Punct {
+                            char: ':',
+                            spacing: Alone,
+                        },
+                        ty: [
+                            i8,
+                        ],
+                        tk_equals: Punct {
+                            char: '=',
+                            spacing: Alone,
+                        },
+                        initializer: [
+                            24,
+                            "+",
+                            7,
+                        ],
+                        tk_semicolon: Punct {
+                            char: ';',
+                            spacing: Alone,
+                        },
+                    },
+                ),
+            ],
+            tk_braces: {},
+        },
+    },
+)

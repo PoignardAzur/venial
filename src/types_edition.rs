@@ -1,3 +1,4 @@
+use crate::types::Impl;
 pub use crate::types::{
     Attribute, AttributeValue, Declaration, Enum, EnumVariant, EnumVariantValue, Function,
     GenericBound, GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, NamedField, Struct,
@@ -12,6 +13,7 @@ impl Declaration {
             Declaration::Struct(struct_decl) => &struct_decl.attributes,
             Declaration::Enum(enum_decl) => &enum_decl.attributes,
             Declaration::Union(union_decl) => &union_decl.attributes,
+            Declaration::Impl(impl_decl) => &impl_decl.attributes,
             Declaration::Function(function_decl) => &function_decl.attributes,
         }
     }
@@ -22,19 +24,21 @@ impl Declaration {
             Declaration::Struct(struct_decl) => &mut struct_decl.attributes,
             Declaration::Enum(enum_decl) => &mut enum_decl.attributes,
             Declaration::Union(union_decl) => &mut union_decl.attributes,
+            Declaration::Impl(impl_decl) => &mut impl_decl.attributes,
             Declaration::Function(function_decl) => &mut function_decl.attributes,
         }
     }
 
     /// Returns the [`GenericParamList`], if any, of the declaration.
     ///
-    /// For instance, this will return Some for `struct MyStruct<A, B, C> { ... }`
-    /// and None for `enum MyEnum { ... }`.
+    /// For instance, this will return Some for `struct MyStruct<A, B, C> { ... }`,
+    /// Some for `impl<A> MyTrait for MyType<A>` and None for `enum MyEnum { ... }`.
     pub fn generic_params(&self) -> Option<&GenericParamList> {
         match self {
             Declaration::Struct(struct_decl) => struct_decl.generic_params.as_ref(),
             Declaration::Enum(enum_decl) => enum_decl.generic_params.as_ref(),
             Declaration::Union(union_decl) => union_decl.generic_params.as_ref(),
+            Declaration::Impl(impl_decl) => impl_decl.impl_generic_params.as_ref(),
             Declaration::Function(function_decl) => function_decl.generic_params.as_ref(),
         }
     }
@@ -45,11 +49,15 @@ impl Declaration {
             Declaration::Struct(struct_decl) => struct_decl.generic_params.as_mut(),
             Declaration::Enum(enum_decl) => enum_decl.generic_params.as_mut(),
             Declaration::Union(union_decl) => union_decl.generic_params.as_mut(),
+            Declaration::Impl(impl_decl) => impl_decl.impl_generic_params.as_mut(),
             Declaration::Function(function_decl) => function_decl.generic_params.as_mut(),
         }
     }
 
-    /// Returns the [`Ident`] of the declaration.
+    /// Returns the [`Ident`] of the declaration, if available.
+    ///
+    /// Certain declarations (currently `impl` blocks) do not have a name, as they refer to other (possibly qualified) types.
+    /// In that case, `None` is returned.
     ///
     /// ```
     /// # use venial::parse_declaration;
@@ -57,14 +65,15 @@ impl Declaration {
     /// let struct_type = parse_declaration(quote!(
     ///     struct Hello(A, B);
     /// )).unwrap();
-    /// assert_eq!(struct_type.name().to_string(), "Hello");
+    /// assert_eq!(struct_type.name().unwrap().to_string(), "Hello");
     /// ```
-    pub fn name(&self) -> Ident {
+    pub fn name(&self) -> Option<Ident> {
         match self {
-            Declaration::Struct(struct_decl) => struct_decl.name.clone(),
-            Declaration::Enum(enum_decl) => enum_decl.name.clone(),
-            Declaration::Union(union_decl) => union_decl.name.clone(),
-            Declaration::Function(function_decl) => function_decl.name.clone(),
+            Declaration::Struct(struct_decl) => Some(struct_decl.name.clone()),
+            Declaration::Enum(enum_decl) => Some(enum_decl.name.clone()),
+            Declaration::Union(union_decl) => Some(union_decl.name.clone()),
+            Declaration::Impl(_) => None,
+            Declaration::Function(function_decl) => Some(function_decl.name.clone()),
         }
     }
 
@@ -88,6 +97,14 @@ impl Declaration {
     pub fn as_union(&self) -> Option<&Union> {
         match self {
             Declaration::Union(union_decl) => Some(union_decl),
+            _ => None,
+        }
+    }
+
+    /// Returns the [`Impl`] variant of the enum if possible.
+    pub fn as_impl(&self) -> Option<&Impl> {
+        match self {
+            Declaration::Impl(impl_decl) => Some(impl_decl),
             _ => None,
         }
     }

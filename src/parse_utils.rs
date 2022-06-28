@@ -1,9 +1,14 @@
 use crate::types::{Attribute, AttributeValue, VisMarker};
 use crate::types_edition::GroupSpan;
-use proc_macro2::{Delimiter, Ident, Punct, TokenTree};
+use proc_macro2::{Delimiter, Ident, Punct, TokenStream, TokenTree};
 use std::iter::Peekable;
 
-type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
+pub(crate) type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
+
+pub(crate) fn tokens_from_slice(slice: &[TokenTree]) -> TokenIter {
+    let stream = TokenStream::from_iter(slice.iter().cloned());
+    stream.into_iter().peekable()
+}
 
 pub(crate) fn parse_ident(token: TokenTree) -> Result<Ident, TokenTree> {
     match token {
@@ -169,4 +174,32 @@ pub(crate) fn consume_comma(tokens: &mut TokenIter) -> Option<Punct> {
         }
         _ => None,
     }
+}
+
+/// Splits `path::to::Thing` into `vec!["path", "to", "Thing"]`. None if not matching.
+pub(crate) fn try_consume_path(mut tokens: TokenIter) -> Option<Vec<Ident>> {
+    let mut elems = vec![];
+    loop {
+        // path elem
+        match tokens.next() {
+            Some(TokenTree::Ident(ident)) => elems.push(ident),
+            Some(_) => return None,
+            None => return None, // end of tokens is no ident, error
+        }
+
+        // first ':'
+        match tokens.next() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => {}
+            Some(_) => return None,
+            None => break, // reached end gracefully
+        }
+
+        // second ':'
+        match tokens.next() {
+            Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => {}
+            _ => return None,
+        }
+    }
+
+    Some(elems)
 }

@@ -1,4 +1,4 @@
-use crate::{parse_declaration, Declaration, GenericParam, Struct, WhereClauseItem};
+use crate::{parse_declaration, Declaration, GenericParam, Struct, TyExpr, WhereClauseItem};
 
 use insta::assert_debug_snapshot;
 use proc_macro2::TokenStream;
@@ -985,4 +985,110 @@ fn add_where_item() {
 
     assert_quote_snapshot!(basic_type);
     assert_quote_snapshot!(type_with_args);
+}
+
+// =================
+// IMPL DECLARATIONS
+// =================
+
+#[test]
+fn parse_impl_inherent() {
+    let expr = quote! {
+        impl MyStruct {
+            fn new(i: i32, b: bool) -> Self {
+                Self {}
+            }
+
+            #[attr]
+            pub(crate) fn set_value(&mut self, s: String) {}
+
+            pub const CONSTANT: i8 = 24 + 7;
+        }
+    };
+
+    let impl_decl = parse_declaration_checked(expr);
+    assert_debug_snapshot!(impl_decl);
+}
+
+#[test]
+fn parse_impl_inherent_generic() {
+    let expr = quote! {
+        impl<'a, T: Clone, const N: i8> structs::MyStruct<'a, T, N> {}
+    };
+
+    let impl_decl = parse_declaration_checked(expr);
+    assert_debug_snapshot!(impl_decl);
+}
+
+#[test]
+fn parse_impl_trait() {
+    let expr = quote! {
+        impl MyTrait for MyStruct {
+            pub type MyType = std::string::String;
+
+            fn new(i: i32, b: bool) -> Self {
+                Self {}
+            }
+
+            #[attr]
+            const fn set_value(&mut self, s: String) {}
+
+            const CONSTANT: i8 = 24 + 7;
+        }
+    };
+
+    let impl_decl = parse_declaration_checked(expr);
+    assert_debug_snapshot!(impl_decl);
+}
+
+#[test]
+fn parse_impl_trait_generic() {
+    let expr = quote! {
+        impl<'a, T, const N: i8> traits::MyTrait<T, N> for structs::MyStruct<'a, T>
+            where T: Clone
+        {
+            pub(crate) const CONSTANT: i8 = N;
+        }
+    };
+
+    let impl_decl = parse_declaration_checked(expr);
+    assert_debug_snapshot!(impl_decl);
+}
+
+// ================
+// TYPE EXPRESSIONS
+// ================
+
+#[test]
+fn interpret_ty_expr_simple_as_path() {
+    let ty_expr = TyExpr {
+        tokens: quote! { path::to::Type }.into_iter().collect(),
+    };
+
+    let (path_elems, generic_args) = ty_expr.as_path().expect("as_path()");
+    assert_debug_snapshot!(path_elems);
+    assert_debug_snapshot!(generic_args);
+}
+
+#[test]
+fn interpret_ty_expr_generic_as_path() {
+    let ty_expr = TyExpr {
+        tokens: quote! { path::to::Type<'a, other::Arg, 36> }
+            .into_iter()
+            .collect(),
+    };
+
+    let (path_elems, generic_args) = ty_expr.as_path().expect("as_path()");
+    assert_debug_snapshot!(path_elems);
+    assert_debug_snapshot!(generic_args);
+}
+
+#[test]
+fn interpret_ty_expr_invalid_as_path() {
+    let ty_expr = TyExpr {
+        tokens: quote! { () }.into_iter().collect(),
+    };
+
+    let invalid = ty_expr.as_path();
+    assert!(invalid.is_none())
 }
