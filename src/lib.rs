@@ -58,6 +58,7 @@ mod tests;
 mod error;
 mod parse;
 mod parse_fn;
+mod parse_impl;
 mod parse_type;
 mod parse_utils;
 mod punctuated;
@@ -68,7 +69,9 @@ pub use error::Error;
 pub use parse::parse_declaration;
 pub use punctuated::Punctuated;
 pub use types::{
-    Attribute, AttributeValue, Declaration, Enum, EnumVariant, EnumVariantValue, GenericBound,
-    GenericParam, GenericParamList, NamedField, NamedStructFields, Struct, StructFields,
-    TupleField, TupleStructFields, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
+    Attribute, AttributeValue, Constant, Declaration, Enum, EnumVariant, EnumVariantValue,
+    Function, FunctionParameter, FunctionReceiverParameter, GenericBound, GenericParam,
+    GenericParamList, Impl, ImplBody, ImplMember, NamedField, NamedStructFields, Struct,
+    StructFields, TupleField, TupleStructFields, TyExpr, TypeDefinition, Union, ValueExpr,
+    VisMarker, WhereClause, WhereClauseItem,
 };
