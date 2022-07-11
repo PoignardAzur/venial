@@ -1,3 +1,4 @@
+use crate::parse_utils::{tokens_from_slice, try_consume_path};
 use crate::types::Impl;
 pub use crate::types::{
     Attribute, AttributeValue, Declaration, Enum, EnumVariant, EnumVariantValue, Function,
@@ -582,6 +583,44 @@ impl WhereClauseItem {
                 tokens: bound_tokens,
             },
         }
+    }
+}
+
+impl TyExpr {
+    /// Tries to parse this type in the common form `path::to::Type<'a, other::Type>`.
+    ///
+    /// The 1st element of the tuple is the path, e.g. `path::to::Type`.
+    /// The 2nd element are the raw tokens _inside_ the generic argument list, if available, e.g. `'a, other::Type`.
+    ///
+    /// If this type has any other form, `None` is returned.
+    pub fn as_path(&self) -> Option<(Vec<Ident>, Option<&[TokenTree]>)> {
+        let found_split = self
+            .tokens
+            .iter()
+            .enumerate()
+            .find(|(_, tk)| matches!(tk, TokenTree::Punct(punct) if punct.as_char() == '<'));
+
+        let (prefix, generic_args) = if let Some((split_pos, _)) = found_split {
+            let (prefix, generic_args) = self.tokens.split_at(split_pos);
+
+            let closing_angle_bracket = generic_args.last();
+            if matches!(closing_angle_bracket, Some(TokenTree::Punct(punct)) if punct.as_char() == '>')
+            {
+                (prefix, Some(&generic_args[1..generic_args.len() - 1]))
+            } else {
+                (prefix, None)
+            }
+        } else {
+            // could be 'path::to::Type' without generic args, or something entirely different
+            (self.tokens.as_slice(), None)
+        };
+
+        let path_tokens = tokens_from_slice(prefix);
+        if let Some(path_elems) = try_consume_path(path_tokens) {
+            return Some((path_elems, generic_args));
+        }
+
+        None
     }
 }
 
