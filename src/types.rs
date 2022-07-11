@@ -161,14 +161,8 @@ pub struct Impl {
     pub tk_for: Option<Ident>,
     pub self_ty: TyExpr,
     pub where_clause: Option<WhereClause>,
-    pub body: ImplBody,
-}
-
-/// The `{ }` group representing the body of an `impl` block.
-#[derive(Clone, Debug)]
-pub struct ImplBody {
-    pub members: Vec<ImplMember>,
     pub tk_braces: GroupSpan,
+    pub body_items: Vec<ImplMember>,
 }
 
 /// The group representing an `impl` block.
@@ -877,14 +871,8 @@ impl ToTokens for Impl {
         self.tk_for.to_tokens(tokens);
         self.self_ty.to_tokens(tokens);
         self.where_clause.to_tokens(tokens);
-        self.body.to_tokens(tokens);
-    }
-}
-
-impl ToTokens for ImplBody {
-    fn to_tokens(&self, tokens: &mut TokenStream) {
         self.tk_braces.quote_with(tokens, |tokens| {
-            for item in self.members.iter() {
+            for item in self.body_items.iter() {
                 item.to_tokens(tokens)
             }
         });

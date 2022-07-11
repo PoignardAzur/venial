@@ -49,9 +49,7 @@ Impl(
             ">",
         ],
         where_clause: None,
-        body: ImplBody {
-            members: [],
-            tk_braces: {},
-        },
+        tk_braces: {},
+        body_items: [],
     },
 )

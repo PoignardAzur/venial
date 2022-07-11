@@ -70,7 +70,7 @@ pub use parse::parse_declaration;
 pub use punctuated::Punctuated;
 pub use types::{
     Attribute, AttributeValue, Constant, Declaration, Enum, EnumVariant, EnumVariantValue, FnParam,
-    FnReceiverParam, Function, GenericBound, GenericParam, GenericParamList, Impl, ImplBody,
-    ImplMember, NamedField, NamedStructFields, Struct, StructFields, TupleField, TupleStructFields,
-    TyExpr, TypeDefinition, Union, ValueExpr, VisMarker, WhereClause, WhereClauseItem,
+    FnReceiverParam, Function, GenericBound, GenericParam, GenericParamList, Impl, ImplMember,
+    NamedField, NamedStructFields, Struct, StructFields, TupleField, TupleStructFields, TyExpr,
+    TypeDefinition, Union, ValueExpr, VisMarker, WhereClause, WhereClauseItem,
 };
