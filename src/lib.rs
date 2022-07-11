@@ -69,9 +69,8 @@ pub use error::Error;
 pub use parse::parse_declaration;
 pub use punctuated::Punctuated;
 pub use types::{
-    Attribute, AttributeValue, Constant, Declaration, Enum, EnumVariant, EnumVariantValue,
-    Function, FunctionParameter, FunctionReceiverParameter, GenericBound, GenericParam,
-    GenericParamList, Impl, ImplBody, ImplMember, NamedField, NamedStructFields, Struct,
-    StructFields, TupleField, TupleStructFields, TyExpr, TypeDefinition, Union, ValueExpr,
-    VisMarker, WhereClause, WhereClauseItem,
+    Attribute, AttributeValue, Constant, Declaration, Enum, EnumVariant, EnumVariantValue, FnParam,
+    FnReceiverParam, Function, GenericBound, GenericParam, GenericParamList, Impl, ImplBody,
+    ImplMember, NamedField, NamedStructFields, Struct, StructFields, TupleField, TupleStructFields,
+    TyExpr, TypeDefinition, Union, ValueExpr, VisMarker, WhereClause, WhereClauseItem,
 };

@@ -21,7 +21,7 @@ Impl(
                     Function {
                         attributes: [],
                         vis_marker: None,
-                        qualifiers: FunctionQualifiers {
+                        qualifiers: FnQualifiers {
                             tk_default: None,
                             tk_const: None,
                             tk_async: None,
@@ -39,7 +39,7 @@ Impl(
                         tk_params_parens: (),
                         params: [
                             Typed(
-                                FunctionTypedParameter {
+                                FnTypedParam {
                                     attributes: [],
                                     tk_mut: None,
                                     name: Ident(
@@ -55,7 +55,7 @@ Impl(
                                 },
                             ),
                             Typed(
-                                FunctionTypedParameter {
+                                FnTypedParam {
                                     attributes: [],
                                     tk_mut: None,
                                     name: Ident(
@@ -126,7 +126,7 @@ Impl(
                                 crate,
                             ),
                         ),
-                        qualifiers: FunctionQualifiers {
+                        qualifiers: FnQualifiers {
                             tk_default: None,
                             tk_const: None,
                             tk_async: None,
@@ -144,7 +144,7 @@ Impl(
                         tk_params_parens: (),
                         params: [
                             Receiver(
-                                FunctionReceiverParameter {
+                                FnReceiverParam {
                                     attributes: [],
                                     tk_ref: Some(
                                         Punct {
@@ -163,7 +163,7 @@ Impl(
                                 },
                             ),
                             Typed(
-                                FunctionTypedParameter {
+                                FnTypedParam {
                                     attributes: [],
                                     tk_mut: None,
                                     name: Ident(

@@ -4,8 +4,7 @@ use crate::parse_type::{
 use crate::parse_utils::{consume_attributes, consume_comma, consume_stuff_until, parse_ident};
 use crate::punctuated::Punctuated;
 use crate::types::{
-    Function, FunctionParameter, FunctionQualifiers, FunctionReceiverParameter,
-    FunctionTypedParameter, GroupSpan, TyExpr,
+    FnParam, FnQualifiers, FnReceiverParam, FnTypedParam, Function, GroupSpan, TyExpr,
 };
 use crate::{Attribute, VisMarker};
 use proc_macro2::{Delimiter, Ident, Punct, TokenStream, TokenTree};
@@ -13,7 +12,7 @@ use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
 
-pub(crate) fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FunctionQualifiers {
+pub(crate) fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FnQualifiers {
     let tk_default = match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == "default" => {
             let ident = ident.clone();
@@ -70,7 +69,7 @@ pub(crate) fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FunctionQualifier
         }
     };
 
-    FunctionQualifiers {
+    FnQualifiers {
         tk_default,
         tk_const,
         tk_async,
@@ -80,7 +79,7 @@ pub(crate) fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FunctionQualifier
     }
 }
 
-pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FunctionParameter> {
+pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
     let mut fields = Punctuated::new();
 
     let mut tokens = tokens.into_iter().peekable();
@@ -116,7 +115,7 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FunctionParamet
         };
 
         let param = if let Some(tk_self) = tk_self {
-            FunctionParameter::Receiver(FunctionReceiverParameter {
+            FnParam::Receiver(FnReceiverParam {
                 attributes,
                 tk_ref,
                 tk_mut,
@@ -130,7 +129,7 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FunctionParamet
                 _ => panic!("cannot parse fn params"),
             };
             let ty_tokens = consume_field_type(&mut tokens);
-            FunctionParameter::Typed(FunctionTypedParameter {
+            FnParam::Typed(FnTypedParam {
                 attributes,
                 tk_mut,
                 name: ident,

@@ -18,7 +18,7 @@ Function(
             },
         ],
         vis_marker: None,
-        qualifiers: FunctionQualifiers {
+        qualifiers: FnQualifiers {
             tk_default: None,
             tk_const: None,
             tk_async: None,
@@ -36,7 +36,7 @@ Function(
         tk_params_parens: (),
         params: [
             Typed(
-                FunctionTypedParameter {
+                FnTypedParam {
                     attributes: [],
                     tk_mut: None,
                     name: Ident(
