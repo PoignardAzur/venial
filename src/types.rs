@@ -627,6 +627,9 @@ impl std::fmt::Debug for GenericParamList {
 impl std::fmt::Debug for GenericParam {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("GenericParam");
+        if let Some(prefix) = self.tk_prefix.as_ref() {
+            f.field("tk_prefix", &prefix.to_string());
+        }
         f.field("name", &self.name.to_string());
         f.field("bound", &self.bound);
         f.finish()

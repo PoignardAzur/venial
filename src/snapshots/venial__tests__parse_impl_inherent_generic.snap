@@ -11,6 +11,7 @@ Impl(
         impl_generic_params: Some(
             [
                 GenericParam {
+                    tk_prefix: "'",
                     name: "a",
                     bound: None,
                 },
@@ -23,6 +24,7 @@ Impl(
                     ),
                 },
                 GenericParam {
+                    tk_prefix: "const",
                     name: "N",
                     bound: Some(
                         [
