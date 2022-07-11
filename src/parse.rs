@@ -196,7 +196,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
 
             let where_clause = consume_where_clause(&mut tokens);
 
-            let body = match tokens.next().unwrap() {
+            let (body_items, tk_braces) = match tokens.next().unwrap() {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
                     parse_impl_members(group)
                 }
@@ -211,7 +211,8 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
                 tk_for,
                 self_ty,
                 where_clause,
-                body,
+                body_items,
+                tk_braces
             })
         }
         Some(TokenTree::Ident(keyword))

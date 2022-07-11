@@ -1,6 +1,6 @@
 use crate::parse_fn::consume_fn;
 use crate::parse_utils::{consume_attributes, consume_stuff_until, consume_vis_marker};
-use crate::types::{Constant, ImplBody, ImplMember, TypeDefinition, ValueExpr};
+use crate::types::{Constant, ImplMember, TypeDefinition, ValueExpr};
 use crate::types_edition::GroupSpan;
 use crate::{Attribute, TyExpr, VisMarker};
 use proc_macro2::{Group, Ident, TokenTree};
@@ -20,8 +20,8 @@ pub(crate) fn consume_for(tokens: &mut TokenIter) -> Option<Ident> {
     None
 }
 
-pub(crate) fn parse_impl_members(token_group: Group) -> ImplBody {
-    let mut members = vec![];
+pub(crate) fn parse_impl_members(token_group: Group) -> (Vec<ImplMember>, GroupSpan) {
+    let mut body_items = vec![];
 
     let mut tokens = token_group.stream().into_iter().peekable();
     loop {
@@ -64,13 +64,10 @@ pub(crate) fn parse_impl_members(token_group: Group) -> ImplBody {
             panic!("unsupported impl element: {:?}", tokens.peek())
         };
 
-        members.push(item);
+        body_items.push(item);
     }
 
-    ImplBody {
-        members,
-        tk_braces: GroupSpan::new(&token_group),
-    }
+    (body_items, GroupSpan::new(&token_group))
 }
 
 pub(crate) fn consume_constant(
