@@ -18,7 +18,7 @@ Function(
             fn,
         ),
         name: Ident(
-            hello,
+            prototype,
         ),
         generic_params: None,
         tk_params_parens: (),
@@ -42,7 +42,11 @@ Function(
             Typed(
                 FunctionTypedParameter {
                     attributes: [],
-                    tk_mut: None,
+                    tk_mut: Some(
+                        Ident(
+                            mut,
+                        ),
+                    ),
                     name: Ident(
                         b,
                     ),
@@ -74,12 +78,12 @@ Function(
                 String,
             ],
         ),
-        tk_semicolon: None,
-        body: Some(
-            Group {
-                delimiter: Brace,
-                stream: TokenStream [],
+        tk_semicolon: Some(
+            Punct {
+                char: ';',
+                spacing: Alone,
             },
         ),
+        body: None,
     },
 )

@@ -14,6 +14,9 @@ Function(
             tk_extern: None,
             extern_abi: None,
         },
+        tk_fn_keyword: Ident(
+            fn,
+        ),
         name: Ident(
             prototype,
         ),
@@ -70,6 +73,12 @@ Function(
             [
                 String,
             ],
+        ),
+        tk_semicolon: Some(
+            Punct {
+                char: ';',
+                spacing: Alone,
+            },
         ),
         body: None,
     },
