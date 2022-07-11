@@ -18,9 +18,16 @@ Function(
             fn,
         ),
         name: Ident(
-            hello,
+            prototype,
         ),
-        generic_params: None,
+        generic_params: Some(
+            [
+                GenericParam {
+                    name: "a",
+                    bound: None,
+                },
+            ],
+        ),
         tk_params_parens: (),
         params: [
             Typed(
@@ -35,23 +42,11 @@ Function(
                         spacing: Alone,
                     },
                     ty: [
+                        "&",
+                        "'",
+                        a,
+                        mut,
                         i32,
-                    ],
-                },
-            ),
-            Typed(
-                FunctionTypedParameter {
-                    attributes: [],
-                    tk_mut: None,
-                    name: Ident(
-                        b,
-                    ),
-                    tk_colon: Punct {
-                        char: ':',
-                        spacing: Alone,
-                    },
-                    ty: [
-                        f32,
                     ],
                 },
             ),
@@ -71,15 +66,18 @@ Function(
         ),
         return_ty: Some(
             [
+                "&",
+                "'",
+                a,
                 String,
             ],
         ),
-        tk_semicolon: None,
-        body: Some(
-            Group {
-                delimiter: Brace,
-                stream: TokenStream [],
+        tk_semicolon: Some(
+            Punct {
+                char: ';',
+                spacing: Alone,
             },
         ),
+        body: None,
     },
 )

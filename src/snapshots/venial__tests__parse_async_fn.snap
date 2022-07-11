@@ -20,6 +20,9 @@ Function(
             tk_extern: None,
             extern_abi: None,
         },
+        tk_fn_keyword: Ident(
+            fn,
+        ),
         name: Ident(
             async_fn,
         ),
@@ -46,6 +49,7 @@ Function(
         where_clause: None,
         tk_return_arrow: None,
         return_ty: None,
+        tk_semicolon: None,
         body: Some(
             Group {
                 delimiter: Brace,

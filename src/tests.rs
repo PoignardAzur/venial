@@ -778,6 +778,26 @@ fn parse_fn_prototype() {
     assert_debug_snapshot!(func);
 }
 
+#[test]
+fn parse_fn_mut_param() {
+    let func = parse_declaration(quote! {
+        fn prototype(a: i32, mut b: f32) -> String;
+    })
+    .unwrap();
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_fn_lifetimes() {
+    let func = parse_declaration(quote! {
+        fn prototype<'a>(a: &'a mut i32) -> &'a String;
+    })
+    .unwrap();
+
+    assert_debug_snapshot!(func);
+}
+
 // FIXME
 #[test]
 #[should_panic]

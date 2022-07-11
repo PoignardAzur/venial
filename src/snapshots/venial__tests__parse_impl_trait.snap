@@ -68,6 +68,9 @@ Impl(
                             tk_extern: None,
                             extern_abi: None,
                         },
+                        tk_fn_keyword: Ident(
+                            fn,
+                        ),
                         name: Ident(
                             new,
                         ),
@@ -125,6 +128,7 @@ Impl(
                                 Self,
                             ],
                         ),
+                        tk_semicolon: None,
                         body: Some(
                             Group {
                                 delimiter: Brace,
@@ -169,6 +173,9 @@ Impl(
                             tk_extern: None,
                             extern_abi: None,
                         },
+                        tk_fn_keyword: Ident(
+                            fn,
+                        ),
                         name: Ident(
                             set_value,
                         ),
@@ -214,6 +221,7 @@ Impl(
                         where_clause: None,
                         tk_return_arrow: None,
                         return_ty: None,
+                        tk_semicolon: None,
                         body: Some(
                             Group {
                                 delimiter: Brace,
