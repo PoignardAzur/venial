@@ -6,7 +6,7 @@ Function(
     Function {
         attributes: [],
         vis_marker: None,
-        qualifiers: FunctionQualifiers {
+        qualifiers: FnQualifiers {
             tk_default: None,
             tk_const: None,
             tk_async: None,
@@ -14,6 +14,9 @@ Function(
             tk_extern: None,
             extern_abi: None,
         },
+        tk_fn_keyword: Ident(
+            fn,
+        ),
         name: Ident(
             hello,
         ),
@@ -21,7 +24,7 @@ Function(
         tk_params_parens: (),
         params: [
             Typed(
-                FunctionTypedParameter {
+                FnTypedParam {
                     attributes: [],
                     tk_mut: None,
                     name: Ident(
@@ -37,7 +40,7 @@ Function(
                 },
             ),
             Typed(
-                FunctionTypedParameter {
+                FnTypedParam {
                     attributes: [],
                     tk_mut: None,
                     name: Ident(
@@ -71,6 +74,7 @@ Function(
                 String,
             ],
         ),
+        tk_semicolon: None,
         body: Some(
             Group {
                 delimiter: Brace,

@@ -1,0 +1,40 @@
+---
+source: src/tests.rs
+expression: generic_args
+---
+Some(
+    [
+        Punct {
+            char: '\'',
+            spacing: Joint,
+        },
+        Ident {
+            sym: a,
+        },
+        Punct {
+            char: ',',
+            spacing: Alone,
+        },
+        Ident {
+            sym: other,
+        },
+        Punct {
+            char: ':',
+            spacing: Joint,
+        },
+        Punct {
+            char: ':',
+            spacing: Alone,
+        },
+        Ident {
+            sym: Arg,
+        },
+        Punct {
+            char: ',',
+            spacing: Alone,
+        },
+        Literal {
+            lit: 36,
+        },
+    ],
+)

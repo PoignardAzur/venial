@@ -1,5 +1,6 @@
 #![allow(missing_docs)]
 
+use crate::parse_utils::{tokens_from_slice, try_consume_path};
 use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt as _};
 
@@ -30,6 +31,7 @@ pub enum Declaration {
     Struct(Struct),
     Enum(Enum),
     Union(Union),
+    Impl(Impl),
     Function(Function),
 }
 
@@ -133,6 +135,91 @@ pub struct Union {
     pub fields: NamedStructFields,
 }
 
+/// Declaration of an `impl` block.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// # #[cfg(FALSE)]
+/// impl MyType {
+///     // ...
+/// }
+/// ```
+/// or:
+/// ```no_run
+/// # #[cfg(FALSE)]
+/// impl MyTrait for MyType {
+///     // ...
+/// }
+/// ```
+#[derive(Clone, Debug)]
+pub struct Impl {
+    pub attributes: Vec<Attribute>,
+    pub tk_impl: Ident,
+    pub impl_generic_params: Option<GenericParamList>,
+    pub trait_ty: Option<TyExpr>,
+    pub tk_for: Option<Ident>,
+    pub self_ty: TyExpr,
+    pub where_clause: Option<WhereClause>,
+    pub body: ImplBody,
+}
+
+/// The `{ }` group representing the body of an `impl` block.
+#[derive(Clone, Debug)]
+pub struct ImplBody {
+    pub members: Vec<ImplMember>,
+    pub tk_braces: GroupSpan,
+}
+
+/// The group representing an `impl` block.
+#[derive(Clone, Debug)]
+#[non_exhaustive]
+pub enum ImplMember {
+    Method(Function),
+    Constant(Constant),
+    AssocTy(TypeDefinition),
+    // other items like macro!{...} or macro!(...); invocations
+}
+
+/// Constant declaration.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// pub const CONSTANT: i32 = 783;
+/// ```
+#[derive(Clone, Debug)]
+pub struct Constant {
+    pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
+    pub tk_const: Ident,
+    pub name: Ident,
+    pub tk_colon: Punct,
+    pub ty: TyExpr,
+    pub tk_equals: Punct,
+    pub initializer: ValueExpr,
+    pub tk_semicolon: Punct,
+}
+
+/// Type definition.
+/// Handles both associated types (in `impl` blocks) or type aliases (globally).
+///
+/// **Example input:**
+///
+/// ```no_run
+/// type MyType = i32;
+/// ```
+#[derive(Clone, Debug)]
+pub struct TypeDefinition {
+    pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
+    pub tk_type: Ident,
+    pub name: Ident,
+    pub tk_equals: Punct,
+    pub initializer_ty: TyExpr,
+    pub tk_semicolon: Punct,
+}
+
 /// Declaration of a function.
 ///
 /// **Example input:**
@@ -147,14 +234,16 @@ pub struct Union {
 pub struct Function {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
-    pub qualifiers: FunctionQualifiers,
+    pub qualifiers: FnQualifiers,
+    pub tk_fn_keyword: Ident,
     pub name: Ident,
     pub generic_params: Option<GenericParamList>,
     pub tk_params_parens: GroupSpan,
-    pub params: Punctuated<FunctionParameter>,
+    pub params: Punctuated<FnParam>,
     pub where_clause: Option<WhereClause>,
     pub tk_return_arrow: Option<[Punct; 2]>,
     pub return_ty: Option<TyExpr>,
+    pub tk_semicolon: Option<Punct>,
     pub body: Option<Group>,
 }
 
@@ -163,7 +252,7 @@ pub struct Function {
 /// Possible qualifiers are `default`, `const`, `async`, `unsafe` and `extern`,
 /// always in that order.
 #[derive(Clone, Debug, Default)]
-pub struct FunctionQualifiers {
+pub struct FnQualifiers {
     pub tk_default: Option<Ident>,
     pub tk_const: Option<Ident>,
     pub tk_async: Option<Ident>,
@@ -183,9 +272,9 @@ pub struct FunctionQualifiers {
 /// # }
 /// ```
 #[derive(Clone, Debug)]
-pub enum FunctionParameter {
-    Receiver(FunctionReceiverParameter),
-    Typed(FunctionTypedParameter),
+pub enum FnParam {
+    Receiver(FnReceiverParam),
+    Typed(FnTypedParam),
 }
 
 /// A [`Function`] parameter which refers to `self` in some way.
@@ -195,7 +284,7 @@ pub enum FunctionParameter {
 ///
 /// Parameters of the form `self: Pin<&mut Self>` are recognized as [`FunctionTypedParameter`].
 #[derive(Clone, Debug)]
-pub struct FunctionReceiverParameter {
+pub struct FnReceiverParam {
     pub attributes: Vec<Attribute>,
     pub tk_ref: Option<Punct>,
     // TODO ref lifetime (update doc)
@@ -211,7 +300,7 @@ pub struct FunctionReceiverParameter {
 /// pub fn hello_world(a: i32, mut b: f32) {}
 /// ```
 #[derive(Clone, Debug)]
-pub struct FunctionTypedParameter {
+pub struct FnTypedParam {
     pub attributes: Vec<Attribute>,
     pub tk_mut: Option<Ident>,
     pub name: Ident,
@@ -370,10 +459,61 @@ pub struct WhereClauseItem {
 /// # struct MyUnitStruct<'a> {
 ///     foo: i32,
 ///     bar: &'a mut Vec<(u64, Option<bool>, f64)>,
-/// };
+/// # };
 /// ```
 #[derive(Clone)]
 pub struct TyExpr {
+    pub tokens: Vec<TokenTree>,
+}
+
+impl TyExpr {
+    /// Tries to parse this type in the common form `path::to::Type<'a, other::Type>`.
+    ///
+    /// The 1st element of the tuple is the path, e.g. `path::to::Type`.
+    /// The 2nd element are the raw tokens _inside_ the generic argument list, if available, e.g. `'a, other::Type`.
+    ///
+    /// If this type has any other form, `None` is returned.
+    pub fn as_path(&self) -> Option<(Vec<Ident>, Option<&[TokenTree]>)> {
+        let found_split = self
+            .tokens
+            .iter()
+            .enumerate()
+            .find(|(_, tk)| matches!(tk, TokenTree::Punct(punct) if punct.as_char() == '<'));
+
+        let (prefix, generic_args) = if let Some((split_pos, _)) = found_split {
+            let (prefix, generic_args) = self.tokens.split_at(split_pos);
+
+            let closing_angle_bracket = generic_args.last();
+            if matches!(closing_angle_bracket, Some(TokenTree::Punct(punct)) if punct.as_char() == '>')
+            {
+                (prefix, Some(&generic_args[1..generic_args.len() - 1]))
+            } else {
+                (prefix, None)
+            }
+        } else {
+            // could be 'path::to::Type' without generic args, or something entirely different
+            (self.tokens.as_slice(), None)
+        };
+
+        let path_tokens = tokens_from_slice(prefix);
+        if let Some(path_elems) = try_consume_path(path_tokens) {
+            return Some((path_elems, generic_args));
+        }
+
+        None
+    }
+}
+
+/// Value expression, e.g. as the initializer of a [`Constant`].
+///
+/// **Example input:**
+///
+/// ```no_run
+/// const CONSTANT: i32 = 5 * 302;
+/// //                    ^^^^^^^
+/// ```
+#[derive(Clone)]
+pub struct ValueExpr {
     pub tokens: Vec<TokenTree>,
 }
 
@@ -406,6 +546,17 @@ pub struct GroupSpan {
 // --- Debug impls ---
 
 struct TokenRef<'a>(&'a TokenTree);
+
+pub(crate) fn format_debug_tokens(
+    f: &mut std::fmt::Formatter<'_>,
+    tokens: &[TokenTree],
+) -> std::fmt::Result {
+    let mut list = f.debug_list();
+    for token in tokens {
+        list.entry(&TokenRef(token));
+    }
+    list.finish()
+}
 
 impl<'a> std::fmt::Debug for TokenRef<'a> {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
@@ -529,11 +680,7 @@ impl std::fmt::Debug for GenericParam {
 
 impl std::fmt::Debug for GenericBound {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut list = f.debug_list();
-        for token in &self.tokens {
-            list.entry(&TokenRef(token));
-        }
-        list.finish()
+        format_debug_tokens(f, &self.tokens)
     }
 }
 
@@ -555,11 +702,13 @@ impl std::fmt::Debug for WhereClauseItem {
 
 impl std::fmt::Debug for TyExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        let mut list = f.debug_list();
-        for token in &self.tokens {
-            list.entry(&TokenRef(token));
-        }
-        list.finish()
+        format_debug_tokens(f, &self.tokens)
+    }
+}
+
+impl std::fmt::Debug for ValueExpr {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        format_debug_tokens(f, &self.tokens)
     }
 }
 
@@ -592,6 +741,7 @@ impl ToTokens for Declaration {
             Declaration::Struct(struct_decl) => struct_decl.to_tokens(tokens),
             Declaration::Enum(enum_decl) => enum_decl.to_tokens(tokens),
             Declaration::Union(union_decl) => union_decl.to_tokens(tokens),
+            Declaration::Impl(impl_decl) => impl_decl.to_tokens(tokens),
             Declaration::Function(function_decl) => function_decl.to_tokens(tokens),
         }
     }
@@ -672,6 +822,36 @@ impl ToTokens for EnumVariant {
     }
 }
 
+impl ToTokens for Constant {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
+        self.tk_const.to_tokens(tokens);
+        self.name.to_tokens(tokens);
+        self.tk_colon.to_tokens(tokens);
+        self.ty.to_tokens(tokens);
+        self.tk_equals.to_tokens(tokens);
+        self.initializer.to_tokens(tokens);
+        self.tk_semicolon.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for TypeDefinition {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
+        self.tk_type.to_tokens(tokens);
+        self.name.to_tokens(tokens);
+        self.tk_equals.to_tokens(tokens);
+        self.initializer_ty.to_tokens(tokens);
+        self.tk_semicolon.to_tokens(tokens);
+    }
+}
+
 impl ToTokens for Union {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for attribute in &self.attributes {
@@ -686,6 +866,41 @@ impl ToTokens for Union {
     }
 }
 
+impl ToTokens for Impl {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.tk_impl.to_tokens(tokens);
+        self.impl_generic_params.to_tokens(tokens);
+        self.trait_ty.to_tokens(tokens);
+        self.tk_for.to_tokens(tokens);
+        self.self_ty.to_tokens(tokens);
+        self.where_clause.to_tokens(tokens);
+        self.body.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for ImplBody {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.tk_braces.quote_with(tokens, |tokens| {
+            for item in self.members.iter() {
+                item.to_tokens(tokens)
+            }
+        });
+    }
+}
+
+impl ToTokens for ImplMember {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        match self {
+            ImplMember::Method(function) => function.to_tokens(tokens),
+            ImplMember::Constant(constant) => constant.to_tokens(tokens),
+            ImplMember::AssocTy(assoc_ty) => assoc_ty.to_tokens(tokens),
+        }
+    }
+}
+
 impl ToTokens for Function {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for attribute in &self.attributes {
@@ -693,7 +908,7 @@ impl ToTokens for Function {
         }
         self.vis_marker.to_tokens(tokens);
         self.qualifiers.to_tokens(tokens);
-        tokens.append(Ident::new("fn", Span::call_site()));
+        self.tk_fn_keyword.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
         self.tk_params_parens.quote_with(tokens, |tokens| {
@@ -709,12 +924,12 @@ impl ToTokens for Function {
         if let Some(body) = self.body.as_ref() {
             body.to_tokens(tokens);
         } else {
-            tokens.append(Punct::new(';', Spacing::Alone))
+            self.tk_semicolon.as_ref().unwrap().to_tokens(tokens);
         }
     }
 }
 
-impl ToTokens for FunctionQualifiers {
+impl ToTokens for FnQualifiers {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.tk_default.to_tokens(tokens);
         self.tk_const.to_tokens(tokens);
@@ -725,16 +940,16 @@ impl ToTokens for FunctionQualifiers {
     }
 }
 
-impl ToTokens for FunctionParameter {
+impl ToTokens for FnParam {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            FunctionParameter::Receiver(param) => param.to_tokens(tokens),
-            FunctionParameter::Typed(param) => param.to_tokens(tokens),
+            FnParam::Receiver(param) => param.to_tokens(tokens),
+            FnParam::Typed(param) => param.to_tokens(tokens),
         }
     }
 }
 
-impl ToTokens for FunctionReceiverParameter {
+impl ToTokens for FnReceiverParam {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for attribute in &self.attributes {
             attribute.to_tokens(tokens);
@@ -745,7 +960,7 @@ impl ToTokens for FunctionReceiverParameter {
     }
 }
 
-impl ToTokens for FunctionTypedParameter {
+impl ToTokens for FnTypedParam {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for attribute in &self.attributes {
             attribute.to_tokens(tokens);
@@ -878,6 +1093,14 @@ impl ToTokens for WhereClauseItem {
 }
 
 impl ToTokens for TyExpr {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for token in &self.tokens {
+            tokens.append(token.clone());
+        }
+    }
+}
+
+impl ToTokens for ValueExpr {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for token in &self.tokens {
             tokens.append(token.clone());

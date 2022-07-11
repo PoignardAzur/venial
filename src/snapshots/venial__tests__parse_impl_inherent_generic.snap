@@ -1,0 +1,57 @@
+---
+source: src/tests.rs
+expression: impl_decl
+---
+Impl(
+    Impl {
+        attributes: [],
+        tk_impl: Ident(
+            impl,
+        ),
+        impl_generic_params: Some(
+            [
+                GenericParam {
+                    name: "a",
+                    bound: None,
+                },
+                GenericParam {
+                    name: "T",
+                    bound: Some(
+                        [
+                            Clone,
+                        ],
+                    ),
+                },
+                GenericParam {
+                    name: "N",
+                    bound: Some(
+                        [
+                            i8,
+                        ],
+                    ),
+                },
+            ],
+        ),
+        trait_ty: None,
+        tk_for: None,
+        self_ty: [
+            structs,
+            ":",
+            ":",
+            MyStruct,
+            "<",
+            "'",
+            a,
+            ",",
+            T,
+            ",",
+            N,
+            ">",
+        ],
+        where_clause: None,
+        body: ImplBody {
+            members: [],
+            tk_braces: {},
+        },
+    },
+)

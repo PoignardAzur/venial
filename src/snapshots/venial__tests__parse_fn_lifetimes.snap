@@ -18,16 +18,12 @@ Function(
             fn,
         ),
         name: Ident(
-            generic,
+            prototype,
         ),
         generic_params: Some(
             [
                 GenericParam {
-                    name: "T",
-                    bound: None,
-                },
-                GenericParam {
-                    name: "B",
+                    name: "a",
                     bound: None,
                 },
             ],
@@ -46,7 +42,11 @@ Function(
                         spacing: Alone,
                     },
                     ty: [
-                        T,
+                        "&",
+                        "'",
+                        a,
+                        mut,
+                        i32,
                     ],
                 },
             ),
@@ -66,15 +66,18 @@ Function(
         ),
         return_ty: Some(
             [
-                B,
+                "&",
+                "'",
+                a,
+                String,
             ],
         ),
-        tk_semicolon: None,
-        body: Some(
-            Group {
-                delimiter: Brace,
-                stream: TokenStream [],
+        tk_semicolon: Some(
+            Punct {
+                char: ';',
+                spacing: Alone,
             },
         ),
+        body: None,
     },
 )

@@ -1,12 +1,14 @@
 use crate::error::Error;
 use crate::parse_fn::consume_fn;
+use crate::parse_impl::{consume_for, parse_impl_members};
 use crate::parse_type::{
     consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
 };
-use crate::parse_utils::{consume_attributes, consume_vis_marker};
-use crate::types::{Declaration, Enum, Struct, StructFields, Union};
+use crate::parse_utils::{consume_attributes, consume_stuff_until, consume_vis_marker};
+use crate::types::{Declaration, Enum, Impl, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
+use crate::TyExpr;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
 
 // TODO - Return Result<...>, handle case where TokenStream is valid declaration,
@@ -161,6 +163,57 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
                 fields: union_fields,
             })
         }
+        Some(TokenTree::Ident(keyword)) if keyword == "impl" => {
+            // impl keyword
+            tokens.next().unwrap();
+
+            let impl_generic_params = consume_generic_params(&mut tokens);
+            let trait_or_self_ty = consume_stuff_until(&mut tokens,|tk| match tk {
+                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
+                TokenTree::Ident(ident) if ident == "for" || ident == "where" => true,
+                _ => false,
+            }, true);
+
+            let (tk_for, trait_ty, self_ty) =
+                if let Some(tk_for) = consume_for(&mut tokens) {
+                    let self_ty = consume_stuff_until(&mut tokens,
+                        |tk| match tk {
+                            TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
+                            TokenTree::Ident(ident) if ident == "where" => true,
+                            _ => false,
+                        },
+                        true
+                    );
+
+                    (
+                        Some(tk_for),
+                        Some( TyExpr { tokens: trait_or_self_ty }),
+                        TyExpr { tokens: self_ty },
+                    )
+                } else {
+                    (None, None,  TyExpr { tokens: trait_or_self_ty })
+                };
+
+            let where_clause = consume_where_clause(&mut tokens);
+
+            let body = match tokens.next().unwrap() {
+                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
+                    parse_impl_members(group)
+                }
+                token => panic!("cannot parse impl: unexpected token {:?}", token),
+            };
+
+            Declaration::Impl(Impl {
+                attributes,
+                tk_impl: keyword,
+                impl_generic_params,
+                trait_ty,
+                tk_for,
+                self_ty,
+                where_clause,
+                body,
+            })
+        }
         Some(TokenTree::Ident(keyword))
             // Note: fn qualifiers appear always in this order in Rust
             if matches!(
@@ -173,12 +226,12 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
         }
         Some(token) => {
             panic!(
-                "cannot parse declaration: expected keyword struct/enum/union/default/const/async/unsafe/extern/fn, found token {:?}",
+                "cannot parse declaration: expected keyword struct/enum/union/impl/default/const/async/unsafe/extern/fn, found token {:?}",
                 token
             );
         }
         None => {
-            panic!("cannot parse type: expected keyword struct/enum/union/default/const/async/unsafe/extern/fn, found end-of-stream");
+            panic!("cannot parse type: expected keyword struct/enum/union/impl/default/const/async/unsafe/extern/fn, found end-of-stream");
         }
     };
     Ok(declaration)
