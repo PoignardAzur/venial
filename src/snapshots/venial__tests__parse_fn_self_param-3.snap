@@ -7,7 +7,7 @@ Ok(
         Function {
             attributes: [],
             vis_marker: None,
-            qualifiers: FunctionQualifiers {
+            qualifiers: FnQualifiers {
                 tk_default: None,
                 tk_const: None,
                 tk_async: None,
@@ -25,7 +25,7 @@ Ok(
             tk_params_parens: (),
             params: [
                 Receiver(
-                    FunctionReceiverParameter {
+                    FnReceiverParam {
                         attributes: [],
                         tk_ref: None,
                         tk_mut: Some(

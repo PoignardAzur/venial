@@ -234,12 +234,12 @@ pub struct TypeDefinition {
 pub struct Function {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
-    pub qualifiers: FunctionQualifiers,
+    pub qualifiers: FnQualifiers,
     pub tk_fn_keyword: Ident,
     pub name: Ident,
     pub generic_params: Option<GenericParamList>,
     pub tk_params_parens: GroupSpan,
-    pub params: Punctuated<FunctionParameter>,
+    pub params: Punctuated<FnParam>,
     pub where_clause: Option<WhereClause>,
     pub tk_return_arrow: Option<[Punct; 2]>,
     pub return_ty: Option<TyExpr>,
@@ -252,7 +252,7 @@ pub struct Function {
 /// Possible qualifiers are `default`, `const`, `async`, `unsafe` and `extern`,
 /// always in that order.
 #[derive(Clone, Debug, Default)]
-pub struct FunctionQualifiers {
+pub struct FnQualifiers {
     pub tk_default: Option<Ident>,
     pub tk_const: Option<Ident>,
     pub tk_async: Option<Ident>,
@@ -272,9 +272,9 @@ pub struct FunctionQualifiers {
 /// # }
 /// ```
 #[derive(Clone, Debug)]
-pub enum FunctionParameter {
-    Receiver(FunctionReceiverParameter),
-    Typed(FunctionTypedParameter),
+pub enum FnParam {
+    Receiver(FnReceiverParam),
+    Typed(FnTypedParam),
 }
 
 /// A [`Function`] parameter which refers to `self` in some way.
@@ -284,7 +284,7 @@ pub enum FunctionParameter {
 ///
 /// Parameters of the form `self: Pin<&mut Self>` are recognized as [`FunctionTypedParameter`].
 #[derive(Clone, Debug)]
-pub struct FunctionReceiverParameter {
+pub struct FnReceiverParam {
     pub attributes: Vec<Attribute>,
     pub tk_ref: Option<Punct>,
     // TODO ref lifetime (update doc)
@@ -300,7 +300,7 @@ pub struct FunctionReceiverParameter {
 /// pub fn hello_world(a: i32, mut b: f32) {}
 /// ```
 #[derive(Clone, Debug)]
-pub struct FunctionTypedParameter {
+pub struct FnTypedParam {
     pub attributes: Vec<Attribute>,
     pub tk_mut: Option<Ident>,
     pub name: Ident,
@@ -931,7 +931,7 @@ impl ToTokens for Function {
     }
 }
 
-impl ToTokens for FunctionQualifiers {
+impl ToTokens for FnQualifiers {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.tk_default.to_tokens(tokens);
         self.tk_const.to_tokens(tokens);
@@ -942,16 +942,16 @@ impl ToTokens for FunctionQualifiers {
     }
 }
 
-impl ToTokens for FunctionParameter {
+impl ToTokens for FnParam {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            FunctionParameter::Receiver(param) => param.to_tokens(tokens),
-            FunctionParameter::Typed(param) => param.to_tokens(tokens),
+            FnParam::Receiver(param) => param.to_tokens(tokens),
+            FnParam::Typed(param) => param.to_tokens(tokens),
         }
     }
 }
 
-impl ToTokens for FunctionReceiverParameter {
+impl ToTokens for FnReceiverParam {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for attribute in &self.attributes {
             attribute.to_tokens(tokens);
@@ -962,7 +962,7 @@ impl ToTokens for FunctionReceiverParameter {
     }
 }
 
-impl ToTokens for FunctionTypedParameter {
+impl ToTokens for FnTypedParam {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for attribute in &self.attributes {
             attribute.to_tokens(tokens);
