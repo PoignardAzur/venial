@@ -504,6 +504,23 @@ fn parse_enum_empty_generic_params() {
     assert_debug_snapshot!(enum_type);
 }
 
+// ============
+// GENERIC ARGS
+// ============
+
+#[test]
+fn parse_generic_args() {
+    let generic_args_tokens = quote! {
+        <'a, path::to::Type, 15, Item = i32, module::NestedType<another::Type>>
+    };
+
+    let mut token_iter = generic_args_tokens.clone().into_iter().peekable();
+    let parsed = crate::parse_type::consume_generic_args(&mut token_iter).unwrap();
+
+    similar_asserts::assert_str_eq!(quote!(#parsed), generic_args_tokens);
+    assert_debug_snapshot!(parsed);
+}
+
 // ==================
 // ENUM VARIANT VALUE
 // ==================

@@ -1,0 +1,57 @@
+---
+source: src/tests.rs
+expression: parsed
+---
+[
+    Lifetime {
+        tk_lifetime: Punct {
+            char: '\'',
+            spacing: Joint,
+        },
+        ident: Ident(
+            a,
+        ),
+    },
+    TypeOrConst {
+        expr: [
+            path,
+            ":",
+            ":",
+            to,
+            ":",
+            ":",
+            Type,
+        ],
+    },
+    TypeOrConst {
+        expr: [
+            15,
+        ],
+    },
+    Binding {
+        ident: Ident(
+            Item,
+        ),
+        tk_equals: Punct {
+            char: '=',
+            spacing: Alone,
+        },
+        ty: [
+            i32,
+        ],
+    },
+    TypeOrConst {
+        expr: [
+            module,
+            ":",
+            ":",
+            NestedType,
+            "<",
+            another,
+            ":",
+            ":",
+            Type,
+            ">",
+        ],
+    },
+]

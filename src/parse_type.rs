@@ -4,9 +4,9 @@ use crate::parse_utils::{
 };
 use crate::punctuated::Punctuated;
 use crate::types::{
-    EnumVariant, EnumVariantValue, GenericBound, GenericParam, GenericParamList, NamedField,
-    NamedStructFields, StructFields, TupleField, TupleStructFields, TyExpr, WhereClause,
-    WhereClauseItem,
+    EnumVariant, EnumVariantValue, GenericArg, GenericArgList, GenericBound, GenericParam,
+    GenericParamList, NamedField, NamedStructFields, StructFields, TupleField, TupleStructFields,
+    TyExpr, WhereClause, WhereClauseItem,
 };
 use crate::types_edition::GroupSpan;
 use proc_macro2::{Delimiter, Group, Ident, Punct, TokenStream, TokenTree};
@@ -44,7 +44,7 @@ pub(crate) fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericPa
     loop {
         let token = tokens
             .peek()
-            .expect("cannot parse generic params: expected token after '>'");
+            .expect("cannot parse generic params: expected token after '<'");
         let prefix = match token {
             TokenTree::Punct(punct) if punct.as_char() == '>' => {
                 lt = punct.clone();
@@ -105,6 +105,109 @@ pub(crate) fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericPa
     Some(GenericParamList {
         tk_l_bracket: gt,
         params: generic_params,
+        tk_r_bracket: lt,
+    })
+}
+
+fn consume_generic_arg(tokens: Vec<TokenTree>) -> GenericArg {
+    // Note: method not called if tokens is empty
+    let mut tokens = tokens.into_iter().peekable();
+
+    // Try parsing 'lifetime
+    if let TokenTree::Punct(punct) = tokens.peek().unwrap() {
+        if punct.as_char() == '\'' {
+            let tk_lifetime = punct.clone();
+            tokens.next(); // consume '
+
+            // after the ', there must be a single identifier
+            match tokens.next() {
+                Some(TokenTree::Ident(ident)) => {
+                    assert!(
+                        tokens.next().is_none(),
+                        "cannot parse lifetime generic argument"
+                    );
+
+                    return GenericArg::Lifetime { tk_lifetime, ident };
+                }
+                Some(other) => {
+                    panic!(
+                        "expected identifier after ' lifetime symbol, got {:?}",
+                        other
+                    );
+                }
+                None => {
+                    panic!("expected identifier after ' lifetime symbol, but ran out of tokens")
+                }
+            }
+        }
+    }
+
+    // Then, try parsing Item = ...
+    // (there is at least 1 token, so unwrap is safe)
+    let before_ident = tokens.clone();
+    if let TokenTree::Ident(ident) = tokens.next().unwrap() {
+        if let Some(TokenTree::Punct(punct)) = tokens.next() {
+            if punct.as_char() == '=' {
+                let remaining: Vec<TokenTree> = tokens.collect();
+
+                return GenericArg::Binding {
+                    ident,
+                    tk_equals: punct,
+                    ty: TyExpr { tokens: remaining },
+                };
+            }
+        }
+    }
+
+    // Last, all the rest is just tokens
+    let remaining: Vec<TokenTree> = before_ident.collect();
+
+    GenericArg::TypeOrConst {
+        expr: TyExpr { tokens: remaining },
+    }
+}
+
+pub(crate) fn consume_generic_args(tokens: &mut TokenIter) -> Option<GenericArgList> {
+    let gt: Punct;
+    let mut generic_params = Punctuated::new();
+    let lt: Punct;
+
+    match tokens.peek() {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => {
+            gt = punct.clone();
+            tokens.next();
+        }
+        _ => return None,
+    };
+
+    loop {
+        // Tokenize until next comma (skips nested <>)
+        let arg_tokens = consume_stuff_until(
+            tokens,
+            |tk| matches!(tk, TokenTree::Punct(punct) if punct.as_char() == ','),
+            false,
+        );
+        let comma = consume_comma(tokens);
+
+        // Exit when end reached
+        if arg_tokens.is_empty() {
+            break;
+        }
+
+        generic_params.push(consume_generic_arg(arg_tokens), comma);
+    }
+
+    match tokens.peek() {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == '>' => {
+            lt = punct.clone();
+            tokens.next();
+        }
+        _ => panic!("generic argument list must end with '>'"),
+    };
+
+    Some(GenericArgList {
+        tk_l_bracket: gt,
+        args: generic_params,
         tk_r_bracket: lt,
     })
 }
