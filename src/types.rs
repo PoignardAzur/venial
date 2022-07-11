@@ -414,6 +414,46 @@ pub struct GenericBound {
     pub tokens: Vec<TokenTree>,
 }
 
+/// List of generic arguments, as in `Vec<i32, Alloc>`.
+#[derive(Clone)]
+pub struct GenericArgList {
+    pub tk_l_bracket: Punct,
+    pub args: Punctuated<GenericArg>,
+    pub tk_r_bracket: Punct,
+}
+
+/// A parameter in a type's generic list.
+///
+/// **Example inputs:** (arguments are _inside_ the angle brackets)
+///
+/// ```no_run
+/// # use std::borrow::Cow;
+/// # mod path { pub mod to { pub type Type = i32; }}
+/// # struct MyArray<const N: i32> {}
+/// # #[allow(clippy::needless_lifetimes)] fn f<'a>(tuple: (
+/// Cow<'a, path::to::Type>,
+/// impl Iterator<Item = path::to::Type>,
+/// MyArray<17>,
+/// # )) {}
+/// ```
+#[derive(Clone, Debug)]
+pub enum GenericArg {
+    /// E.g. `Ref<'a>`.
+    Lifetime { tk_lifetime: Punct, ident: Ident },
+    /// E.g. `Iterator<Item = path::to::Type>`.
+    Binding {
+        /// For the above example, this would be `Item`.
+        ident: Ident,
+        tk_equals: Punct,
+        /// For the above example, this would be `path::to::Type`.
+        /// Note that it may also capture constants, e.g. `MyArray<32>` this would be `32`.
+        ty: TyExpr,
+    },
+    /// E.g. `Rc<path::to::Type>` or `MyArray<32>`.  
+    /// Since expressions are not parsed, the two cannot be differentiated.
+    TypeOrConst { expr: TyExpr },
+}
+
 /// Generic arguments deduced from a type's [GenericParamList].
 ///
 /// For instance, `<'a: 'static, T, U: Clone, const N: usize>` becomes `<'a, T, U, N>`.
@@ -639,6 +679,12 @@ impl std::fmt::Debug for GenericParam {
 impl std::fmt::Debug for GenericBound {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         format_debug_tokens(f, &self.tokens)
+    }
+}
+
+impl std::fmt::Debug for GenericArgList {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        self.args.fmt(f)
     }
 }
 
@@ -1010,6 +1056,37 @@ impl ToTokens for GenericBound {
         self.tk_colon.to_tokens(tokens);
         for token in &self.tokens {
             tokens.append(token.clone());
+        }
+    }
+}
+
+impl ToTokens for GenericArgList {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(self.tk_l_bracket.clone());
+        self.args.to_tokens(tokens);
+        tokens.append(self.tk_r_bracket.clone());
+    }
+}
+
+impl ToTokens for GenericArg {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        match self {
+            GenericArg::Lifetime { tk_lifetime, ident } => {
+                tk_lifetime.to_tokens(tokens);
+                ident.to_tokens(tokens);
+            }
+            GenericArg::Binding {
+                ident,
+                tk_equals,
+                ty,
+            } => {
+                ident.to_tokens(tokens);
+                tk_equals.to_tokens(tokens);
+                ty.to_tokens(tokens);
+            }
+            GenericArg::TypeOrConst { expr } => {
+                expr.to_tokens(tokens);
+            }
         }
     }
 }
