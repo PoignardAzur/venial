@@ -1,4 +1,4 @@
-use crate::parse_fn::consume_fn;
+use crate::parse_fn::try_consume_fn;
 use crate::parse_utils::{consume_attributes, consume_stuff_until, consume_vis_marker};
 use crate::types::{Constant, ImplMember, TypeDefinition, ValueExpr};
 use crate::types_edition::GroupSpan;
@@ -38,25 +38,15 @@ pub(crate) fn parse_impl_members(token_group: Group) -> (Vec<ImplMember>, GroupS
                     let assoc_ty = consume_assoc_ty(&mut tokens, attributes, vis_marker);
                     ImplMember::AssocTy(assoc_ty)
                 }
-                "const" => {
-                    // needs 2-lookahead to differentiate `const IDENT` and `const fn`
-                    let mut lookahead = tokens.clone();
-                    lookahead.next(); // const
-                    if let Some(TokenTree::Ident(ident)) = lookahead.peek() {
-                        if ident == "fn" {
-                            let method = consume_fn(&mut tokens, attributes, vis_marker);
-                            ImplMember::Method(method)
-                        } else {
-                            let constant = consume_constant(&mut tokens, attributes, vis_marker);
-                            ImplMember::Constant(constant)
-                        }
+                "default" | "const" | "async" | "unsafe" | "extern" | "fn" => {
+                    if let Some(method) =
+                        try_consume_fn(&mut tokens, attributes.clone(), vis_marker.clone())
+                    {
+                        ImplMember::Method(method)
                     } else {
-                        panic!("unsupported tokens after `const` in impl block")
+                        let constant = consume_constant(&mut tokens, attributes, vis_marker);
+                        ImplMember::Constant(constant)
                     }
-                }
-                "default" | "async" | "unsafe" | "extern" | "fn" => {
-                    let method = consume_fn(&mut tokens, attributes, vis_marker);
-                    ImplMember::Method(method)
                 }
                 _ => panic!("unsupported impl item `{ident}`"),
             }

@@ -175,16 +175,30 @@ pub(crate) fn consume_fn_return(tokens: &mut TokenIter) -> Option<([Punct; 2], T
     ))
 }
 
-pub(crate) fn consume_fn(
+/// Tries to parse a function definition.
+///
+/// Panics when the following tokens do not constitute a function definition, with one exception:
+/// when `const` is followed by an identifier which is not `fn`, then `None` is returned. This is to
+/// allow fallback to a constant declaration (both can begin with the `const` token).
+pub(crate) fn try_consume_fn(
     tokens: &mut TokenIter,
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
-) -> Function {
+) -> Option<Function> {
+    let before_start = tokens.clone();
     let qualifiers = consume_fn_qualifiers(tokens);
 
-    // fn keyword
-    let tk_fn_keyword = if let Some(TokenTree::Ident(fn_keyword)) = tokens.next() {
-        fn_keyword
+    // fn keyword, or const fallback
+    let tk_fn_keyword = if let Some(TokenTree::Ident(ident)) = tokens.next() {
+        if ident == "fn" {
+            ident
+        } else if qualifiers.has_only_const() {
+            // rollback iterator, could be start of const declaration
+            *tokens = before_start;
+            return None;
+        } else {
+            panic!("expected 'fn' keyword, got ident '{}'", ident)
+        }
     } else {
         panic!("expected 'fn' keyword")
     };
@@ -215,7 +229,7 @@ pub(crate) fn consume_fn(
         _ => panic!("cannot parse function"),
     };
 
-    Function {
+    Some(Function {
         attributes,
         vis_marker,
         qualifiers,
@@ -229,5 +243,14 @@ pub(crate) fn consume_fn(
         return_ty,
         tk_semicolon,
         body: function_body,
-    }
+    })
+}
+
+pub(crate) fn consume_fn(
+    tokens: &mut TokenIter,
+    attributes: Vec<Attribute>,
+    vis_marker: Option<VisMarker>,
+) -> Function {
+    try_consume_fn(tokens, attributes, vis_marker)
+        .expect("expected function, not constant declaration")
 }
