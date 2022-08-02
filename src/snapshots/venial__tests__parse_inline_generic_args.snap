@@ -1,0 +1,37 @@
+---
+source: src/tests.rs
+expression: params
+---
+[
+    GenericParam {
+        tk_prefix: "'",
+        name: "a",
+        bound: Some(
+            [
+                "'",
+                static,
+            ],
+        ),
+    },
+    GenericParam {
+        name: "T",
+        bound: None,
+    },
+    GenericParam {
+        name: "U",
+        bound: Some(
+            [
+                Clone,
+            ],
+        ),
+    },
+    GenericParam {
+        tk_prefix: "const",
+        name: "N",
+        bound: Some(
+            [
+                usize,
+            ],
+        ),
+    },
+]

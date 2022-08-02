@@ -4,8 +4,8 @@ pub use crate::types::{
     GenericBound, GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, NamedField, Struct,
     StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
-use crate::types::{FnQualifiers, Impl, Path};
-use crate::{Constant, TyDefinition};
+use crate::types::{FnQualifiers, GenericArg, GenericArgList, Impl, Path};
+use crate::{Constant, Punctuated, TyDefinition};
 use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
 impl Declaration {
@@ -574,6 +574,56 @@ impl GenericParam {
         match &self.tk_prefix {
             Some(TokenTree::Ident(ident)) if ident == "const" => true,
             _ => false,
+        }
+    }
+}
+
+impl<'a> InlineGenericArgs<'a> {
+    /// Returns an owned argument list from this.
+    pub fn to_owned_args(&self) -> GenericArgList {
+        let GenericParamList {
+            tk_l_bracket,
+            params,
+            tk_r_bracket,
+        } = self.0;
+
+        GenericArgList {
+            tk_turbofish_colons: None, // TODO add if GenericParamList supports this, too
+            tk_l_bracket: tk_l_bracket.clone(),
+            args: Punctuated {
+                inner: params
+                    .inner
+                    .iter()
+                    .map(|(param, punctuated_punct)| {
+                        let name = param.name.clone();
+                        let arg = match &param.tk_prefix {
+                            Some(TokenTree::Punct(punct)) if punct.as_char() == '\'' => {
+                                GenericArg::Lifetime {
+                                    tk_lifetime: punct.clone(),
+                                    ident: name,
+                                }
+                            }
+                            Some(TokenTree::Ident(ident)) if ident == "const" => {
+                                GenericArg::TyOrConst {
+                                    expr: TyExpr {
+                                        tokens: vec![TokenTree::Ident(name)],
+                                    },
+                                }
+                            }
+                            Some(_) => panic!("unexpected tk_prefix, must be ' or const"),
+                            None => GenericArg::TyOrConst {
+                                expr: TyExpr {
+                                    tokens: vec![TokenTree::Ident(name)],
+                                },
+                            },
+                        };
+
+                        (arg, punctuated_punct.clone())
+                    })
+                    .collect(),
+                skip_last: params.skip_last,
+            },
+            tk_r_bracket: tk_r_bracket.clone(),
         }
     }
 }

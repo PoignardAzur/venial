@@ -1,0 +1,32 @@
+---
+source: src/tests.rs
+expression: owned_args
+---
+GenericArgList {
+    args: [
+        Lifetime {
+            tk_lifetime: Punct {
+                char: '\'',
+                spacing: Joint,
+            },
+            ident: Ident(
+                a,
+            ),
+        },
+        TyOrConst {
+            expr: [
+                T,
+            ],
+        },
+        TyOrConst {
+            expr: [
+                U,
+            ],
+        },
+        TyOrConst {
+            expr: [
+                N,
+            ],
+        },
+    ],
+}
