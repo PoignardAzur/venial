@@ -1,15 +1,26 @@
 ---
 source: src/tests.rs
-expression: path_elems
+expression: path
 ---
-[
-    Ident(
-        path,
-    ),
-    Ident(
-        to,
-    ),
-    Ident(
-        Type,
-    ),
-]
+Path {
+    segments: [
+        PathSegment {
+            tk_separator_colons: "::",
+            ident: Ident(
+                path,
+            ),
+        },
+        PathSegment {
+            tk_separator_colons: "::",
+            ident: Ident(
+                to,
+            ),
+        },
+        PathSegment {
+            tk_separator_colons: "::",
+            ident: Ident(
+                Type,
+            ),
+        },
+    ],
+}

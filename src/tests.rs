@@ -8,7 +8,7 @@ use quote::quote;
 
 macro_rules! assert_quote_snapshot {
     ($item:expr) => {{
-        use ::quote::ToTokens;
+        use quote::ToTokens;
         let tokens = ($item).to_token_stream();
         ::insta::assert_display_snapshot!(tokens);
     }};
@@ -512,6 +512,19 @@ fn parse_enum_empty_generic_params() {
 fn parse_generic_args() {
     let generic_args_tokens = quote! {
         <'a, path::to::Type, 15, Item = i32, module::NestedType<another::Type>>
+    };
+
+    let mut token_iter = generic_args_tokens.clone().into_iter().peekable();
+    let parsed = crate::parse_type::consume_generic_args(&mut token_iter).unwrap();
+
+    similar_asserts::assert_str_eq!(quote!(#parsed), generic_args_tokens);
+    assert_debug_snapshot!(parsed);
+}
+
+#[test]
+fn parse_generic_args_turbofish() {
+    let generic_args_tokens = quote! {
+        ::<>
     };
 
     let mut token_iter = generic_args_tokens.clone().into_iter().peekable();
@@ -1092,38 +1105,39 @@ fn parse_impl_trait_generic() {
     assert_debug_snapshot!(impl_decl);
 }
 
-// ================
-// TYPE EXPRESSIONS
-// ================
+// =====================
+// TYPE PATH EXPRESSIONS
+// =====================
 
 #[test]
 fn interpret_ty_expr_simple_as_path() {
+    let tokens = quote! { ::path::to::Type };
     let ty_expr = TyExpr {
-        tokens: quote! { path::to::Type }.into_iter().collect(),
+        tokens: tokens.clone().into_iter().collect(),
     };
 
-    let (path_elems, generic_args) = ty_expr.as_path().expect("as_path()");
-    assert_debug_snapshot!(path_elems);
-    assert_debug_snapshot!(generic_args);
+    let path = ty_expr.as_path().expect("as_path()");
+    assert_debug_snapshot!(path);
+    similar_asserts::assert_str_eq!(quote!(#ty_expr), tokens);
 }
 
 #[test]
 fn interpret_ty_expr_generic_as_path() {
+    let tokens = quote! { path::to::Type<'a, other::Arg, 36>::Turbofish::<> };
     let ty_expr = TyExpr {
-        tokens: quote! { path::to::Type<'a, other::Arg, 36> }
-            .into_iter()
-            .collect(),
+        tokens: tokens.clone().into_iter().collect(),
     };
 
-    let (path_elems, generic_args) = ty_expr.as_path().expect("as_path()");
-    assert_debug_snapshot!(path_elems);
-    assert_debug_snapshot!(generic_args);
+    let path = ty_expr.as_path().expect("as_path()");
+    assert_debug_snapshot!(path);
+    similar_asserts::assert_str_eq!(quote!(#ty_expr), tokens);
 }
 
 #[test]
 fn interpret_ty_expr_invalid_as_path() {
+    let tokens = quote! { () };
     let ty_expr = TyExpr {
-        tokens: quote! { () }.into_iter().collect(),
+        tokens: tokens.into_iter().collect(),
     };
 
     let invalid = ty_expr.as_path();

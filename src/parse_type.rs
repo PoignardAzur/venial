@@ -1,6 +1,7 @@
 use crate::error::Error;
 use crate::parse_utils::{
     consume_attributes, consume_comma, consume_stuff_until, consume_vis_marker, parse_ident,
+    try_consume_colon2,
 };
 use crate::punctuated::Punctuated;
 use crate::types::{
@@ -168,18 +169,22 @@ fn consume_generic_arg(tokens: Vec<TokenTree>) -> GenericArg {
 }
 
 pub(crate) fn consume_generic_args(tokens: &mut TokenIter) -> Option<GenericArgList> {
-    let gt: Punct;
-    let mut generic_params = Punctuated::new();
-    let lt: Punct;
+    let before = tokens.clone();
+    let tk_turbofish_colons = try_consume_colon2(tokens);
 
-    match tokens.peek() {
+    let tk_l_bracket = match tokens.peek() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => {
-            gt = punct.clone();
+            let gt = punct.clone();
             tokens.next();
+            gt
         }
-        _ => return None,
+        _ => {
+            *tokens = before;
+            return None;
+        }
     };
 
+    let mut generic_args = Punctuated::new();
     loop {
         // Tokenize until next comma (skips nested <>)
         let arg_tokens = consume_stuff_until(
@@ -194,21 +199,23 @@ pub(crate) fn consume_generic_args(tokens: &mut TokenIter) -> Option<GenericArgL
             break;
         }
 
-        generic_params.push(consume_generic_arg(arg_tokens), comma);
+        generic_args.push(consume_generic_arg(arg_tokens), comma);
     }
 
-    match tokens.peek() {
+    let tk_r_bracket = match tokens.peek() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == '>' => {
-            lt = punct.clone();
+            let lt = punct.clone();
             tokens.next();
+            lt
         }
         _ => panic!("generic argument list must end with '>'"),
     };
 
     Some(GenericArgList {
-        tk_l_bracket: gt,
-        args: generic_params,
-        tk_r_bracket: lt,
+        tk_turbofish_colons,
+        tk_l_bracket,
+        args: generic_args,
+        tk_r_bracket,
     })
 }
 

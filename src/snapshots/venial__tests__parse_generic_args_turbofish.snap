@@ -1,0 +1,8 @@
+---
+source: src/tests.rs
+expression: parsed
+---
+GenericArgList {
+    tk_turbofish_colons: "::",
+    args: [],
+}
