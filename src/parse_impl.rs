@@ -20,46 +20,6 @@ pub(crate) fn consume_for(tokens: &mut TokenIter) -> Option<Ident> {
     None
 }
 
-pub(crate) fn parse_impl_members(token_group: Group) -> (Vec<ImplMember>, GroupSpan) {
-    let mut body_items = vec![];
-
-    let mut tokens = token_group.stream().into_iter().peekable();
-    loop {
-        if tokens.peek().is_none() {
-            break;
-        }
-
-        let attributes = consume_attributes(&mut tokens);
-        let vis_marker = consume_vis_marker(&mut tokens);
-
-        let item: ImplMember = if let Some(TokenTree::Ident(ident)) = tokens.peek() {
-            match ident.to_string().as_str() {
-                "type" => {
-                    let assoc_ty = consume_assoc_ty(&mut tokens, attributes, vis_marker);
-                    ImplMember::AssocTy(assoc_ty)
-                }
-                "default" | "const" | "async" | "unsafe" | "extern" | "fn" => {
-                    if let Some(method) =
-                        try_consume_fn(&mut tokens, attributes.clone(), vis_marker.clone())
-                    {
-                        ImplMember::Method(method)
-                    } else {
-                        let constant = consume_constant(&mut tokens, attributes, vis_marker);
-                        ImplMember::Constant(constant)
-                    }
-                }
-                _ => panic!("unsupported impl item `{ident}`"),
-            }
-        } else {
-            panic!("unsupported impl element: {:?}", tokens.peek())
-        };
-
-        body_items.push(item);
-    }
-
-    (body_items, GroupSpan::new(&token_group))
-}
-
 pub(crate) fn consume_constant(
     tokens: &mut TokenIter,
     attributes: Vec<Attribute>,
@@ -157,4 +117,51 @@ pub(crate) fn consume_assoc_ty(
         initializer_ty: TyExpr { tokens: ty_tokens },
         tk_semicolon,
     }
+}
+
+pub(crate) fn consume_fn_const_or_type(
+    tokens: &mut TokenIter,
+    attributes: Vec<Attribute>,
+    vis_marker: Option<VisMarker>,
+    context: &str, // for panic
+) -> ImplMember {
+    if let Some(TokenTree::Ident(ident)) = tokens.peek() {
+        match ident.to_string().as_str() {
+            "type" => {
+                let assoc_ty = consume_assoc_ty(tokens, attributes, vis_marker);
+                ImplMember::AssocTy(assoc_ty)
+            }
+            "default" | "const" | "async" | "unsafe" | "extern" | "fn" => {
+                if let Some(method) = try_consume_fn(tokens, attributes.clone(), vis_marker.clone())
+                {
+                    ImplMember::Method(method)
+                } else {
+                    let constant = consume_constant(tokens, attributes, vis_marker);
+                    ImplMember::Constant(constant)
+                }
+            }
+            _ => panic!("unsupported {} item `{}`", context, ident),
+        }
+    } else {
+        panic!("unsupported {} element: {:?}", context, tokens.peek())
+    }
+}
+
+pub(crate) fn parse_impl_members(token_group: Group) -> (Vec<ImplMember>, GroupSpan) {
+    let mut body_items = vec![];
+
+    let mut tokens = token_group.stream().into_iter().peekable();
+    loop {
+        if tokens.peek().is_none() {
+            break;
+        }
+
+        let attributes = consume_attributes(&mut tokens);
+        let vis_marker = consume_vis_marker(&mut tokens);
+        let item = consume_fn_const_or_type(&mut tokens, attributes, vis_marker, "impl");
+
+        body_items.push(item);
+    }
+
+    (body_items, GroupSpan::new(&token_group))
 }

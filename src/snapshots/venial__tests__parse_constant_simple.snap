@@ -1,0 +1,34 @@
+---
+source: src/tests.rs
+expression: const_decl
+---
+Constant(
+    Constant {
+        attributes: [],
+        vis_marker: None,
+        tk_const: Ident(
+            const,
+        ),
+        name: Ident(
+            CONSTANT,
+        ),
+        tk_colon: Punct {
+            char: ':',
+            spacing: Alone,
+        },
+        ty: [
+            i32,
+        ],
+        tk_equals: Punct {
+            char: '=',
+            spacing: Alone,
+        },
+        initializer: [
+            20,
+        ],
+        tk_semicolon: Punct {
+            char: ';',
+            spacing: Alone,
+        },
+    },
+)
