@@ -170,7 +170,7 @@ pub struct Impl {
 pub enum ImplMember {
     Method(Function),
     Constant(Constant),
-    AssocTy(TypeDefinition),
+    AssocTy(TyDefinition),
     // other items like macro!{...} or macro!(...); invocations
 }
 
@@ -203,7 +203,7 @@ pub struct Constant {
 /// type MyType = i32;
 /// ```
 #[derive(Clone, Debug)]
-pub struct TypeDefinition {
+pub struct TyDefinition {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
     pub tk_type: Ident,
@@ -456,7 +456,7 @@ pub enum GenericArg {
     },
     /// E.g. `Rc<path::to::Type>` or `MyArray<32>`.  
     /// Since expressions are not parsed, the two cannot be differentiated.
-    TypeOrConst { expr: TyExpr },
+    TyOrConst { expr: TyExpr },
 }
 
 /// Generic arguments deduced from a type's [GenericParamList].
@@ -886,7 +886,7 @@ impl ToTokens for Constant {
     }
 }
 
-impl ToTokens for TypeDefinition {
+impl ToTokens for TyDefinition {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for attribute in &self.attributes {
             attribute.to_tokens(tokens);
@@ -1152,7 +1152,7 @@ impl ToTokens for GenericArg {
                 tk_equals.to_tokens(tokens);
                 ty.to_tokens(tokens);
             }
-            GenericArg::TypeOrConst { expr } => {
+            GenericArg::TyOrConst { expr } => {
                 expr.to_tokens(tokens);
             }
         }

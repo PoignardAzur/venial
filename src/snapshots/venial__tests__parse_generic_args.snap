@@ -13,7 +13,7 @@ GenericArgList {
                 a,
             ),
         },
-        TypeOrConst {
+        TyOrConst {
             expr: [
                 path,
                 ":",
@@ -24,7 +24,7 @@ GenericArgList {
                 Type,
             ],
         },
-        TypeOrConst {
+        TyOrConst {
             expr: [
                 15,
             ],
@@ -41,7 +41,7 @@ GenericArgList {
                 i32,
             ],
         },
-        TypeOrConst {
+        TyOrConst {
             expr: [
                 module,
                 ":",
