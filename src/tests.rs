@@ -534,6 +534,23 @@ fn parse_generic_args_turbofish() {
     assert_debug_snapshot!(parsed);
 }
 
+#[test]
+fn parse_inline_generic_args() {
+    let generic_params_tokens = quote! {
+        <'a: 'static, T, U: Clone, const N: usize>
+    };
+
+    let mut token_iter = generic_params_tokens.clone().into_iter().peekable();
+    let params = crate::parse_type::consume_generic_params(&mut token_iter).unwrap();
+
+    similar_asserts::assert_str_eq!(quote!(#params), generic_params_tokens);
+    assert_debug_snapshot!(params);
+
+    let inline_args = params.as_inline_args();
+    let owned_args = inline_args.to_owned_args();
+    assert_debug_snapshot!(owned_args);
+}
+
 // ==================
 // ENUM VARIANT VALUE
 // ==================
