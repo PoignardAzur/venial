@@ -31,7 +31,7 @@ Path {
                             a,
                         ),
                     },
-                    TypeOrConst {
+                    TyOrConst {
                         expr: [
                             other,
                             ":",
@@ -39,7 +39,7 @@ Path {
                             Arg,
                         ],
                     },
-                    TypeOrConst {
+                    TyOrConst {
                         expr: [
                             36,
                         ],

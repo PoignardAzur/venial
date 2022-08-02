@@ -163,7 +163,7 @@ fn consume_generic_arg(tokens: Vec<TokenTree>) -> GenericArg {
     // Last, all the rest is just tokens
     let remaining: Vec<TokenTree> = before_ident.collect();
 
-    GenericArg::TypeOrConst {
+    GenericArg::TyOrConst {
         expr: TyExpr { tokens: remaining },
     }
 }

@@ -1,6 +1,6 @@
 use crate::parse_fn::try_consume_fn;
 use crate::parse_utils::{consume_attributes, consume_stuff_until, consume_vis_marker};
-use crate::types::{Constant, ImplMember, TypeDefinition, ValueExpr};
+use crate::types::{Constant, ImplMember, TyDefinition, ValueExpr};
 use crate::types_edition::GroupSpan;
 use crate::{Attribute, TyExpr, VisMarker};
 use proc_macro2::{Group, Ident, TokenTree};
@@ -121,7 +121,7 @@ pub(crate) fn consume_assoc_ty(
     tokens: &mut TokenIter,
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
-) -> TypeDefinition {
+) -> TyDefinition {
     let tk_type = match tokens.next() {
         Some(TokenTree::Ident(ident)) if ident == "type" => ident,
         _ => panic!("cannot parse associated type"),
@@ -148,7 +148,7 @@ pub(crate) fn consume_assoc_ty(
         _ => panic!("cannot parse associated type"),
     };
 
-    TypeDefinition {
+    TyDefinition {
         attributes,
         vis_marker,
         tk_type,

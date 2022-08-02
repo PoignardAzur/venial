@@ -72,5 +72,5 @@ pub use types::{
     Attribute, AttributeValue, Constant, Declaration, Enum, EnumVariant, EnumVariantValue, FnParam,
     FnReceiverParam, Function, GenericBound, GenericParam, GenericParamList, Impl, ImplMember,
     NamedField, NamedStructFields, Struct, StructFields, TupleField, TupleStructFields, TyExpr,
-    TypeDefinition, Union, ValueExpr, VisMarker, WhereClause, WhereClauseItem,
+    TyDefinition, Union, ValueExpr, VisMarker, WhereClause, WhereClauseItem,
 };
