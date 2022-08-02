@@ -1,15 +1,61 @@
 ---
 source: src/tests.rs
-expression: path_elems
+expression: path
 ---
-[
-    Ident(
-        path,
-    ),
-    Ident(
-        to,
-    ),
-    Ident(
-        Type,
-    ),
-]
+Path {
+    segments: [
+        PathSegment {
+            ident: Ident(
+                path,
+            ),
+        },
+        PathSegment {
+            tk_separator_colons: "::",
+            ident: Ident(
+                to,
+            ),
+        },
+        PathSegment {
+            tk_separator_colons: "::",
+            ident: Ident(
+                Type,
+            ),
+            generic_args: GenericArgList {
+                args: [
+                    Lifetime {
+                        tk_lifetime: Punct {
+                            char: '\'',
+                            spacing: Joint,
+                        },
+                        ident: Ident(
+                            a,
+                        ),
+                    },
+                    TypeOrConst {
+                        expr: [
+                            other,
+                            ":",
+                            ":",
+                            Arg,
+                        ],
+                    },
+                    TypeOrConst {
+                        expr: [
+                            36,
+                        ],
+                    },
+                ],
+            },
+        },
+        PathSegment {
+            tk_separator_colons: "::",
+            ident: Ident(
+                Turbofish,
+            ),
+            generic_args: GenericArgList {
+                tk_turbofish_colons: "::",
+                args: [],
+            },
+        },
+    ],
+}

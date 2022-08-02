@@ -1,6 +1,7 @@
-use crate::types::{Attribute, AttributeValue, VisMarker};
+use crate::parse_type::consume_generic_args;
+use crate::types::{Attribute, AttributeValue, Path, PathSegment, VisMarker};
 use crate::types_edition::GroupSpan;
-use proc_macro2::{Delimiter, Ident, Punct, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Ident, Punct, Spacing, TokenStream, TokenTree};
 use std::iter::Peekable;
 
 pub(crate) type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
@@ -176,30 +177,63 @@ pub(crate) fn consume_comma(tokens: &mut TokenIter) -> Option<Punct> {
     }
 }
 
-/// Splits `path::to::Thing` into `vec!["path", "to", "Thing"]`. None if not matching.
-pub(crate) fn try_consume_path(mut tokens: TokenIter) -> Option<Vec<Ident>> {
-    let mut elems = vec![];
-    loop {
-        // path elem
-        match tokens.next() {
-            Some(TokenTree::Ident(ident)) => elems.push(ident),
-            Some(_) => return None,
-            None => return None, // end of tokens is no ident, error
-        }
+/// Parse `::`, as in path separator or turbofish.
+///
+/// Does not advance `tokens` if the double colon is not found.
+pub(crate) fn try_consume_colon2(tokens: &mut TokenIter) -> Option<[Punct; 2]> {
+    let before = tokens.clone();
 
-        // first ':'
-        match tokens.next() {
-            Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => {}
-            Some(_) => return None,
-            None => break, // reached end gracefully
-        }
-
-        // second ':'
-        match tokens.next() {
-            Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => {}
-            _ => return None,
+    if let Some(TokenTree::Punct(first)) = tokens.next() {
+        if first.as_char() == ':' && first.spacing() == Spacing::Joint {
+            if let Some(TokenTree::Punct(second)) = tokens.next() {
+                if second.as_char() == ':' && second.spacing() == Spacing::Alone {
+                    return Some([first, second]);
+                }
+            }
         }
     }
 
-    Some(elems)
+    *tokens = before;
+    None
+}
+
+/// Tries to parse a path expressions; returns `None` if not matching.
+pub(crate) fn try_consume_path(mut tokens: TokenIter) -> Option<Path> {
+    let mut segments = vec![];
+
+    // Leading `::` is optional
+    let mut tk_separator_colons = try_consume_colon2(&mut tokens);
+
+    loop {
+        // path elem
+        let ident = match tokens.next() {
+            Some(TokenTree::Ident(ident)) => ident.clone(),
+            _ => return None, // end of tokens OR not a path
+        };
+
+        let generic_args = consume_generic_args(&mut tokens);
+
+        segments.push(PathSegment {
+            tk_separator_colons,
+            ident,
+            generic_args,
+        });
+
+        if tokens.peek().is_none() {
+            break;
+        }
+
+        println!("-----");
+        dbg!(&segments);
+        dbg!(&tokens);
+
+        // Intermediate `::` are not optional
+        if let Some(separator) = try_consume_colon2(&mut tokens) {
+            tk_separator_colons = Some(separator);
+        } else {
+            return None;
+        }
+    }
+
+    Some(Path { segments })
 }

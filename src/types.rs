@@ -417,8 +417,13 @@ pub struct GenericBound {
 /// List of generic arguments, as in `Vec<i32, Alloc>`.
 #[derive(Clone)]
 pub struct GenericArgList {
+    /// If the list is in expression position, e.g. `Vec::<i32, Alloc>`, then this captures the `::`.
+    pub tk_turbofish_colons: Option<[Punct; 2]>,
+    /// Opening bracket of the generic argument list.
     pub tk_l_bracket: Punct,
+    /// The arguments, separated by comma. Nested `<` `>` tokens will be part of this.
     pub args: Punctuated<GenericArg>,
+    /// Opening bracket of the generic argument list.
     pub tk_r_bracket: Punct,
 }
 
@@ -510,6 +515,26 @@ pub struct TyExpr {
 #[derive(Clone)]
 pub struct ValueExpr {
     pub tokens: Vec<TokenTree>,
+}
+
+/// Implements a path expression according to the [Rust documentation](https://doc.rust-lang.org/reference/paths.html).
+///
+/// Examples: `bool`, `path::to::Type`, `module::Type::<i32, Item=()>`, etc.
+#[derive(Clone, Debug)]
+pub struct Path {
+    // Note: could use Punctuated once that supports other tokens than ','
+    pub segments: Vec<PathSegment>,
+}
+
+/// A segment of a [`Path`], e.g. `Type::<i32>`
+#[derive(Clone)]
+pub struct PathSegment {
+    /// `::` separator in front (can be omitted for leading segment)
+    pub tk_separator_colons: Option<[Punct; 2]>,
+    /// Main identifier of the path
+    pub ident: Ident,
+    /// Generic argument list, if available
+    pub generic_args: Option<GenericArgList>,
 }
 
 /// The value of an [`EnumVariant`], normally for c-like enums.
@@ -658,6 +683,20 @@ impl std::fmt::Debug for VisMarker {
     }
 }
 
+impl std::fmt::Debug for PathSegment {
+    fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
+        let mut f = f.debug_struct("PathSegment");
+        if self.tk_separator_colons.is_some() {
+            f.field("tk_separator_colons", &"::");
+        }
+        f.field("ident", &self.ident);
+        if let Some(args) = self.generic_args.as_ref() {
+            f.field("generic_args", args);
+        }
+        f.finish()
+    }
+}
+
 impl std::fmt::Debug for GenericParamList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.params.fmt(f)
@@ -684,7 +723,12 @@ impl std::fmt::Debug for GenericBound {
 
 impl std::fmt::Debug for GenericArgList {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
-        self.args.fmt(f)
+        let mut f = f.debug_struct("GenericArgList");
+        if self.tk_turbofish_colons.is_some() {
+            f.field("tk_turbofish_colons", &"::");
+        }
+        f.field("args", &self.args);
+        f.finish()
     }
 }
 
@@ -1035,6 +1079,26 @@ impl ToTokens for VisMarker {
     }
 }
 
+impl ToTokens for Path {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for segment in &self.segments {
+            segment.to_tokens(tokens);
+        }
+    }
+}
+
+impl ToTokens for PathSegment {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        if let Some(colons) = &self.tk_separator_colons {
+            tokens.append(colons[0].clone());
+            tokens.append(colons[1].clone());
+        }
+
+        self.ident.to_tokens(tokens);
+        self.generic_args.to_tokens(tokens);
+    }
+}
+
 impl ToTokens for GenericParamList {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         tokens.append(self.tk_l_bracket.clone());
@@ -1062,6 +1126,10 @@ impl ToTokens for GenericBound {
 
 impl ToTokens for GenericArgList {
     fn to_tokens(&self, tokens: &mut TokenStream) {
+        if let Some(colons) = &self.tk_turbofish_colons {
+            tokens.append(colons[0].clone());
+            tokens.append(colons[1].clone());
+        }
         tokens.append(self.tk_l_bracket.clone());
         self.args.to_tokens(tokens);
         tokens.append(self.tk_r_bracket.clone());
