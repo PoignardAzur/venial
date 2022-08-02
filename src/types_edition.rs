@@ -1,10 +1,10 @@
 use crate::parse_utils::{tokens_from_slice, try_consume_path};
-use crate::types::Impl;
 pub use crate::types::{
     Attribute, AttributeValue, Declaration, Enum, EnumVariant, EnumVariantValue, Function,
     GenericBound, GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, NamedField, Struct,
     StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
+use crate::types::{FnQualifiers, Impl};
 use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
 impl Declaration {
@@ -391,6 +391,18 @@ impl EnumVariant {
             StructFields::Unit => None,
             StructFields::Named(_) => None,
         }
+    }
+}
+
+impl FnQualifiers {
+    /// Whether only the `const` attribute is set (so the tokens could be the start of a constant declaration)
+    pub(crate) fn has_only_const(&self) -> bool {
+        self.tk_default.is_none()
+            && self.tk_const.is_some()
+            && self.tk_async.is_none()
+            && self.tk_unsafe.is_none()
+            && self.tk_extern.is_none()
+            && self.extern_abi.is_none()
     }
 }
 
