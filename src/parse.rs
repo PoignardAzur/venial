@@ -1,6 +1,5 @@
 use crate::error::Error;
-use crate::parse_fn::consume_fn;
-use crate::parse_impl::{consume_for, parse_impl_members};
+use crate::parse_impl::{consume_fn_const_or_type, consume_for, parse_impl_members};
 use crate::parse_type::{
     consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
@@ -8,7 +7,7 @@ use crate::parse_type::{
 use crate::parse_utils::{consume_attributes, consume_stuff_until, consume_vis_marker};
 use crate::types::{Declaration, Enum, Impl, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
-use crate::TyExpr;
+use crate::{ImplMember, TyExpr};
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
 
 // TODO - Return Result<...>, handle case where TokenStream is valid declaration,
@@ -219,20 +218,25 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
             // Note: fn qualifiers appear always in this order in Rust
             if matches!(
                 keyword.to_string().as_str(),
-               "default" | "const" | "async" | "unsafe" | "extern" | "fn"
+               "default" | "const" | "async" | "unsafe" | "extern" | "fn" | "type"
             ) =>
         {
-            let function = consume_fn(&mut tokens, attributes, vis_marker);
-            Declaration::Function(function)
+            // Reuse impl parsing
+            match consume_fn_const_or_type(&mut tokens, attributes, vis_marker, "declaration") {
+                ImplMember::Method(function) => Declaration::Function(function),
+                ImplMember::Constant(constant) => Declaration::Constant(constant),
+                ImplMember::AssocTy(ty_def) => Declaration::TyDefinition(ty_def)
+            }
+
         }
         Some(token) => {
             panic!(
-                "cannot parse declaration: expected keyword struct/enum/union/impl/default/const/async/unsafe/extern/fn, found token {:?}",
+                "cannot parse declaration: expected keyword struct/enum/union/type/impl/default/const/async/unsafe/extern/fn, found token {:?}",
                 token
             );
         }
         None => {
-            panic!("cannot parse type: expected keyword struct/enum/union/impl/default/const/async/unsafe/extern/fn, found end-of-stream");
+            panic!("cannot parse type: expected keyword struct/enum/union/type/impl/default/const/async/unsafe/extern/fn, found end-of-stream");
         }
     };
     Ok(declaration)

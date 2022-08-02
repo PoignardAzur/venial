@@ -1105,6 +1105,56 @@ fn parse_impl_trait_generic() {
     assert_debug_snapshot!(impl_decl);
 }
 
+// =================
+// TYPE DECLARATIONS
+// =================
+
+#[test]
+fn parse_type_simple() {
+    let expr = quote! {
+        type MyType = std::string::String;
+    };
+
+    let ty_decl = parse_declaration_checked(expr);
+    assert_debug_snapshot!(ty_decl);
+}
+
+#[test]
+fn parse_type_complex() {
+    let expr = quote! {
+        #[attribute]
+        pub(crate) type MyType = some::module::OtherType<i32, 10>::AssocType<Item = char>;
+    };
+
+    let ty_decl = parse_declaration_checked(expr);
+    assert_debug_snapshot!(ty_decl);
+}
+
+// =====================
+// CONSTANT DECLARATIONS
+// =====================
+
+#[test]
+fn parse_constant_simple() {
+    let expr = quote! {
+        const CONSTANT: i32 = 20;
+    };
+
+    let const_decl = parse_declaration_checked(expr);
+    assert_debug_snapshot!(const_decl);
+}
+
+#[test]
+fn parse_constant_complex() {
+    let expr = quote! {
+        #[attribute]
+        pub(crate) const CONSTANT: some::complex::Type<'static, bool> = some::complex::Expr + 77;
+    };
+
+    let const_decl = parse_declaration_checked(expr);
+    assert_debug_snapshot!(const_decl);
+}
+
 // =====================
 // TYPE PATH EXPRESSIONS
 // =====================

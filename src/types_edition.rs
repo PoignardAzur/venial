@@ -5,6 +5,7 @@ pub use crate::types::{
     StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
 use crate::types::{FnQualifiers, Impl, Path};
+use crate::{Constant, TyDefinition};
 use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
 impl Declaration {
@@ -15,7 +16,9 @@ impl Declaration {
             Declaration::Enum(enum_decl) => &enum_decl.attributes,
             Declaration::Union(union_decl) => &union_decl.attributes,
             Declaration::Impl(impl_decl) => &impl_decl.attributes,
+            Declaration::TyDefinition(ty_decl) => &ty_decl.attributes,
             Declaration::Function(function_decl) => &function_decl.attributes,
+            Declaration::Constant(const_decl) => &const_decl.attributes,
         }
     }
 
@@ -26,7 +29,9 @@ impl Declaration {
             Declaration::Enum(enum_decl) => &mut enum_decl.attributes,
             Declaration::Union(union_decl) => &mut union_decl.attributes,
             Declaration::Impl(impl_decl) => &mut impl_decl.attributes,
+            Declaration::TyDefinition(ty_decl) => &mut ty_decl.attributes,
             Declaration::Function(function_decl) => &mut function_decl.attributes,
+            Declaration::Constant(const_decl) => &mut const_decl.attributes,
         }
     }
 
@@ -34,24 +39,35 @@ impl Declaration {
     ///
     /// For instance, this will return Some for `struct MyStruct<A, B, C> { ... }`,
     /// Some for `impl<A> MyTrait for MyType<A>` and None for `enum MyEnum { ... }`.
+    ///
+    /// `TyDefinition` and `Constant` variants never have a generic parameter list.
     pub fn generic_params(&self) -> Option<&GenericParamList> {
         match self {
             Declaration::Struct(struct_decl) => struct_decl.generic_params.as_ref(),
             Declaration::Enum(enum_decl) => enum_decl.generic_params.as_ref(),
             Declaration::Union(union_decl) => union_decl.generic_params.as_ref(),
             Declaration::Impl(impl_decl) => impl_decl.impl_generic_params.as_ref(),
+            Declaration::TyDefinition(_) => None,
             Declaration::Function(function_decl) => function_decl.generic_params.as_ref(),
+            Declaration::Constant(_) => None,
         }
     }
 
     /// Returns the [`GenericParamList`], if any, of the declaration.
+    ///
+    /// For instance, this will return Some for `struct MyStruct<A, B, C> { ... }`,
+    /// Some for `impl<A> MyTrait for MyType<A>` and None for `enum MyEnum { ... }`.
+    ///
+    /// `TyDefinition` and `Constant` variants never have a generic parameter list.
     pub fn generic_params_mut(&mut self) -> Option<&mut GenericParamList> {
         match self {
             Declaration::Struct(struct_decl) => struct_decl.generic_params.as_mut(),
             Declaration::Enum(enum_decl) => enum_decl.generic_params.as_mut(),
             Declaration::Union(union_decl) => union_decl.generic_params.as_mut(),
             Declaration::Impl(impl_decl) => impl_decl.impl_generic_params.as_mut(),
+            Declaration::TyDefinition(_) => None,
             Declaration::Function(function_decl) => function_decl.generic_params.as_mut(),
+            Declaration::Constant(_) => None,
         }
     }
 
@@ -74,7 +90,9 @@ impl Declaration {
             Declaration::Enum(enum_decl) => Some(enum_decl.name.clone()),
             Declaration::Union(union_decl) => Some(union_decl.name.clone()),
             Declaration::Impl(_) => None,
+            Declaration::TyDefinition(ty_decl) => Some(ty_decl.name.clone()),
             Declaration::Function(function_decl) => Some(function_decl.name.clone()),
+            Declaration::Constant(const_decl) => Some(const_decl.name.clone()),
         }
     }
 
@@ -110,10 +128,26 @@ impl Declaration {
         }
     }
 
+    /// Returns the [`TyDefinition`] variant of the enum if possible.
+    pub fn as_ty_definition(&self) -> Option<&TyDefinition> {
+        match self {
+            Declaration::TyDefinition(ty_decl) => Some(ty_decl),
+            _ => None,
+        }
+    }
+
     /// Returns the [`Function`] variant of the enum if possible.
     pub fn as_function(&self) -> Option<&Function> {
         match self {
             Declaration::Function(function_decl) => Some(function_decl),
+            _ => None,
+        }
+    }
+
+    /// Returns the [`Constant`] variant of the enum if possible.
+    pub fn as_constant(&self) -> Option<&Constant> {
+        match self {
+            Declaration::Constant(const_decl) => Some(const_decl),
             _ => None,
         }
     }

@@ -245,12 +245,3 @@ pub(crate) fn try_consume_fn(
         body: function_body,
     })
 }
-
-pub(crate) fn consume_fn(
-    tokens: &mut TokenIter,
-    attributes: Vec<Attribute>,
-    vis_marker: Option<VisMarker>,
-) -> Function {
-    try_consume_fn(tokens, attributes, vis_marker)
-        .expect("expected function, not constant declaration")
-}

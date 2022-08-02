@@ -1,0 +1,70 @@
+---
+source: src/tests.rs
+expression: const_decl
+---
+Constant(
+    Constant {
+        attributes: [
+            Attribute {
+                tk_hashbang: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_brackets: [],
+                path: [
+                    attribute,
+                ],
+                value: Empty,
+            },
+        ],
+        vis_marker: Some(
+            pub(
+                crate,
+            ),
+        ),
+        tk_const: Ident(
+            const,
+        ),
+        name: Ident(
+            CONSTANT,
+        ),
+        tk_colon: Punct {
+            char: ':',
+            spacing: Alone,
+        },
+        ty: [
+            some,
+            ":",
+            ":",
+            complex,
+            ":",
+            ":",
+            Type,
+            "<",
+            "'",
+            static,
+            ",",
+            bool,
+            ">",
+        ],
+        tk_equals: Punct {
+            char: '=',
+            spacing: Alone,
+        },
+        initializer: [
+            some,
+            ":",
+            ":",
+            complex,
+            ":",
+            ":",
+            Expr,
+            "+",
+            77,
+        ],
+        tk_semicolon: Punct {
+            char: ';',
+            spacing: Alone,
+        },
+    },
+)

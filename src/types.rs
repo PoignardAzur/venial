@@ -31,7 +31,9 @@ pub enum Declaration {
     Enum(Enum),
     Union(Union),
     Impl(Impl),
+    TyDefinition(TyDefinition),
     Function(Function),
+    Constant(Constant),
 }
 
 /// Declaration of a struct.
@@ -790,7 +792,9 @@ impl ToTokens for Declaration {
             Declaration::Enum(enum_decl) => enum_decl.to_tokens(tokens),
             Declaration::Union(union_decl) => union_decl.to_tokens(tokens),
             Declaration::Impl(impl_decl) => impl_decl.to_tokens(tokens),
+            Declaration::TyDefinition(ty_decl) => ty_decl.to_tokens(tokens),
             Declaration::Function(function_decl) => function_decl.to_tokens(tokens),
+            Declaration::Constant(const_decl) => const_decl.to_tokens(tokens),
         }
     }
 }

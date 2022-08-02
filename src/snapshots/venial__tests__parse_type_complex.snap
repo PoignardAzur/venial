@@ -1,0 +1,62 @@
+---
+source: src/tests.rs
+expression: ty_decl
+---
+TyDefinition(
+    TyDefinition {
+        attributes: [
+            Attribute {
+                tk_hashbang: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_brackets: [],
+                path: [
+                    attribute,
+                ],
+                value: Empty,
+            },
+        ],
+        vis_marker: Some(
+            pub(
+                crate,
+            ),
+        ),
+        tk_type: Ident(
+            type,
+        ),
+        name: Ident(
+            MyType,
+        ),
+        tk_equals: Punct {
+            char: '=',
+            spacing: Alone,
+        },
+        initializer_ty: [
+            some,
+            ":",
+            ":",
+            module,
+            ":",
+            ":",
+            OtherType,
+            "<",
+            i32,
+            ",",
+            10,
+            ">",
+            ":",
+            ":",
+            AssocType,
+            "<",
+            Item,
+            "=",
+            char,
+            ">",
+        ],
+        tk_semicolon: Punct {
+            char: ';',
+            spacing: Alone,
+        },
+    },
+)

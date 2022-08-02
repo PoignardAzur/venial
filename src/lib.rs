@@ -71,6 +71,6 @@ pub use punctuated::Punctuated;
 pub use types::{
     Attribute, AttributeValue, Constant, Declaration, Enum, EnumVariant, EnumVariantValue, FnParam,
     FnReceiverParam, Function, GenericBound, GenericParam, GenericParamList, Impl, ImplMember,
-    NamedField, NamedStructFields, Struct, StructFields, TupleField, TupleStructFields, TyExpr,
-    TyDefinition, Union, ValueExpr, VisMarker, WhereClause, WhereClauseItem,
+    NamedField, NamedStructFields, Struct, StructFields, TupleField, TupleStructFields,
+    TyDefinition, TyExpr, Union, ValueExpr, VisMarker, WhereClause, WhereClauseItem,
 };
