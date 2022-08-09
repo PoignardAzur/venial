@@ -52,6 +52,7 @@ Impl(
         ],
         where_clause: None,
         tk_braces: {},
+        inner_attributes: [],
         body_items: [],
     },
 )

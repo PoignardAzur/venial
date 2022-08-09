@@ -6,7 +6,7 @@ Constant(
     Constant {
         attributes: [
             Attribute {
-                tk_hashbang: Punct {
+                tk_hash: Punct {
                     char: '#',
                     spacing: Alone,
                 },

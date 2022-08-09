@@ -163,6 +163,7 @@ pub struct Impl {
     pub self_ty: TyExpr,
     pub where_clause: Option<WhereClause>,
     pub tk_braces: GroupSpan,
+    pub inner_attributes: Vec<Attribute>,
     pub body_items: Vec<ImplMember>,
 }
 
@@ -336,7 +337,7 @@ pub struct NamedField {
 
 // --- Token groups ---
 
-/// An outer attribute.
+/// An outer or inner attribute.
 ///
 /// **Example input:**
 ///
@@ -345,11 +346,16 @@ pub struct NamedField {
 /// #[hello(world)]
 /// # struct Foo;
 /// ```
+///
+/// See also: https://doc.rust-lang.org/reference/attributes.html
 #[derive(Clone)]
 pub struct Attribute {
-    pub tk_hashbang: Punct,
+    /// `#`, always present
+    pub tk_hash: Punct,
+    /// `!`, present only for inner attributes
+    pub tk_bang: Option<Punct>,
+    /// `[ ]`
     pub tk_brackets: GroupSpan,
-
     /// The `hello` in `#[hello(world)]`. May be an arbitrary path, eg `a::b::c`.
     pub path: Vec<TokenTree>,
     /// Everything that comes after the path
@@ -637,7 +643,10 @@ impl std::fmt::Debug for Attribute {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut f = f.debug_struct("Attribute");
 
-        f.field("tk_hashbang", &self.tk_hashbang);
+        f.field("tk_hash", &self.tk_hash);
+        if let Some(tk_bang) = self.tk_bang.as_ref() {
+            f.field("tk_bang", tk_bang);
+        }
         f.field("tk_brackets", &self.tk_brackets);
 
         let path_token_refs: Vec<_> = self.path.iter().map(TokenRef).collect();
@@ -932,6 +941,10 @@ impl ToTokens for Impl {
         self.self_ty.to_tokens(tokens);
         self.where_clause.to_tokens(tokens);
         self.tk_braces.quote_with(tokens, |tokens| {
+            for attribute in &self.inner_attributes {
+                attribute.to_tokens(tokens);
+            }
+
             for item in self.body_items.iter() {
                 item.to_tokens(tokens)
             }
@@ -1046,7 +1059,11 @@ impl ToTokens for NamedField {
 
 impl ToTokens for Attribute {
     fn to_tokens(&self, tokens: &mut TokenStream) {
-        self.tk_hashbang.to_tokens(tokens);
+        self.tk_hash.to_tokens(tokens);
+        if let Some(tk_bang) = self.tk_bang.as_ref() {
+            tk_bang.to_tokens(tokens);
+        }
+
         self.tk_brackets.quote_with(tokens, |tokens| {
             for token in &self.path {
                 token.to_tokens(tokens);

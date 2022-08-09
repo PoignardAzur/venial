@@ -1066,7 +1066,10 @@ fn add_where_item() {
 #[test]
 fn parse_impl_inherent() {
     let expr = quote!(
+        #[outer]
         impl MyStruct {
+            #![inner]
+
             fn new(i: i32, b: bool) -> Self {
                 Self {}
             }
@@ -1095,7 +1098,10 @@ fn parse_impl_inherent_generic() {
 #[test]
 fn parse_impl_trait() {
     let expr = quote!(
+        #[outer]
         impl MyTrait for MyStruct {
+            #![inner]
+
             pub type MyType = std::string::String;
 
             fn new(i: i32, b: bool) -> Self {
