@@ -41,13 +41,17 @@ pub(crate) fn consume_constant(
 
     let ty_tokens = consume_stuff_until(
         tokens,
-        |tt| matches!(tt, TokenTree::Punct(punct) if punct.as_char() == '='),
+        |tt| matches!(tt, TokenTree::Punct(punct) if punct.as_char() == '=' || punct.as_char() == ';'),
         true,
     );
 
-    let tk_equals = match tokens.next() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => punct,
-        _ => panic!("cannot parse constant"),
+    let tk_equals = match tokens.peek() {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => {
+            let punct = punct.clone();
+            tokens.next();
+            Some(punct)
+        }
+        _ => None,
     };
 
     let value_tokens = consume_stuff_until(
@@ -55,6 +59,13 @@ pub(crate) fn consume_constant(
         |tt| matches!(tt, TokenTree::Punct(punct) if punct.as_char() == ';'),
         true,
     );
+    let initializer = if value_tokens.is_empty() {
+        None
+    } else {
+        Some(ValueExpr {
+            tokens: value_tokens,
+        })
+    };
 
     let tk_semicolon = match tokens.next() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == ';' => punct,
@@ -69,9 +80,7 @@ pub(crate) fn consume_constant(
         tk_colon,
         ty: TyExpr { tokens: ty_tokens },
         tk_equals,
-        initializer: ValueExpr {
-            tokens: value_tokens,
-        },
+        initializer,
         tk_semicolon,
     }
 }

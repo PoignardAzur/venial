@@ -92,13 +92,17 @@ Impl(
                     ty: [
                         i8,
                     ],
-                    tk_equals: Punct {
-                        char: '=',
-                        spacing: Alone,
-                    },
-                    initializer: [
-                        N,
-                    ],
+                    tk_equals: Some(
+                        Punct {
+                            char: '=',
+                            spacing: Alone,
+                        },
+                    ),
+                    initializer: Some(
+                        [
+                            N,
+                        ],
+                    ),
                     tk_semicolon: Punct {
                         char: ';',
                         spacing: Alone,

@@ -1178,6 +1178,17 @@ fn parse_constant_complex() {
     assert_debug_snapshot!(const_decl);
 }
 
+// Syntactically valid in venial
+#[test]
+fn parse_constant_expressionless() {
+    let expr = quote!(
+        const CONSTANT: some::Type;
+    );
+
+    let const_decl = parse_declaration_checked(expr);
+    assert_debug_snapshot!(const_decl);
+}
+
 // =====================
 // TYPE PATH EXPRESSIONS
 // =====================
