@@ -4,7 +4,19 @@ expression: impl_decl
 ---
 Impl(
     Impl {
-        attributes: [],
+        attributes: [
+            Attribute {
+                tk_hash: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_brackets: [],
+                path: [
+                    outer,
+                ],
+                value: Empty,
+            },
+        ],
         tk_impl: Ident(
             impl,
         ),
@@ -24,6 +36,23 @@ Impl(
         ],
         where_clause: None,
         tk_braces: {},
+        inner_attributes: [
+            Attribute {
+                tk_hash: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_bang: Punct {
+                    char: '!',
+                    spacing: Alone,
+                },
+                tk_brackets: [],
+                path: [
+                    inner,
+                ],
+                value: Empty,
+            },
+        ],
         body_items: [
             AssocTy(
                 TyDefinition {
@@ -149,7 +178,7 @@ Impl(
                 Function {
                     attributes: [
                         Attribute {
-                            tk_hashbang: Punct {
+                            tk_hash: Punct {
                                 char: '#',
                                 spacing: Alone,
                             },

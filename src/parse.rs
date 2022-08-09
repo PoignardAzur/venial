@@ -1,5 +1,5 @@
 use crate::error::Error;
-use crate::parse_impl::{consume_fn_const_or_type, consume_for, parse_impl_members};
+use crate::parse_impl::{consume_fn_const_or_type, consume_for, parse_impl_body};
 use crate::parse_type::{
     consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
@@ -195,9 +195,9 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
 
             let where_clause = consume_where_clause(&mut tokens);
 
-            let (body_items, tk_braces) = match tokens.next().unwrap() {
+            let (tk_braces, inner_attributes, body_items) = match tokens.next().unwrap() {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                    parse_impl_members(group)
+                    parse_impl_body(group)
                 }
                 token => panic!("cannot parse impl: unexpected token {:?}", token),
             };
@@ -211,6 +211,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
                 self_ty,
                 where_clause,
                 body_items,
+                inner_attributes,
                 tk_braces
             })
         }

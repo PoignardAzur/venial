@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 304
 expression: struct_type
 ---
 Struct(
@@ -22,7 +21,7 @@ Struct(
                 NamedField {
                     attributes: [
                         Attribute {
-                            tk_hashbang: Punct {
+                            tk_hash: Punct {
                                 char: '#',
                                 spacing: Alone,
                             },
@@ -62,7 +61,7 @@ Struct(
                 NamedField {
                     attributes: [
                         Attribute {
-                            tk_hashbang: Punct {
+                            tk_hash: Punct {
                                 char: '#',
                                 spacing: Alone,
                             },
@@ -73,7 +72,7 @@ Struct(
                             value: Empty,
                         },
                         Attribute {
-                            tk_hashbang: Punct {
+                            tk_hash: Punct {
                                 char: '#',
                                 spacing: Alone,
                             },
@@ -84,7 +83,7 @@ Struct(
                             value: Empty,
                         },
                         Attribute {
-                            tk_hashbang: Punct {
+                            tk_hash: Punct {
                                 char: '#',
                                 spacing: Alone,
                             },

@@ -1,5 +1,7 @@
 use crate::parse_fn::consume_fn;
-use crate::parse_utils::{consume_attributes, consume_stuff_until, consume_vis_marker};
+use crate::parse_utils::{
+    consume_attributes, consume_inner_attributes, consume_stuff_until, consume_vis_marker,
+};
 use crate::types::{Constant, ImplMember, TyDefinition, ValueExpr};
 use crate::types_edition::GroupSpan;
 use crate::{Attribute, TyExpr, VisMarker};
@@ -156,10 +158,11 @@ pub(crate) fn consume_fn_const_or_type(
     }
 }
 
-pub(crate) fn parse_impl_members(token_group: Group) -> (Vec<ImplMember>, GroupSpan) {
+pub(crate) fn parse_impl_body(token_group: Group) -> (GroupSpan, Vec<Attribute>, Vec<ImplMember>) {
     let mut body_items = vec![];
 
     let mut tokens = token_group.stream().into_iter().peekable();
+    let inner_attributes = consume_inner_attributes(&mut tokens);
     loop {
         if tokens.peek().is_none() {
             break;
@@ -172,5 +175,5 @@ pub(crate) fn parse_impl_members(token_group: Group) -> (Vec<ImplMember>, GroupS
         body_items.push(item);
     }
 
-    (body_items, GroupSpan::new(&token_group))
+    (GroupSpan::new(&token_group), inner_attributes, body_items)
 }

@@ -20,19 +20,34 @@ pub(crate) fn parse_ident(token: TokenTree) -> Result<Ident, TokenTree> {
     }
 }
 
-pub(crate) fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
+fn consume_attributes_with_scope(tokens: &mut TokenIter, expect_inner: bool) -> Vec<Attribute> {
     let mut attributes = Vec::new();
 
     loop {
-        let hashbang = match tokens.peek() {
+        let tk_hash = match tokens.peek() {
             Some(TokenTree::Punct(punct)) if punct.as_char() == '#' => punct.clone(),
             _ => break,
         };
         tokens.next();
 
+        let tk_bang = if expect_inner {
+            match tokens.next() {
+                Some(TokenTree::Punct(punct)) if punct.as_char() == '!' => Some(punct),
+                _ => panic!("cannot parse inner attribute: expected '!' after '#' token"),
+            }
+        } else {
+            None
+        };
+
         let group = match tokens.next() {
             Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Bracket => group,
-            _ => panic!("cannot parse attribute: expected '[' after '#' token"),
+            _ => {
+                if expect_inner {
+                    panic!("cannot parse inner attribute: expected '[' after '#!' tokens")
+                } else {
+                    panic!("cannot parse attribute: expected '[' after '#' token")
+                }
+            }
         };
 
         let tk_braces = GroupSpan::new(&group);
@@ -68,7 +83,8 @@ pub(crate) fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
         };
 
         attributes.push(Attribute {
-            tk_hashbang: hashbang,
+            tk_hash,
+            tk_bang,
             tk_brackets: tk_braces,
             path,
             value,
@@ -76,6 +92,16 @@ pub(crate) fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
     }
 
     attributes
+}
+
+/// Outer macro attributes of the form `#[attribute]`
+pub(crate) fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
+    consume_attributes_with_scope(tokens, false)
+}
+
+/// Inner macro attributes of the form `#![attribute]`
+pub(crate) fn consume_inner_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
+    consume_attributes_with_scope(tokens, true)
 }
 
 pub(crate) fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {
