@@ -210,15 +210,19 @@ Impl(
                     ty: [
                         i8,
                     ],
-                    tk_equals: Punct {
-                        char: '=',
-                        spacing: Alone,
-                    },
-                    initializer: [
-                        24,
-                        "+",
-                        7,
-                    ],
+                    tk_equals: Some(
+                        Punct {
+                            char: '=',
+                            spacing: Alone,
+                        },
+                    ),
+                    initializer: Some(
+                        [
+                            24,
+                            "+",
+                            7,
+                        ],
+                    ),
                     tk_semicolon: Punct {
                         char: ';',
                         spacing: Alone,

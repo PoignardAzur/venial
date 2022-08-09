@@ -191,8 +191,10 @@ pub struct Constant {
     pub name: Ident,
     pub tk_colon: Punct,
     pub ty: TyExpr,
-    pub tk_equals: Punct,
-    pub initializer: ValueExpr,
+    /// The '=' sign is optional; constants without initializer are syntactically valid.
+    pub tk_equals: Option<Punct>,
+    /// The initializer value is optional; constants without initializer are syntactically valid.
+    pub initializer: Option<ValueExpr>,
     pub tk_semicolon: Punct,
 }
 

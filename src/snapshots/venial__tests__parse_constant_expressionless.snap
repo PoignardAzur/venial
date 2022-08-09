@@ -17,19 +17,13 @@ Constant(
             spacing: Alone,
         },
         ty: [
-            i32,
+            some,
+            ":",
+            ":",
+            Type,
         ],
-        tk_equals: Some(
-            Punct {
-                char: '=',
-                spacing: Alone,
-            },
-        ),
-        initializer: Some(
-            [
-                20,
-            ],
-        ),
+        tk_equals: None,
+        initializer: None,
         tk_semicolon: Punct {
             char: ';',
             spacing: Alone,

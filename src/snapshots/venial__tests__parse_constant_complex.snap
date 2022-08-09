@@ -47,21 +47,25 @@ Constant(
             bool,
             ">",
         ],
-        tk_equals: Punct {
-            char: '=',
-            spacing: Alone,
-        },
-        initializer: [
-            some,
-            ":",
-            ":",
-            complex,
-            ":",
-            ":",
-            Expr,
-            "+",
-            77,
-        ],
+        tk_equals: Some(
+            Punct {
+                char: '=',
+                spacing: Alone,
+            },
+        ),
+        initializer: Some(
+            [
+                some,
+                ":",
+                ":",
+                complex,
+                ":",
+                ":",
+                Expr,
+                "+",
+                77,
+            ],
+        ),
         tk_semicolon: Punct {
             char: ';',
             spacing: Alone,
