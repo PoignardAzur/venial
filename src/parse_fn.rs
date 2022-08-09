@@ -180,11 +180,12 @@ pub(crate) fn consume_fn_return(tokens: &mut TokenIter) -> Option<([Punct; 2], T
 /// Panics when the following tokens do not constitute a function definition, with one exception:
 /// when `const` is followed by an identifier which is not `fn`, then `None` is returned. This is to
 /// allow fallback to a constant declaration (both can begin with the `const` token).
-pub(crate) fn try_consume_fn(
+pub(crate) fn consume_fn(
     tokens: &mut TokenIter,
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
 ) -> Option<Function> {
+    // TODO consider multiple-lookahead instead of potentially cloning many tokens
     let before_start = tokens.clone();
     let qualifiers = consume_fn_qualifiers(tokens);
 

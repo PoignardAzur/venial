@@ -69,7 +69,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
             let generic_params = consume_generic_params(&mut tokens);
             let mut where_clause = consume_where_clause(&mut tokens);
 
-            let struct_fields = match tokens.peek().unwrap() {
+            let struct_fields = match tokens.peek().expect("cannot parse struct: missing body or semicolon") {
                 TokenTree::Punct(punct) if punct.as_char() == ';' => StructFields::Unit,
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
                     let group = group.clone();
