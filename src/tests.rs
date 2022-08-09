@@ -1,5 +1,7 @@
 use crate::{parse_declaration, Declaration, GenericParam, Struct, TyExpr, WhereClauseItem};
 
+use crate::parse_type::consume_generic_args;
+use crate::types::GenericArgList;
 use insta::assert_debug_snapshot;
 use proc_macro2::TokenStream;
 use quote::quote;
@@ -21,6 +23,17 @@ fn parse_declaration_checked(tokens: TokenStream) -> Declaration {
     similar_asserts::assert_str_eq!(quote!(#declaration), initial_tokens);
 
     declaration
+}
+
+fn parse_generic_args_checked(tokens: TokenStream) -> GenericArgList {
+    let initial_tokens = tokens.clone();
+
+    let mut token_iter = tokens.into_iter().peekable();
+    let generic_args = consume_generic_args(&mut token_iter).unwrap();
+
+    similar_asserts::assert_str_eq!(quote!(#generic_args), initial_tokens);
+
+    generic_args
 }
 
 // =============
@@ -510,40 +523,29 @@ fn parse_enum_empty_generic_params() {
 
 #[test]
 fn parse_generic_args() {
-    let generic_args_tokens = quote! {
+    let generic_args = parse_generic_args_checked(quote!(
         <'a, path::to::Type, 15, Item = i32, module::NestedType<another::Type>>
-    };
+    ));
 
-    let mut token_iter = generic_args_tokens.clone().into_iter().peekable();
-    let parsed = crate::parse_type::consume_generic_args(&mut token_iter).unwrap();
-
-    similar_asserts::assert_str_eq!(quote!(#parsed), generic_args_tokens);
-    assert_debug_snapshot!(parsed);
+    assert_debug_snapshot!(generic_args);
 }
 
 #[test]
 fn parse_generic_args_turbofish() {
-    let generic_args_tokens = quote! {
+    let generic_args = parse_generic_args_checked(quote!(
         ::<>
-    };
+    ));
 
-    let mut token_iter = generic_args_tokens.clone().into_iter().peekable();
-    let parsed = crate::parse_type::consume_generic_args(&mut token_iter).unwrap();
-
-    similar_asserts::assert_str_eq!(quote!(#parsed), generic_args_tokens);
-    assert_debug_snapshot!(parsed);
+    assert_debug_snapshot!(generic_args);
 }
 
 #[test]
 fn parse_inline_generic_args() {
-    let generic_params_tokens = quote! {
-        <'a: 'static, T, U: Clone, const N: usize>
-    };
+    let struct_decl = parse_declaration_checked(quote!(
+        struct Hello<'a: 'static, T, U: Clone, const N: usize> {}
+    ));
 
-    let mut token_iter = generic_params_tokens.clone().into_iter().peekable();
-    let params = crate::parse_type::consume_generic_params(&mut token_iter).unwrap();
-
-    similar_asserts::assert_str_eq!(quote!(#params), generic_params_tokens);
+    let params = struct_decl.generic_params().unwrap();
     assert_debug_snapshot!(params);
 
     let inline_args = params.as_inline_args();
@@ -653,9 +655,9 @@ fn parse_macro_in_where_clause() {
 
 #[test]
 fn parse_fn() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         fn hello(a: i32, b: f32) -> String {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -663,9 +665,9 @@ fn parse_fn() {
 
 #[test]
 fn parse_empty_fn() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         fn test_me() {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -673,9 +675,9 @@ fn parse_empty_fn() {
 
 #[test]
 fn parse_generic_fn() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         fn generic<T, B>(a: T) -> B {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -683,19 +685,21 @@ fn parse_generic_fn() {
 
 #[test]
 fn parse_where_fn() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         fn where_clause<T>() -> T
         where
-            T: Debug
-        {}
-    })
+            T: Debug,
+        {
+        }
+    ))
     .unwrap();
-    let func_2 = parse_declaration(quote! {
+    let func_2 = parse_declaration(quote!(
         fn where_clause<T>()
         where
-            T: Debug
-        {}
-    })
+            T: Debug,
+        {
+        }
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -704,10 +708,10 @@ fn parse_where_fn() {
 
 #[test]
 fn parse_attr_fn() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         #[my_attr]
         fn my_attr_fn(a: i32) {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -715,9 +719,9 @@ fn parse_attr_fn() {
 
 #[test]
 fn parse_visi_fn() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         pub fn visibility(b: f32) {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -725,9 +729,9 @@ fn parse_visi_fn() {
 
 #[test]
 fn parse_default_fn() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         pub default fn default_fn(b: f32) {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -735,9 +739,9 @@ fn parse_default_fn() {
 
 #[test]
 fn parse_const_fn() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         pub const fn const_fn(b: f32) {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -745,9 +749,9 @@ fn parse_const_fn() {
 
 #[test]
 fn parse_async_fn() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         pub async fn async_fn(b: f32) {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -755,9 +759,9 @@ fn parse_async_fn() {
 
 #[test]
 fn parse_unsafe_fn() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         pub unsafe fn unsafe_fn(b: f32) {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -765,9 +769,9 @@ fn parse_unsafe_fn() {
 
 #[test]
 fn parse_extern_abi_fn() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         pub extern "C" fn extern_fn(b: f32) {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -775,9 +779,10 @@ fn parse_extern_abi_fn() {
 
 #[test]
 fn parse_extern_fn() {
-    let func = parse_declaration(quote! {
+    #[rustfmt::skip] // would add "C"
+    let func = parse_declaration(quote!(
         pub extern fn extern_fn(b: f32) {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -785,9 +790,9 @@ fn parse_extern_fn() {
 
 #[test]
 fn parse_all_kw_fn() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         pub default const async unsafe extern "C" fn all_kw(b: f32) {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -795,9 +800,9 @@ fn parse_all_kw_fn() {
 
 #[test]
 fn parse_param_attr_fn() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         pub async fn visibility(#[my_attr] b: f32) {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -805,11 +810,11 @@ fn parse_param_attr_fn() {
 
 #[test]
 fn parse_fn_body() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         fn hello_world(a: i32, b: f32) -> String {
             println!("hello world")
         }
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -817,9 +822,9 @@ fn parse_fn_body() {
 
 #[test]
 fn parse_fn_prototype() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         fn prototype(a: i32, b: f32) -> String;
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -827,9 +832,9 @@ fn parse_fn_prototype() {
 
 #[test]
 fn parse_fn_mut_param() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         fn prototype(a: i32, mut b: f32) -> String;
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -837,9 +842,9 @@ fn parse_fn_mut_param() {
 
 #[test]
 fn parse_fn_lifetimes() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         fn prototype<'a>(a: &'a mut i32) -> &'a String;
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -849,9 +854,9 @@ fn parse_fn_lifetimes() {
 #[test]
 #[should_panic]
 fn parse_fn_pattern_arg() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         fn foobar((a, b): (i32, i32)) {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -861,9 +866,9 @@ fn parse_fn_pattern_arg() {
 #[test]
 #[should_panic]
 fn parse_fn_c_variadics() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         fn foobar(a: i32, ...) {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -873,9 +878,9 @@ fn parse_fn_c_variadics() {
 #[test]
 #[should_panic]
 fn parse_fn_no_pattern() {
-    let func = parse_declaration(quote! {
+    let func = parse_declaration(quote!(
         fn foobar(i32) {}
-    })
+    ))
     .unwrap();
 
     assert_debug_snapshot!(func);
@@ -883,18 +888,18 @@ fn parse_fn_no_pattern() {
 
 #[test]
 fn parse_fn_self_param() {
-    let func_self = parse_declaration(quote! {
+    let func_self = parse_declaration(quote!(
         fn foobar(self) {}
-    });
-    let func_ref_self = parse_declaration(quote! {
+    ));
+    let func_ref_self = parse_declaration(quote!(
         fn foobar(&self) {}
-    });
-    let func_mut_self = parse_declaration(quote! {
+    ));
+    let func_mut_self = parse_declaration(quote!(
         fn foobar(mut self) {}
-    });
-    let func_ref_mut_self = parse_declaration(quote! {
+    ));
+    let func_ref_mut_self = parse_declaration(quote!(
         fn foobar(&mut self) {}
-    });
+    ));
 
     assert_debug_snapshot!(func_self);
     assert_debug_snapshot!(func_ref_self);
@@ -1060,7 +1065,7 @@ fn add_where_item() {
 
 #[test]
 fn parse_impl_inherent() {
-    let expr = quote! {
+    let expr = quote!(
         impl MyStruct {
             fn new(i: i32, b: bool) -> Self {
                 Self {}
@@ -1071,7 +1076,7 @@ fn parse_impl_inherent() {
 
             pub const CONSTANT: i8 = 24 + 7;
         }
-    };
+    );
 
     let impl_decl = parse_declaration_checked(expr);
     assert_debug_snapshot!(impl_decl);
@@ -1079,9 +1084,9 @@ fn parse_impl_inherent() {
 
 #[test]
 fn parse_impl_inherent_generic() {
-    let expr = quote! {
+    let expr = quote!(
         impl<'a, T: Clone, const N: i8> structs::MyStruct<'a, T, N> {}
-    };
+    );
 
     let impl_decl = parse_declaration_checked(expr);
     assert_debug_snapshot!(impl_decl);
@@ -1089,7 +1094,7 @@ fn parse_impl_inherent_generic() {
 
 #[test]
 fn parse_impl_trait() {
-    let expr = quote! {
+    let expr = quote!(
         impl MyTrait for MyStruct {
             pub type MyType = std::string::String;
 
@@ -1102,7 +1107,7 @@ fn parse_impl_trait() {
 
             const CONSTANT: i8 = 24 + 7;
         }
-    };
+    );
 
     let impl_decl = parse_declaration_checked(expr);
     assert_debug_snapshot!(impl_decl);
@@ -1110,13 +1115,14 @@ fn parse_impl_trait() {
 
 #[test]
 fn parse_impl_trait_generic() {
-    let expr = quote! {
+    let expr = quote!(
         impl<'a, T, const N: i8> traits::MyTrait<T, N> for structs::MyStruct<'a, T>
-            where T: Clone
+        where
+            T: Clone,
         {
             pub(crate) const CONSTANT: i8 = N;
         }
-    };
+    );
 
     let impl_decl = parse_declaration_checked(expr);
     assert_debug_snapshot!(impl_decl);
@@ -1128,9 +1134,9 @@ fn parse_impl_trait_generic() {
 
 #[test]
 fn parse_type_simple() {
-    let expr = quote! {
+    let expr = quote!(
         type MyType = std::string::String;
-    };
+    );
 
     let ty_decl = parse_declaration_checked(expr);
     assert_debug_snapshot!(ty_decl);
@@ -1138,10 +1144,10 @@ fn parse_type_simple() {
 
 #[test]
 fn parse_type_complex() {
-    let expr = quote! {
+    let expr = quote!(
         #[attribute]
         pub(crate) type MyType = some::module::OtherType<i32, 10>::AssocType<Item = char>;
-    };
+    );
 
     let ty_decl = parse_declaration_checked(expr);
     assert_debug_snapshot!(ty_decl);
@@ -1153,9 +1159,9 @@ fn parse_type_complex() {
 
 #[test]
 fn parse_constant_simple() {
-    let expr = quote! {
+    let expr = quote!(
         const CONSTANT: i32 = 20;
-    };
+    );
 
     let const_decl = parse_declaration_checked(expr);
     assert_debug_snapshot!(const_decl);
@@ -1163,10 +1169,10 @@ fn parse_constant_simple() {
 
 #[test]
 fn parse_constant_complex() {
-    let expr = quote! {
+    let expr = quote!(
         #[attribute]
         pub(crate) const CONSTANT: some::complex::Type<'static, bool> = some::complex::Expr + 77;
-    };
+    );
 
     let const_decl = parse_declaration_checked(expr);
     assert_debug_snapshot!(const_decl);
@@ -1178,7 +1184,7 @@ fn parse_constant_complex() {
 
 #[test]
 fn interpret_ty_expr_simple_as_path() {
-    let tokens = quote! { ::path::to::Type };
+    let tokens = quote!(::path::to::Type);
     let ty_expr = TyExpr {
         tokens: tokens.clone().into_iter().collect(),
     };
@@ -1190,7 +1196,8 @@ fn interpret_ty_expr_simple_as_path() {
 
 #[test]
 fn interpret_ty_expr_generic_as_path() {
-    let tokens = quote! { path::to::Type<'a, other::Arg, 36>::Turbofish::<> };
+    #[rustfmt::skip] // would remove trailing ::<>
+    let tokens = quote!(path::to::Type<'a, other::Arg, 36>::Turbofish::<>);
     let ty_expr = TyExpr {
         tokens: tokens.clone().into_iter().collect(),
     };
@@ -1202,7 +1209,7 @@ fn interpret_ty_expr_generic_as_path() {
 
 #[test]
 fn interpret_ty_expr_invalid_as_path() {
-    let tokens = quote! { () };
+    let tokens = quote!(());
     let ty_expr = TyExpr {
         tokens: tokens.into_iter().collect(),
     };

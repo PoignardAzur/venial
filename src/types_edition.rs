@@ -1,4 +1,4 @@
-use crate::parse_utils::{tokens_from_slice, try_consume_path};
+use crate::parse_utils::{consume_path, tokens_from_slice};
 pub use crate::types::{
     Attribute, AttributeValue, Declaration, Enum, EnumVariant, EnumVariantValue, Function,
     GenericBound, GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, NamedField, Struct,
@@ -689,7 +689,7 @@ impl TyExpr {
     pub fn as_path(&self) -> Option<Path> {
         let tokens = tokens_from_slice(&self.tokens);
 
-        try_consume_path(tokens)
+        consume_path(tokens)
     }
 }
 

@@ -1,7 +1,7 @@
 use crate::error::Error;
 use crate::parse_utils::{
-    consume_attributes, consume_comma, consume_stuff_until, consume_vis_marker, parse_ident,
-    try_consume_colon2,
+    consume_attributes, consume_colon2, consume_comma, consume_stuff_until, consume_vis_marker,
+    parse_ident,
 };
 use crate::punctuated::Punctuated;
 use crate::types::{
@@ -110,7 +110,7 @@ pub(crate) fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericPa
     })
 }
 
-fn consume_generic_arg(tokens: Vec<TokenTree>) -> GenericArg {
+fn parse_generic_arg(tokens: Vec<TokenTree>) -> GenericArg {
     // Note: method not called if tokens is empty
     let mut tokens = tokens.into_iter().peekable();
 
@@ -145,6 +145,7 @@ fn consume_generic_arg(tokens: Vec<TokenTree>) -> GenericArg {
 
     // Then, try parsing Item = ...
     // (there is at least 1 token, so unwrap is safe)
+    // TODO also handle generic bindings (eg `LendingIterator<Item<'_> = XXX>`)
     let before_ident = tokens.clone();
     if let TokenTree::Ident(ident) = tokens.next().unwrap() {
         if let Some(TokenTree::Punct(punct)) = tokens.next() {
@@ -169,8 +170,9 @@ fn consume_generic_arg(tokens: Vec<TokenTree>) -> GenericArg {
 }
 
 pub(crate) fn consume_generic_args(tokens: &mut TokenIter) -> Option<GenericArgList> {
-    let before = tokens.clone();
-    let tk_turbofish_colons = try_consume_colon2(tokens);
+    // TODO consider multiple-lookahead instead of potentially cloning many tokens
+    let before_start = tokens.clone();
+    let tk_turbofish_colons = consume_colon2(tokens);
 
     let tk_l_bracket = match tokens.peek() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => {
@@ -179,7 +181,7 @@ pub(crate) fn consume_generic_args(tokens: &mut TokenIter) -> Option<GenericArgL
             gt
         }
         _ => {
-            *tokens = before;
+            *tokens = before_start;
             return None;
         }
     };
@@ -199,7 +201,7 @@ pub(crate) fn consume_generic_args(tokens: &mut TokenIter) -> Option<GenericArgL
             break;
         }
 
-        generic_args.push(consume_generic_arg(arg_tokens), comma);
+        generic_args.push(parse_generic_arg(arg_tokens), comma);
     }
 
     let tk_r_bracket = match tokens.peek() {

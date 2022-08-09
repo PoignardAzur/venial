@@ -52,6 +52,13 @@
 //! assert_eq!(enum_type.variants[2].0.name, "Triangle");
 //! ```
 
+// Implementation guidelines and naming conventions:
+// - `parse_xxx` functions return `T`.
+//   - They expect the whole item to be present, and panic otherwise.
+// - `consume_xxx` functions return Option<T>:
+//   - None if the syntax item is absent
+//   - panic if the beginning of the syntax item is present but the expect continuation isn't.
+
 #[cfg(test)]
 mod tests;
 

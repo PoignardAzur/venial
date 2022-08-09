@@ -180,8 +180,9 @@ pub(crate) fn consume_comma(tokens: &mut TokenIter) -> Option<Punct> {
 /// Parse `::`, as in path separator or turbofish.
 ///
 /// Does not advance `tokens` if the double colon is not found.
-pub(crate) fn try_consume_colon2(tokens: &mut TokenIter) -> Option<[Punct; 2]> {
-    let before = tokens.clone();
+pub(crate) fn consume_colon2(tokens: &mut TokenIter) -> Option<[Punct; 2]> {
+    // TODO consider multiple-lookahead instead of potentially cloning many tokens
+    let before_start = tokens.clone();
 
     if let Some(TokenTree::Punct(first)) = tokens.next() {
         if first.as_char() == ':' && first.spacing() == Spacing::Joint {
@@ -193,16 +194,16 @@ pub(crate) fn try_consume_colon2(tokens: &mut TokenIter) -> Option<[Punct; 2]> {
         }
     }
 
-    *tokens = before;
+    *tokens = before_start;
     None
 }
 
 /// Tries to parse a path expressions; returns `None` if not matching.
-pub(crate) fn try_consume_path(mut tokens: TokenIter) -> Option<Path> {
+pub(crate) fn consume_path(mut tokens: TokenIter) -> Option<Path> {
     let mut segments = vec![];
 
     // Leading `::` is optional
-    let mut tk_separator_colons = try_consume_colon2(&mut tokens);
+    let mut tk_separator_colons = consume_colon2(&mut tokens);
 
     loop {
         // path elem
@@ -223,12 +224,8 @@ pub(crate) fn try_consume_path(mut tokens: TokenIter) -> Option<Path> {
             break;
         }
 
-        println!("-----");
-        dbg!(&segments);
-        dbg!(&tokens);
-
         // Intermediate `::` are not optional
-        if let Some(separator) = try_consume_colon2(&mut tokens) {
+        if let Some(separator) = consume_colon2(&mut tokens) {
             tk_separator_colons = Some(separator);
         } else {
             return None;
