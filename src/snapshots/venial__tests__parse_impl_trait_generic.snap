@@ -74,7 +74,19 @@ Impl(
         body_items: [
             Constant(
                 Constant {
-                    attributes: [],
+                    attributes: [
+                        Attribute {
+                            tk_hash: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_brackets: [],
+                            path: [
+                                attr,
+                            ],
+                            value: Empty,
+                        },
+                    ],
                     vis_marker: Some(
                         pub(
                             crate,

@@ -1101,7 +1101,10 @@ fn parse_impl_trait() {
         #[outer]
         impl MyTrait for MyStruct {
             #![inner]
+            #![inner2]
 
+            #[attr]
+            #[attr2]
             pub type MyType = std::string::String;
 
             fn new(i: i32, b: bool) -> Self {
@@ -1126,6 +1129,7 @@ fn parse_impl_trait_generic() {
         where
             T: Clone,
         {
+            #[attr]
             pub(crate) const CONSTANT: i8 = N;
         }
     );

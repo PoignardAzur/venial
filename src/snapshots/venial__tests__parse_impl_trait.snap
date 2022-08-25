@@ -52,11 +52,49 @@ Impl(
                 ],
                 value: Empty,
             },
+            Attribute {
+                tk_hash: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_bang: Punct {
+                    char: '!',
+                    spacing: Alone,
+                },
+                tk_brackets: [],
+                path: [
+                    inner2,
+                ],
+                value: Empty,
+            },
         ],
         body_items: [
             AssocTy(
                 TyDefinition {
-                    attributes: [],
+                    attributes: [
+                        Attribute {
+                            tk_hash: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_brackets: [],
+                            path: [
+                                attr,
+                            ],
+                            value: Empty,
+                        },
+                        Attribute {
+                            tk_hash: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_brackets: [],
+                            path: [
+                                attr2,
+                            ],
+                            value: Empty,
+                        },
+                    ],
                     vis_marker: Some(
                         pub,
                     ),
