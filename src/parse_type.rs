@@ -1,7 +1,7 @@
 use crate::error::Error;
 use crate::parse_utils::{
-    consume_attributes, consume_colon2, consume_comma, consume_stuff_until, consume_vis_marker,
-    parse_ident,
+    consume_colon2, consume_comma, consume_outer_attributes, consume_stuff_until,
+    consume_vis_marker, parse_ident,
 };
 use crate::punctuated::Punctuated;
 use crate::types::{
@@ -349,7 +349,7 @@ pub(crate) fn parse_tuple_fields(token_group: Group) -> TupleStructFields {
             break;
         }
 
-        let attributes = consume_attributes(&mut tokens);
+        let attributes = consume_outer_attributes(&mut tokens);
         let vis_marker = consume_vis_marker(&mut tokens);
 
         let ty_tokens = consume_field_type(&mut tokens);
@@ -381,7 +381,7 @@ pub(crate) fn parse_named_fields(token_group: Group) -> NamedStructFields {
             break;
         }
 
-        let attributes = consume_attributes(&mut tokens);
+        let attributes = consume_outer_attributes(&mut tokens);
         let vis_marker = consume_vis_marker(&mut tokens);
 
         let ident = parse_ident(tokens.next().unwrap()).unwrap();
@@ -424,7 +424,7 @@ pub(crate) fn parse_enum_variants(tokens: TokenStream) -> Result<Punctuated<Enum
             break;
         }
 
-        let attributes = consume_attributes(&mut tokens);
+        let attributes = consume_outer_attributes(&mut tokens);
         let vis_marker = consume_vis_marker(&mut tokens);
 
         let ident = parse_ident(tokens.next().unwrap()).unwrap();

@@ -20,7 +20,13 @@ pub(crate) fn parse_ident(token: TokenTree) -> Result<Ident, TokenTree> {
     }
 }
 
-fn consume_attributes_with_scope(tokens: &mut TokenIter, expect_inner: bool) -> Vec<Attribute> {
+/// Parse zero, one or more attributes.
+///
+/// If `expect_inner` is true, then this will only parse inner attributes `#![...]` and
+/// stop *before* any outer attributes `#[...]`.
+///
+/// If `expect_inner` is false, only outer ones are consumed (encountering inner ones is an error).
+fn consume_attributes_with_inner(tokens: &mut TokenIter, expect_inner: bool) -> Vec<Attribute> {
     let mut attributes = Vec::new();
 
     loop {
@@ -28,24 +34,38 @@ fn consume_attributes_with_scope(tokens: &mut TokenIter, expect_inner: bool) -> 
             Some(TokenTree::Punct(punct)) if punct.as_char() == '#' => punct.clone(),
             _ => break,
         };
-        tokens.next();
 
         let tk_bang = if expect_inner {
-            match tokens.next() {
-                Some(TokenTree::Punct(punct)) if punct.as_char() == '!' => Some(punct),
+            // Memorize start position before next macro, to recognize boundary between #![...] and #[...]
+            // TODO consider multiple-lookahead instead of potentially cloning many tokens
+            let before_attribute = tokens.clone();
+            tokens.next(); // consume '#'
+
+            match tokens.peek() {
+                Some(TokenTree::Punct(punct)) if punct.as_char() == '!' => {
+                    let tk_bang = Some(punct.clone());
+                    tokens.next();
+                    tk_bang
+                }
+                Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Bracket => {
+                    // '#' followed by '[' -> we reached first outer attribute, stop here
+                    *tokens = before_attribute;
+                    break;
+                }
                 _ => panic!("cannot parse inner attribute: expected '!' after '#' token"),
             }
         } else {
+            tokens.next(); // consume '#'
             None
         };
 
         let group = match tokens.next() {
             Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Bracket => group,
             _ => {
-                if expect_inner {
+                if tk_bang.is_some() {
                     panic!("cannot parse inner attribute: expected '[' after '#!' tokens")
                 } else {
-                    panic!("cannot parse attribute: expected '[' after '#' token")
+                    panic!("cannot parse outer attribute: expected '[' after '#' token")
                 }
             }
         };
@@ -95,13 +115,17 @@ fn consume_attributes_with_scope(tokens: &mut TokenIter, expect_inner: bool) -> 
 }
 
 /// Outer macro attributes of the form `#[attribute]`
-pub(crate) fn consume_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
-    consume_attributes_with_scope(tokens, false)
+///
+/// Panics if any inner attributes such as `#![attribute]` are encountered.
+pub(crate) fn consume_outer_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
+    consume_attributes_with_inner(tokens, false)
 }
 
-/// Inner macro attributes of the form `#![attribute]`
+/// Inner macro attributes of the form `#![attribute]`.
+///
+/// Stops _before_ encountering any outer attributes such as `#[attribute]`.
 pub(crate) fn consume_inner_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
-    consume_attributes_with_scope(tokens, true)
+    consume_attributes_with_inner(tokens, true)
 }
 
 pub(crate) fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {

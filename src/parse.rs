@@ -4,7 +4,7 @@ use crate::parse_type::{
     consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
 };
-use crate::parse_utils::{consume_attributes, consume_stuff_until, consume_vis_marker};
+use crate::parse_utils::{consume_outer_attributes, consume_stuff_until, consume_vis_marker};
 use crate::types::{Declaration, Enum, Impl, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
 use crate::{ImplMember, TyExpr};
@@ -57,7 +57,7 @@ use proc_macro2::{Delimiter, TokenStream, TokenTree};
 pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
     let mut tokens = tokens.into_iter().peekable();
 
-    let attributes = consume_attributes(&mut tokens);
+    let attributes = consume_outer_attributes(&mut tokens);
     let vis_marker = consume_vis_marker(&mut tokens);
 
     let declaration = match tokens.peek().cloned() {

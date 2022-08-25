@@ -1,7 +1,9 @@
 use crate::parse_type::{
     consume_declaration_name, consume_field_type, consume_generic_params, consume_where_clause,
 };
-use crate::parse_utils::{consume_attributes, consume_comma, consume_stuff_until, parse_ident};
+use crate::parse_utils::{
+    consume_comma, consume_outer_attributes, consume_stuff_until, parse_ident,
+};
 use crate::punctuated::Punctuated;
 use crate::types::{
     FnParam, FnQualifiers, FnReceiverParam, FnTypedParam, Function, GroupSpan, TyExpr,
@@ -87,7 +89,7 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
         if tokens.peek().is_none() {
             break;
         }
-        let attributes = consume_attributes(&mut tokens);
+        let attributes = consume_outer_attributes(&mut tokens);
 
         let tk_ref = match tokens.peek() {
             Some(TokenTree::Punct(punct)) if punct.as_char() == '&' => {
