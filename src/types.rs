@@ -30,6 +30,7 @@ pub enum Declaration {
     Struct(Struct),
     Enum(Enum),
     Union(Union),
+    Mod(Mod),
     Impl(Impl),
     TyDefinition(TyDefinition),
     Function(Function),
@@ -113,6 +114,25 @@ pub struct EnumVariant {
 
     /// The value of the variant, normally for c-like enums.
     pub value: Option<EnumVariantValue>,
+}
+
+/// Declaration of a module.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// mod module {
+///     // ...
+/// }
+/// ```
+#[derive(Clone, Debug)]
+pub struct Mod {
+    pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
+    pub tk_mod: Ident,
+    pub name: Ident,
+    pub tk_braces: GroupSpan,
+    pub members: Vec<Declaration>,
 }
 
 /// Declaration of an union.
@@ -802,6 +822,7 @@ impl ToTokens for Declaration {
             Declaration::Struct(struct_decl) => struct_decl.to_tokens(tokens),
             Declaration::Enum(enum_decl) => enum_decl.to_tokens(tokens),
             Declaration::Union(union_decl) => union_decl.to_tokens(tokens),
+            Declaration::Mod(mod_decl) => mod_decl.to_tokens(tokens),
             Declaration::Impl(impl_decl) => impl_decl.to_tokens(tokens),
             Declaration::TyDefinition(ty_decl) => ty_decl.to_tokens(tokens),
             Declaration::Function(function_decl) => function_decl.to_tokens(tokens),
@@ -926,6 +947,22 @@ impl ToTokens for Union {
         self.generic_params.to_tokens(tokens);
         self.where_clause.to_tokens(tokens);
         self.fields.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for Mod {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
+        self.tk_mod.to_tokens(tokens);
+        self.name.to_tokens(tokens);
+        self.tk_braces.quote_with(tokens, |tokens| {
+            for token in &self.members {
+                token.to_tokens(tokens);
+            }
+        });
     }
 }
 

@@ -1,0 +1,262 @@
+---
+source: src/tests.rs
+expression: mod_decl
+---
+Mod(
+    Mod {
+        attributes: [
+            Attribute {
+                tk_hash: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_brackets: [],
+                path: [
+                    path,
+                ],
+                value: Equals(
+                    [
+                        "some/module",
+                    ],
+                    Punct {
+                        char: '=',
+                        spacing: Alone,
+                    },
+                ),
+            },
+        ],
+        vis_marker: None,
+        tk_mod: Ident(
+            mod,
+        ),
+        name: Ident(
+            one_module,
+        ),
+        tk_braces: {},
+        members: [
+            Struct(
+                Struct {
+                    attributes: [],
+                    vis_marker: Some(
+                        pub,
+                    ),
+                    tk_struct: Ident(
+                        struct,
+                    ),
+                    name: Ident(
+                        MyStruct,
+                    ),
+                    generic_params: None,
+                    where_clause: None,
+                    fields: Named(
+                        [
+                            NamedField {
+                                attributes: [],
+                                vis_marker: None,
+                                name: Ident(
+                                    field,
+                                ),
+                                tk_colon: Punct {
+                                    char: ':',
+                                    spacing: Alone,
+                                },
+                                ty: [
+                                    i32,
+                                ],
+                            },
+                        ],
+                    ),
+                    tk_semicolon: None,
+                },
+            ),
+            Impl(
+                Impl {
+                    attributes: [],
+                    tk_impl: Ident(
+                        impl,
+                    ),
+                    impl_generic_params: None,
+                    trait_ty: None,
+                    tk_for: None,
+                    self_ty: [
+                        MyStruct,
+                    ],
+                    where_clause: None,
+                    tk_braces: {},
+                    inner_attributes: [],
+                    body_items: [],
+                },
+            ),
+            Impl(
+                Impl {
+                    attributes: [],
+                    tk_impl: Ident(
+                        impl,
+                    ),
+                    impl_generic_params: None,
+                    trait_ty: Some(
+                        [
+                            MyTrait,
+                        ],
+                    ),
+                    tk_for: Some(
+                        Ident(
+                            for,
+                        ),
+                    ),
+                    self_ty: [
+                        MyStruct,
+                    ],
+                    where_clause: None,
+                    tk_braces: {},
+                    inner_attributes: [],
+                    body_items: [],
+                },
+            ),
+            Enum(
+                Enum {
+                    attributes: [
+                        Attribute {
+                            tk_hash: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_brackets: [],
+                            path: [
+                                derive,
+                            ],
+                            value: Group(
+                                [
+                                    Copy,
+                                    ",",
+                                    Clone,
+                                ],
+                                (),
+                            ),
+                        },
+                    ],
+                    vis_marker: None,
+                    tk_enum: Ident(
+                        enum,
+                    ),
+                    name: Ident(
+                        Enum,
+                    ),
+                    generic_params: None,
+                    where_clauses: None,
+                    variants: [
+                        EnumVariant {
+                            attributes: [],
+                            vis_marker: None,
+                            name: Ident(
+                                Variant,
+                            ),
+                            contents: Unit,
+                            value: None,
+                        },
+                    ],
+                },
+            ),
+            Function(
+                Function {
+                    attributes: [],
+                    vis_marker: None,
+                    qualifiers: FnQualifiers {
+                        tk_default: None,
+                        tk_const: None,
+                        tk_async: None,
+                        tk_unsafe: None,
+                        tk_extern: None,
+                        extern_abi: None,
+                    },
+                    tk_fn_keyword: Ident(
+                        fn,
+                    ),
+                    name: Ident(
+                        f,
+                    ),
+                    generic_params: None,
+                    tk_params_parens: (),
+                    params: [],
+                    where_clause: None,
+                    tk_return_arrow: Some(
+                        [
+                            Punct {
+                                char: '-',
+                                spacing: Joint,
+                            },
+                            Punct {
+                                char: '>',
+                                spacing: Alone,
+                            },
+                        ],
+                    ),
+                    return_ty: Some(
+                        [
+                            bool,
+                        ],
+                    ),
+                    tk_semicolon: None,
+                    body: Some(
+                        Group {
+                            delimiter: Brace,
+                            stream: TokenStream [
+                                Ident {
+                                    sym: true,
+                                },
+                            ],
+                        },
+                    ),
+                },
+            ),
+            Mod(
+                Mod {
+                    attributes: [],
+                    vis_marker: None,
+                    tk_mod: Ident(
+                        mod,
+                    ),
+                    name: Ident(
+                        nested_mod,
+                    ),
+                    tk_braces: {},
+                    members: [
+                        Function(
+                            Function {
+                                attributes: [],
+                                vis_marker: None,
+                                qualifiers: FnQualifiers {
+                                    tk_default: None,
+                                    tk_const: None,
+                                    tk_async: None,
+                                    tk_unsafe: None,
+                                    tk_extern: None,
+                                    extern_abi: None,
+                                },
+                                tk_fn_keyword: Ident(
+                                    fn,
+                                ),
+                                name: Ident(
+                                    g,
+                                ),
+                                generic_params: None,
+                                tk_params_parens: (),
+                                params: [],
+                                where_clause: None,
+                                tk_return_arrow: None,
+                                return_ty: None,
+                                tk_semicolon: None,
+                                body: Some(
+                                    Group {
+                                        delimiter: Brace,
+                                        stream: TokenStream [],
+                                    },
+                                ),
+                            },
+                        ),
+                    ],
+                },
+            ),
+        ],
+    },
+)

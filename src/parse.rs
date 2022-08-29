@@ -1,14 +1,16 @@
 use crate::error::Error;
-use crate::parse_impl::{consume_fn_const_or_type, consume_for, parse_impl_body};
+use crate::parse_impl::{consume_constant, consume_fn_const_or_type, consume_for, parse_impl_body};
 use crate::parse_type::{
     consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
 };
 use crate::parse_utils::{consume_outer_attributes, consume_stuff_until, consume_vis_marker};
-use crate::types::{Declaration, Enum, Impl, Struct, StructFields, Union};
+use crate::types::{Declaration, Enum, Impl, Mod, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
 use crate::{ImplMember, TyExpr};
+use proc_macro2::token_stream::IntoIter;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
+use std::iter::Peekable;
 
 // TODO - Return Result<...>, handle case where TokenStream is valid declaration,
 // but not a type or function.
@@ -56,7 +58,12 @@ use proc_macro2::{Delimiter, TokenStream, TokenTree};
 
 pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
     let mut tokens = tokens.into_iter().peekable();
+    parse_declaration_tokens(&mut tokens)
+}
 
+fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Declaration, Error> {
+    // FIXME remove redundant '&mut' once the risk of merge conflicts is smaller
+    // TODO handle inner attrs
     let attributes = consume_outer_attributes(&mut tokens);
     let vis_marker = consume_vis_marker(&mut tokens);
 
@@ -69,7 +76,10 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
             let generic_params = consume_generic_params(&mut tokens);
             let mut where_clause = consume_where_clause(&mut tokens);
 
-            let struct_fields = match tokens.peek().expect("cannot parse struct: missing body or semicolon") {
+            let struct_fields = match tokens
+                .peek()
+                .expect("cannot parse struct: missing body or semicolon")
+            {
                 TokenTree::Punct(punct) if punct.as_char() == ';' => StructFields::Unit,
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
                     let group = group.clone();
@@ -162,36 +172,80 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
                 fields: union_fields,
             })
         }
+        Some(TokenTree::Ident(keyword)) if keyword == "mod" => {
+            // mod keyword
+            tokens.next().unwrap();
+
+            let module_name = consume_declaration_name(&mut tokens);
+
+            let (group, stream) = match tokens.next().unwrap() {
+                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
+                    (group.clone(), group.stream())
+                }
+                token => panic!("cannot parse mod: unexpected token {:?}", token),
+            };
+
+            let mut members = vec![];
+            let mut tokens = stream.into_iter().peekable();
+            loop {
+                let item = parse_declaration_tokens(&mut tokens)?;
+                members.push(item);
+                if tokens.peek().is_none() {
+                    break;
+                }
+            }
+            Declaration::Mod(Mod {
+                attributes,
+                vis_marker,
+                tk_mod: keyword,
+                name: module_name,
+                tk_braces: GroupSpan::new(&group),
+                // FIXME inner attributes, use statements
+                members,
+            })
+        }
         Some(TokenTree::Ident(keyword)) if keyword == "impl" => {
             // impl keyword
             tokens.next().unwrap();
 
             let impl_generic_params = consume_generic_params(&mut tokens);
-            let trait_or_self_ty = consume_stuff_until(&mut tokens,|tk| match tk {
-                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
-                TokenTree::Ident(ident) if ident == "for" || ident == "where" => true,
-                _ => false,
-            }, true);
+            let trait_or_self_ty = consume_stuff_until(
+                &mut tokens,
+                |tk| match tk {
+                    TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
+                    TokenTree::Ident(ident) if ident == "for" || ident == "where" => true,
+                    _ => false,
+                },
+                true,
+            );
 
-            let (tk_for, trait_ty, self_ty) =
-                if let Some(tk_for) = consume_for(&mut tokens) {
-                    let self_ty = consume_stuff_until(&mut tokens,
-                        |tk| match tk {
-                            TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
-                            TokenTree::Ident(ident) if ident == "where" => true,
-                            _ => false,
-                        },
-                        true
-                    );
+            let (tk_for, trait_ty, self_ty) = if let Some(tk_for) = consume_for(&mut tokens) {
+                let self_ty = consume_stuff_until(
+                    &mut tokens,
+                    |tk| match tk {
+                        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
+                        TokenTree::Ident(ident) if ident == "where" => true,
+                        _ => false,
+                    },
+                    true,
+                );
 
-                    (
-                        Some(tk_for),
-                        Some( TyExpr { tokens: trait_or_self_ty }),
-                        TyExpr { tokens: self_ty },
-                    )
-                } else {
-                    (None, None,  TyExpr { tokens: trait_or_self_ty })
-                };
+                (
+                    Some(tk_for),
+                    Some(TyExpr {
+                        tokens: trait_or_self_ty,
+                    }),
+                    TyExpr { tokens: self_ty },
+                )
+            } else {
+                (
+                    None,
+                    None,
+                    TyExpr {
+                        tokens: trait_or_self_ty,
+                    },
+                )
+            };
 
             let where_clause = consume_where_clause(&mut tokens);
 
@@ -212,21 +266,21 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
                 where_clause,
                 body_items,
                 inner_attributes,
-                tk_braces
+                tk_braces,
             })
         }
+        // Note: fn qualifiers appear always in this order in Rust
         Some(TokenTree::Ident(keyword))
-            // Note: fn qualifiers appear always in this order in Rust
             if matches!(
                 keyword.to_string().as_str(),
-               "default" | "const" | "async" | "unsafe" | "extern" | "fn" | "type"
+                "default" | "const" | "async" | "unsafe" | "extern" | "fn" | "type"
             ) =>
         {
             // Reuse impl parsing
             match consume_fn_const_or_type(&mut tokens, attributes, vis_marker, "declaration") {
                 ImplMember::Method(function) => Declaration::Function(function),
                 ImplMember::Constant(constant) => Declaration::Constant(constant),
-                ImplMember::AssocTy(ty_def) => Declaration::TyDefinition(ty_def)
+                ImplMember::AssocTy(ty_def) => Declaration::TyDefinition(ty_def),
             }
 
         }
