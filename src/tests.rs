@@ -1238,3 +1238,43 @@ fn interpret_ty_expr_invalid_as_path() {
     let invalid = ty_expr.as_path();
     assert!(invalid.is_none())
 }
+
+// ================
+// MOD DECLARATIONS
+// ================
+
+#[test]
+fn parse_mod() {
+    let expr = quote! {
+        #[path = "some/module"]
+        mod one_module {
+            //#![allow(clippy::iter_with_drain)]
+
+            pub struct MyStruct {
+                field: i32,
+            }
+            impl MyStruct {}
+            impl MyTrait for MyStruct {}
+
+            #[derive(Copy, Clone)]
+            enum Enum {
+                Variant,
+            }
+
+            fn f() -> bool { true }
+
+            const C: i32 = -8 * 2;
+
+            pub static MUTEX: std::sync::Mutex<i32> = std::sync::Mutex::new(0);
+
+            type MyType = Rc<RefCell<MyStruct>>;
+
+            mod nested_mod {
+                fn g() {}
+            }
+        }
+    };
+
+    let mod_decl = parse_declaration_checked(expr);
+    assert_debug_snapshot!(mod_decl);
+}
