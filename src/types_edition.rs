@@ -580,6 +580,9 @@ impl GenericParam {
 
 impl<'a> InlineGenericArgs<'a> {
     /// Returns an owned argument list from this.
+    ///
+    /// # Panics
+    /// If `self` is a mal-formed generic argument list.
     pub fn to_owned_args(&self) -> GenericArgList {
         let GenericParamList {
             tk_l_bracket,
