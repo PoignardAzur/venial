@@ -30,7 +30,7 @@ pub enum Declaration {
     Struct(Struct),
     Enum(Enum),
     Union(Union),
-    Mod(Mod),
+    Module(Module),
     Impl(Impl),
     TyDefinition(TyDefinition),
     Function(Function),
@@ -126,7 +126,7 @@ pub struct EnumVariant {
 /// }
 /// ```
 #[derive(Clone, Debug)]
-pub struct Mod {
+pub struct Module {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
     pub tk_mod: Ident,
@@ -855,7 +855,7 @@ impl ToTokens for Declaration {
             Declaration::Struct(struct_decl) => struct_decl.to_tokens(tokens),
             Declaration::Enum(enum_decl) => enum_decl.to_tokens(tokens),
             Declaration::Union(union_decl) => union_decl.to_tokens(tokens),
-            Declaration::Mod(mod_decl) => mod_decl.to_tokens(tokens),
+            Declaration::Module(mod_decl) => mod_decl.to_tokens(tokens),
             Declaration::Impl(impl_decl) => impl_decl.to_tokens(tokens),
             Declaration::TyDefinition(ty_decl) => ty_decl.to_tokens(tokens),
             Declaration::Function(function_decl) => function_decl.to_tokens(tokens),
@@ -984,7 +984,7 @@ impl ToTokens for Union {
     }
 }
 
-impl ToTokens for Mod {
+impl ToTokens for Module {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for attribute in &self.attributes {
             attribute.to_tokens(tokens);

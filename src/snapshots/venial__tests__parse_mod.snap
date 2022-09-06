@@ -2,8 +2,8 @@
 source: src/tests.rs
 expression: mod_decl
 ---
-Mod(
-    Mod {
+Module(
+    Module {
         attributes: [
             Attribute {
                 tk_hash: Punct {
@@ -468,8 +468,8 @@ Mod(
                     },
                 },
             ),
-            Mod(
-                Mod {
+            Module(
+                Module {
                     attributes: [],
                     vis_marker: None,
                     tk_mod: Ident(
@@ -521,8 +521,8 @@ Mod(
                     ],
                 },
             ),
-            Mod(
-                Mod {
+            Module(
+                Module {
                     attributes: [],
                     vis_marker: None,
                     tk_mod: Ident(
@@ -540,8 +540,8 @@ Mod(
                     members: [],
                 },
             ),
-            Mod(
-                Mod {
+            Module(
+                Module {
                     attributes: [],
                     vis_marker: None,
                     tk_mod: Ident(
