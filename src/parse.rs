@@ -10,7 +10,7 @@ use crate::parse_utils::{
     consume_inner_attributes, consume_outer_attributes, consume_stuff_until,
     consume_use_declarations, consume_vis_marker,
 };
-use crate::types::{Declaration, Enum, Impl, Mod, Struct, StructFields, Union};
+use crate::types::{Declaration, Enum, Impl, Module, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
 use crate::{ImplMember, TyExpr};
 use proc_macro2::token_stream::IntoIter;
@@ -177,6 +177,8 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
             })
         }
         Some(TokenTree::Ident(keyword)) if keyword == "mod" => {
+            // TODO some items currently unsupported: decl-macros, extern crate
+
             // mod keyword
             tokens.next().unwrap();
 
@@ -220,7 +222,7 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
                 members = vec![];
             }
 
-            Declaration::Mod(Mod {
+            Declaration::Module(Module {
                 attributes,
                 vis_marker,
                 tk_mod: keyword,
