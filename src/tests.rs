@@ -1250,6 +1250,10 @@ fn parse_mod() {
         mod one_module {
             #![allow(clippy::iter_with_drain)]
 
+            use std::clone::Clone as Clown;
+            use std::cell::{Cell, RefCell};
+            use crate::{A, self, b::c};
+
             pub struct MyStruct {
                 field: i32,
             }
@@ -1272,6 +1276,9 @@ fn parse_mod() {
             mod nested_mod {
                 fn g() {}
             }
+
+            //mod empty_mod {}
+            //mod foreign_mod;
         }
     };
 

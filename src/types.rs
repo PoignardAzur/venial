@@ -133,6 +133,7 @@ pub struct Mod {
     pub name: Ident,
     pub tk_braces: GroupSpan,
     pub inner_attributes: Vec<Attribute>,
+    pub use_declarations: Vec<UseDeclaration>,
     pub members: Vec<Declaration>,
 }
 
@@ -576,6 +577,24 @@ pub struct PathSegment {
     pub generic_args: Option<GenericArgList>,
 }
 
+/// Type definition.
+/// Handles both associated types (in `impl` blocks) or type aliases (globally).
+///
+/// **Example input:**
+///
+/// ```no_run
+/// use std::collections::hash_map::{self, HashMap};
+/// ```
+#[derive(Clone, Debug)]
+pub struct UseDeclaration {
+    /// The `use` keyword
+    pub tk_use: Ident,
+    /// Un-tokenized import paths between `use` and the finishing `;`
+    pub import_tree: TyExpr,
+    /// Semicolon ending the use statement
+    pub tk_semicolon: Punct,
+}
+
 /// The value of an [`EnumVariant`], normally for c-like enums.
 ///
 /// **Example input:**
@@ -972,6 +991,9 @@ impl ToTokens for Mod {
             for attribute in &self.inner_attributes {
                 attribute.to_tokens(tokens);
             }
+            for use_decl in &self.use_declarations {
+                use_decl.to_tokens(tokens);
+            }
             for token in &self.members {
                 token.to_tokens(tokens);
             }
@@ -1277,6 +1299,14 @@ impl ToTokens for ValueExpr {
         for token in &self.tokens {
             tokens.append(token.clone());
         }
+    }
+}
+
+impl ToTokens for UseDeclaration {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        self.tk_use.to_tokens(tokens);
+        self.import_tree.to_tokens(tokens);
+        self.tk_semicolon.to_tokens(tokens);
     }
 }
 

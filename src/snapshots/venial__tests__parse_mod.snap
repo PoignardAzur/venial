@@ -58,6 +58,107 @@ Mod(
                 ),
             },
         ],
+        use_declarations: [
+            UseDeclaration {
+                tk_use: Ident(
+                    use,
+                ),
+                import_tree: [
+                    std,
+                    ":",
+                    ":",
+                    clone,
+                    ":",
+                    ":",
+                    Clone,
+                    as,
+                    Clown,
+                ],
+                tk_semicolon: Punct {
+                    char: ';',
+                    spacing: Alone,
+                },
+            },
+            UseDeclaration {
+                tk_use: Ident(
+                    use,
+                ),
+                import_tree: [
+                    std,
+                    ":",
+                    ":",
+                    cell,
+                    ":",
+                    ":",
+                    Group {
+                        delimiter: Brace,
+                        stream: TokenStream [
+                            Ident {
+                                sym: Cell,
+                            },
+                            Punct {
+                                char: ',',
+                                spacing: Alone,
+                            },
+                            Ident {
+                                sym: RefCell,
+                            },
+                        ],
+                    },
+                ],
+                tk_semicolon: Punct {
+                    char: ';',
+                    spacing: Alone,
+                },
+            },
+            UseDeclaration {
+                tk_use: Ident(
+                    use,
+                ),
+                import_tree: [
+                    crate,
+                    ":",
+                    ":",
+                    Group {
+                        delimiter: Brace,
+                        stream: TokenStream [
+                            Ident {
+                                sym: A,
+                            },
+                            Punct {
+                                char: ',',
+                                spacing: Alone,
+                            },
+                            Ident {
+                                sym: self,
+                            },
+                            Punct {
+                                char: ',',
+                                spacing: Alone,
+                            },
+                            Ident {
+                                sym: b,
+                            },
+                            Punct {
+                                char: ':',
+                                spacing: Joint,
+                            },
+                            Punct {
+                                char: ':',
+                                spacing: Alone,
+                            },
+                            Ident {
+                                sym: c,
+                            },
+                        ],
+                    },
+                ],
+                tk_semicolon: Punct {
+                    char: ';',
+                    spacing: Alone,
+                },
+            },
+        ],
         members: [
             Struct(
                 Struct {
@@ -376,6 +477,7 @@ Mod(
                     ),
                     tk_braces: {},
                     inner_attributes: [],
+                    use_declarations: [],
                     members: [
                         Function(
                             Function {
