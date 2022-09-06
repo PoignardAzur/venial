@@ -22,9 +22,10 @@ Constant(
                 crate,
             ),
         ),
-        tk_const: Ident(
+        tk_const_or_static: Ident(
             const,
         ),
+        tk_mut: None,
         name: Ident(
             CONSTANT,
         ),

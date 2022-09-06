@@ -21,24 +21,33 @@ pub(crate) fn consume_for(tokens: &mut TokenIter) -> Option<Ident> {
     }
 }
 
-pub(crate) fn consume_constant(
+pub(crate) fn consume_const_or_static(
     tokens: &mut TokenIter,
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
 ) -> Constant {
-    let tk_const = match tokens.next() {
-        Some(TokenTree::Ident(ident)) if ident == "const" => ident,
-        _ => panic!("cannot parse constant"),
+    let (tk_const_or_static, is_const) = match tokens.next() {
+        Some(TokenTree::Ident(ident)) if ident == "const" => (ident, true),
+        Some(TokenTree::Ident(ident)) if ident == "static" => (ident, false),
+        _ => panic!("cannot parse const/static"),
+    };
+
+    let tk_mut = match tokens.peek() {
+        Some(TokenTree::Ident(ident)) if ident == "mut" => {
+            assert!(!is_const, "`const mut` is not a valid declaration");
+            Some(ident.clone())
+        }
+        _ => None,
     };
 
     let name = match tokens.next() {
         Some(TokenTree::Ident(ident)) => ident,
-        _ => panic!("cannot parse constant"),
+        _ => panic!("cannot parse {}", tk_const_or_static),
     };
 
     let tk_colon = match tokens.next() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct,
-        _ => panic!("cannot parse constant"),
+        _ => panic!("cannot parse {}", tk_const_or_static),
     };
 
     let ty_tokens = consume_stuff_until(
@@ -71,13 +80,14 @@ pub(crate) fn consume_constant(
 
     let tk_semicolon = match tokens.next() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == ';' => punct,
-        _ => panic!("cannot parse constant"),
+        _ => panic!("cannot parse {}", tk_const_or_static),
     };
 
     Constant {
         attributes,
         vis_marker,
-        tk_const,
+        tk_const_or_static,
+        tk_mut,
         name,
         tk_colon,
         ty: TyExpr { tokens: ty_tokens },
@@ -147,7 +157,7 @@ pub(crate) fn consume_fn_const_or_type(
                 if let Some(method) = consume_fn(tokens, attributes.clone(), vis_marker.clone()) {
                     ImplMember::Method(method)
                 } else {
-                    let constant = consume_constant(tokens, attributes, vis_marker);
+                    let constant = consume_const_or_static(tokens, attributes, vis_marker);
                     ImplMember::Constant(constant)
                 }
             }

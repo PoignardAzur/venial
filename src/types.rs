@@ -197,18 +197,26 @@ pub enum ImplMember {
     // other items like macro!{...} or macro!(...); invocations
 }
 
-/// Constant declaration.
+/// Constant or static declaration.
 ///
-/// **Example input:**
+/// **Example inputs:**
 ///
 /// ```no_run
 /// pub const CONSTANT: i32 = 783;
+/// # trait Trait {
+/// const CONSTANT: i32;
+/// # }
+/// static MUTEX: std::sync::Mutex<i32> = std::sync::Mutex::new(0);
+/// pub(crate) static mut STATIC: i32 = 7;
 /// ```
 #[derive(Clone, Debug)]
 pub struct Constant {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
-    pub tk_const: Ident,
+    /// Either `const` or `static` keyword
+    pub tk_const_or_static: Ident,
+    /// `mut` keyword in `static mut`, absent for `const` or immutable `static`
+    pub tk_mut: Option<Ident>,
     pub name: Ident,
     pub tk_colon: Punct,
     pub ty: TyExpr,
@@ -912,7 +920,7 @@ impl ToTokens for Constant {
             attribute.to_tokens(tokens);
         }
         self.vis_marker.to_tokens(tokens);
-        self.tk_const.to_tokens(tokens);
+        self.tk_const_or_static.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.tk_colon.to_tokens(tokens);
         self.ty.to_tokens(tokens);
