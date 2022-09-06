@@ -7,7 +7,8 @@ use crate::parse_type::{
     parse_named_fields, parse_tuple_fields,
 };
 use crate::parse_utils::{
-    consume_inner_attributes, consume_outer_attributes, consume_stuff_until, consume_vis_marker,
+    consume_inner_attributes, consume_outer_attributes, consume_stuff_until,
+    consume_use_declarations, consume_vis_marker,
 };
 use crate::types::{Declaration, Enum, Impl, Mod, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
@@ -191,6 +192,7 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
             let mut members = vec![];
             let mut tokens = stream.into_iter().peekable();
             let inner_attributes = consume_inner_attributes(&mut tokens);
+            let use_declarations = consume_use_declarations(&mut tokens);
             loop {
                 let item = parse_declaration_tokens(&mut tokens)?;
                 members.push(item);
@@ -205,7 +207,7 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
                 name: module_name,
                 tk_braces: GroupSpan::new(&group),
                 inner_attributes,
-                // FIXME use statements
+                use_declarations,
                 members,
             })
         }
