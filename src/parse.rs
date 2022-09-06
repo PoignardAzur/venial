@@ -1,5 +1,7 @@
 use crate::error::Error;
-use crate::parse_impl::{consume_constant, consume_fn_const_or_type, consume_for, parse_impl_body};
+use crate::parse_impl::{
+    consume_const_or_static, consume_fn_const_or_type, consume_for, parse_impl_body,
+};
 use crate::parse_type::{
     consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
@@ -269,6 +271,10 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
                 tk_braces,
             })
         }
+        Some(TokenTree::Ident(keyword)) if keyword == "static" => {
+            let static_decl = consume_const_or_static(&mut tokens, attributes, vis_marker);
+            Declaration::Constant(static_decl)
+        }
         // Note: fn qualifiers appear always in this order in Rust
         Some(TokenTree::Ident(keyword))
             if matches!(
@@ -282,7 +288,6 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
                 ImplMember::Constant(constant) => Declaration::Constant(constant),
                 ImplMember::AssocTy(ty_def) => Declaration::TyDefinition(ty_def),
             }
-
         }
         Some(token) => {
             panic!(

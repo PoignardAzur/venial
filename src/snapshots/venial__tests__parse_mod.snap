@@ -209,6 +209,136 @@ Mod(
                     ),
                 },
             ),
+            Constant(
+                Constant {
+                    attributes: [],
+                    vis_marker: None,
+                    tk_const_or_static: Ident(
+                        const,
+                    ),
+                    tk_mut: None,
+                    name: Ident(
+                        C,
+                    ),
+                    tk_colon: Punct {
+                        char: ':',
+                        spacing: Alone,
+                    },
+                    ty: [
+                        i32,
+                    ],
+                    tk_equals: Some(
+                        Punct {
+                            char: '=',
+                            spacing: Alone,
+                        },
+                    ),
+                    initializer: Some(
+                        [
+                            "-",
+                            8,
+                            "*",
+                            2,
+                        ],
+                    ),
+                    tk_semicolon: Punct {
+                        char: ';',
+                        spacing: Alone,
+                    },
+                },
+            ),
+            Constant(
+                Constant {
+                    attributes: [],
+                    vis_marker: Some(
+                        pub,
+                    ),
+                    tk_const_or_static: Ident(
+                        static,
+                    ),
+                    tk_mut: None,
+                    name: Ident(
+                        MUTEX,
+                    ),
+                    tk_colon: Punct {
+                        char: ':',
+                        spacing: Alone,
+                    },
+                    ty: [
+                        std,
+                        ":",
+                        ":",
+                        sync,
+                        ":",
+                        ":",
+                        Mutex,
+                        "<",
+                        i32,
+                        ">",
+                    ],
+                    tk_equals: Some(
+                        Punct {
+                            char: '=',
+                            spacing: Alone,
+                        },
+                    ),
+                    initializer: Some(
+                        [
+                            std,
+                            ":",
+                            ":",
+                            sync,
+                            ":",
+                            ":",
+                            Mutex,
+                            ":",
+                            ":",
+                            new,
+                            Group {
+                                delimiter: Parenthesis,
+                                stream: TokenStream [
+                                    Literal {
+                                        lit: 0,
+                                    },
+                                ],
+                            },
+                        ],
+                    ),
+                    tk_semicolon: Punct {
+                        char: ';',
+                        spacing: Alone,
+                    },
+                },
+            ),
+            TyDefinition(
+                TyDefinition {
+                    attributes: [],
+                    vis_marker: None,
+                    tk_type: Ident(
+                        type,
+                    ),
+                    name: Ident(
+                        MyType,
+                    ),
+                    tk_equals: Punct {
+                        char: '=',
+                        spacing: Alone,
+                    },
+                    initializer_ty: [
+                        Rc,
+                        "<",
+                        RefCell,
+                        "<",
+                        MyStruct,
+                        ">",
+                        ">",
+                    ],
+                    tk_semicolon: Punct {
+                        char: ';',
+                        spacing: Alone,
+                    },
+                },
+            ),
             Mod(
                 Mod {
                     attributes: [],
