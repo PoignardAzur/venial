@@ -131,7 +131,12 @@ pub struct Mod {
     pub vis_marker: Option<VisMarker>,
     pub tk_mod: Ident,
     pub name: Ident,
-    pub tk_braces: GroupSpan,
+    /// `;` token, only present for foreign mods, such as `mod my_module;`.
+    /// This is mutually exclusive with `tk_braces` and all remaining fields.
+    pub tk_semicolon: Option<Punct>,
+    /// `{ }` group, only available for mods with a local block, such as `mod my_module { ... }`.
+    /// This is mutually exclusive with `tk_semicolon`.
+    pub tk_braces: Option<GroupSpan>,
     pub inner_attributes: Vec<Attribute>,
     pub use_declarations: Vec<UseDeclaration>,
     pub members: Vec<Declaration>,
@@ -987,17 +992,22 @@ impl ToTokens for Mod {
         self.vis_marker.to_tokens(tokens);
         self.tk_mod.to_tokens(tokens);
         self.name.to_tokens(tokens);
-        self.tk_braces.quote_with(tokens, |tokens| {
-            for attribute in &self.inner_attributes {
-                attribute.to_tokens(tokens);
-            }
-            for use_decl in &self.use_declarations {
-                use_decl.to_tokens(tokens);
-            }
-            for token in &self.members {
-                token.to_tokens(tokens);
-            }
-        });
+
+        if let Some(tk_semicolon) = self.tk_semicolon.as_ref() {
+            tk_semicolon.to_tokens(tokens);
+        } else if let Some(tk_braces) = self.tk_braces.as_ref() {
+            tk_braces.quote_with(tokens, |tokens| {
+                for attribute in &self.inner_attributes {
+                    attribute.to_tokens(tokens);
+                }
+                for use_decl in &self.use_declarations {
+                    use_decl.to_tokens(tokens);
+                }
+                for token in &self.members {
+                    token.to_tokens(tokens);
+                }
+            });
+        }
     }
 }
 
