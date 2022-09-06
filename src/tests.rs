@@ -1248,7 +1248,7 @@ fn parse_mod() {
     let expr = quote! {
         #[path = "some/module"]
         mod one_module {
-            //#![allow(clippy::iter_with_drain)]
+            #![allow(clippy::iter_with_drain)]
 
             pub struct MyStruct {
                 field: i32,

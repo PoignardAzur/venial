@@ -132,6 +132,7 @@ pub struct Mod {
     pub tk_mod: Ident,
     pub name: Ident,
     pub tk_braces: GroupSpan,
+    pub inner_attributes: Vec<Attribute>,
     pub members: Vec<Declaration>,
 }
 
@@ -921,6 +922,7 @@ impl ToTokens for Constant {
         }
         self.vis_marker.to_tokens(tokens);
         self.tk_const_or_static.to_tokens(tokens);
+        self.tk_mut.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.tk_colon.to_tokens(tokens);
         self.ty.to_tokens(tokens);
@@ -967,6 +969,9 @@ impl ToTokens for Mod {
         self.tk_mod.to_tokens(tokens);
         self.name.to_tokens(tokens);
         self.tk_braces.quote_with(tokens, |tokens| {
+            for attribute in &self.inner_attributes {
+                attribute.to_tokens(tokens);
+            }
             for token in &self.members {
                 token.to_tokens(tokens);
             }
