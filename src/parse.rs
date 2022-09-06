@@ -66,19 +66,19 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
     parse_declaration_tokens(&mut tokens)
 }
 
-fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Declaration, Error> {
+fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declaration, Error> {
     // FIXME remove redundant '&mut' once the risk of merge conflicts is smaller
-    let attributes = consume_outer_attributes(&mut tokens);
-    let vis_marker = consume_vis_marker(&mut tokens);
+    let attributes = consume_outer_attributes(tokens);
+    let vis_marker = consume_vis_marker(tokens);
 
     let declaration = match tokens.peek().cloned() {
         Some(TokenTree::Ident(keyword)) if keyword == "struct" => {
             // struct keyword
             tokens.next().unwrap();
 
-            let struct_name = consume_declaration_name(&mut tokens);
-            let generic_params = consume_generic_params(&mut tokens);
-            let mut where_clause = consume_where_clause(&mut tokens);
+            let struct_name = consume_declaration_name(tokens);
+            let generic_params = consume_generic_params(tokens);
+            let mut where_clause = consume_where_clause(tokens);
 
             let struct_fields = match tokens
                 .peek()
@@ -102,7 +102,7 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
 
             if matches!(struct_fields, StructFields::Tuple(_)) {
                 assert!(where_clause.is_none());
-                where_clause = consume_where_clause(&mut tokens);
+                where_clause = consume_where_clause(tokens);
             }
 
             let semicolon = match tokens.peek() {
@@ -129,9 +129,9 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
             // enum keyword
             tokens.next().unwrap();
 
-            let enum_name = consume_declaration_name(&mut tokens);
-            let generic_params = consume_generic_params(&mut tokens);
-            let where_clause = consume_where_clause(&mut tokens);
+            let enum_name = consume_declaration_name(tokens);
+            let generic_params = consume_generic_params(tokens);
+            let where_clause = consume_where_clause(tokens);
 
             let (group, enum_variants) = match tokens.next().unwrap() {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
@@ -155,9 +155,9 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
             // union keyword
             tokens.next().unwrap();
 
-            let union_name = consume_declaration_name(&mut tokens);
-            let generic_params = consume_generic_params(&mut tokens);
-            let where_clause = consume_where_clause(&mut tokens);
+            let union_name = consume_declaration_name(tokens);
+            let generic_params = consume_generic_params(tokens);
+            let where_clause = consume_where_clause(tokens);
 
             let union_fields = match tokens.next().unwrap() {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
@@ -182,13 +182,13 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
             // mod keyword
             tokens.next().unwrap();
 
-            let module_name = consume_declaration_name(&mut tokens);
+            let module_name = consume_declaration_name(tokens);
 
             let (group, tk_semicolon) = match tokens.next().unwrap() {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                    (Some(group.clone()), None)
+                    (Some(group), None)
                 }
-                TokenTree::Punct(punct) if punct.as_char() == ';' => (None, Some(punct.clone())),
+                TokenTree::Punct(punct) if punct.as_char() == ';' => (None, Some(punct)),
                 token => panic!(
                     "cannot parse mod: expected `{{ }}` or `;`, but got token {:?}",
                     token
@@ -238,9 +238,9 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
             // impl keyword
             tokens.next().unwrap();
 
-            let impl_generic_params = consume_generic_params(&mut tokens);
+            let impl_generic_params = consume_generic_params(tokens);
             let trait_or_self_ty = consume_stuff_until(
-                &mut tokens,
+                tokens,
                 |tk| match tk {
                     TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
                     TokenTree::Ident(ident) if ident == "for" || ident == "where" => true,
@@ -249,9 +249,9 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
                 true,
             );
 
-            let (tk_for, trait_ty, self_ty) = if let Some(tk_for) = consume_for(&mut tokens) {
+            let (tk_for, trait_ty, self_ty) = if let Some(tk_for) = consume_for(tokens) {
                 let self_ty = consume_stuff_until(
-                    &mut tokens,
+                    tokens,
                     |tk| match tk {
                         TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
                         TokenTree::Ident(ident) if ident == "where" => true,
@@ -277,7 +277,7 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
                 )
             };
 
-            let where_clause = consume_where_clause(&mut tokens);
+            let where_clause = consume_where_clause(tokens);
 
             let (tk_braces, inner_attributes, body_items) = match tokens.next().unwrap() {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
@@ -300,7 +300,7 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
             })
         }
         Some(TokenTree::Ident(keyword)) if keyword == "static" => {
-            let static_decl = consume_const_or_static(&mut tokens, attributes, vis_marker);
+            let static_decl = consume_const_or_static(tokens, attributes, vis_marker);
             Declaration::Constant(static_decl)
         }
         // Note: fn qualifiers appear always in this order in Rust
@@ -311,7 +311,7 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
             ) =>
         {
             // Reuse impl parsing
-            match consume_fn_const_or_type(&mut tokens, attributes, vis_marker, "declaration") {
+            match consume_fn_const_or_type(tokens, attributes, vis_marker, "declaration") {
                 ImplMember::Method(function) => Declaration::Function(function),
                 ImplMember::Constant(constant) => Declaration::Constant(constant),
                 ImplMember::AssocTy(ty_def) => Declaration::TyDefinition(ty_def),
