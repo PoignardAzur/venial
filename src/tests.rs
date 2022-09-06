@@ -1277,8 +1277,8 @@ fn parse_mod() {
                 fn g() {}
             }
 
-            //mod empty_mod {}
-            //mod foreign_mod;
+            mod empty_mod {}
+            mod foreign_mod;
         }
     };
 

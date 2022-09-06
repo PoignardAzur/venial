@@ -32,7 +32,10 @@ Mod(
         name: Ident(
             one_module,
         ),
-        tk_braces: {},
+        tk_semicolon: None,
+        tk_braces: Some(
+            {},
+        ),
         inner_attributes: [
             Attribute {
                 tk_hash: Punct {
@@ -475,7 +478,10 @@ Mod(
                     name: Ident(
                         nested_mod,
                     ),
-                    tk_braces: {},
+                    tk_semicolon: None,
+                    tk_braces: Some(
+                        {},
+                    ),
                     inner_attributes: [],
                     use_declarations: [],
                     members: [
@@ -513,6 +519,47 @@ Mod(
                             },
                         ),
                     ],
+                },
+            ),
+            Mod(
+                Mod {
+                    attributes: [],
+                    vis_marker: None,
+                    tk_mod: Ident(
+                        mod,
+                    ),
+                    name: Ident(
+                        empty_mod,
+                    ),
+                    tk_semicolon: None,
+                    tk_braces: Some(
+                        {},
+                    ),
+                    inner_attributes: [],
+                    use_declarations: [],
+                    members: [],
+                },
+            ),
+            Mod(
+                Mod {
+                    attributes: [],
+                    vis_marker: None,
+                    tk_mod: Ident(
+                        mod,
+                    ),
+                    name: Ident(
+                        foreign_mod,
+                    ),
+                    tk_semicolon: Some(
+                        Punct {
+                            char: ';',
+                            spacing: Alone,
+                        },
+                    ),
+                    tk_braces: None,
+                    inner_attributes: [],
+                    use_declarations: [],
+                    members: [],
                 },
             ),
         ],

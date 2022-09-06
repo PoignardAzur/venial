@@ -182,30 +182,51 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
 
             let module_name = consume_declaration_name(&mut tokens);
 
-            let (group, stream) = match tokens.next().unwrap() {
+            let (group, tk_semicolon) = match tokens.next().unwrap() {
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                    (group.clone(), group.stream())
+                    (Some(group.clone()), None)
                 }
-                token => panic!("cannot parse mod: unexpected token {:?}", token),
+                TokenTree::Punct(punct) if punct.as_char() == ';' => (None, Some(punct.clone())),
+                token => panic!(
+                    "cannot parse mod: expected `{{ }}` or `;`, but got token {:?}",
+                    token
+                ),
             };
 
-            let mut members = vec![];
-            let mut tokens = stream.into_iter().peekable();
-            let inner_attributes = consume_inner_attributes(&mut tokens);
-            let use_declarations = consume_use_declarations(&mut tokens);
-            loop {
-                let item = parse_declaration_tokens(&mut tokens)?;
-                members.push(item);
-                if tokens.peek().is_none() {
-                    break;
+            let inner_attributes;
+            let use_declarations;
+            let tk_braces;
+            let members;
+            if let Some(group) = group {
+                // Parse mod block body
+                let mut mod_members = vec![];
+                let mut tokens = group.stream().into_iter().peekable();
+
+                tk_braces = Some(GroupSpan::new(&group));
+                inner_attributes = consume_inner_attributes(&mut tokens);
+                use_declarations = consume_use_declarations(&mut tokens);
+                loop {
+                    if tokens.peek().is_none() {
+                        break;
+                    }
+                    let item = parse_declaration_tokens(&mut tokens)?;
+                    mod_members.push(item);
                 }
+                members = mod_members;
+            } else {
+                tk_braces = None;
+                inner_attributes = vec![];
+                use_declarations = vec![];
+                members = vec![];
             }
+
             Declaration::Mod(Mod {
                 attributes,
                 vis_marker,
                 tk_mod: keyword,
                 name: module_name,
-                tk_braces: GroupSpan::new(&group),
+                tk_semicolon,
+                tk_braces,
                 inner_attributes,
                 use_declarations,
                 members,
@@ -296,12 +317,12 @@ fn parse_declaration_tokens(mut tokens: &mut Peekable<IntoIter>) -> Result<Decla
         }
         Some(token) => {
             panic!(
-                "cannot parse declaration: expected keyword struct/enum/union/type/impl/default/const/async/unsafe/extern/fn, found token {:?}",
+                "cannot parse declaration: expected keyword struct/enum/union/type/impl/mod/default/const/async/unsafe/extern/fn/static, found token {:?}",
                 token
             );
         }
         None => {
-            panic!("cannot parse type: expected keyword struct/enum/union/type/impl/default/const/async/unsafe/extern/fn, found end-of-stream");
+            panic!("cannot parse type: expected keyword struct/enum/union/type/impl/mod/default/const/async/unsafe/extern/fn/static, found end-of-stream");
         }
     };
     Ok(declaration)
