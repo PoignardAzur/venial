@@ -33,6 +33,31 @@ Mod(
             one_module,
         ),
         tk_braces: {},
+        inner_attributes: [
+            Attribute {
+                tk_hash: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_bang: Punct {
+                    char: '!',
+                    spacing: Alone,
+                },
+                tk_brackets: [],
+                path: [
+                    allow,
+                ],
+                value: Group(
+                    [
+                        clippy,
+                        ":",
+                        ":",
+                        iter_with_drain,
+                    ],
+                    (),
+                ),
+            },
+        ],
         members: [
             Struct(
                 Struct {
@@ -350,6 +375,7 @@ Mod(
                         nested_mod,
                     ),
                     tk_braces: {},
+                    inner_attributes: [],
                     members: [
                         Function(
                             Function {
