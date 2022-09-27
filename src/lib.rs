@@ -75,9 +75,4 @@ mod types_edition;
 pub use error::Error;
 pub use parse::parse_declaration;
 pub use punctuated::Punctuated;
-pub use types::{
-    Attribute, AttributeValue, Constant, Declaration, Enum, EnumVariant, EnumVariantValue, FnParam,
-    FnReceiverParam, Function, GenericBound, GenericParam, GenericParamList, Impl, ImplMember,
-    NamedField, NamedStructFields, Struct, StructFields, TupleField, TupleStructFields,
-    TyDefinition, TyExpr, Union, ValueExpr, VisMarker, WhereClause, WhereClauseItem,
-};
+pub use types::*;
