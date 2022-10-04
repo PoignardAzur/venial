@@ -17,6 +17,7 @@ Impl(
                 value: Empty,
             },
         ],
+        tk_unsafe: None,
         tk_impl: Ident(
             impl,
         ),

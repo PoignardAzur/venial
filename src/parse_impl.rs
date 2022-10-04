@@ -1,11 +1,12 @@
 use crate::parse_fn::consume_fn;
+use crate::parse_type::{consume_generic_params, consume_where_clause};
 use crate::parse_utils::{
     consume_inner_attributes, consume_outer_attributes, consume_stuff_until, consume_vis_marker,
 };
 use crate::types::{Constant, ImplMember, TyDefinition, ValueExpr};
 use crate::types_edition::GroupSpan;
-use crate::{Attribute, TyExpr, VisMarker};
-use proc_macro2::{Group, Ident, TokenTree};
+use crate::{Attribute, Declaration, Impl, TyExpr, VisMarker};
+use proc_macro2::{Delimiter, Group, Ident, TokenTree};
 use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
@@ -146,19 +147,25 @@ pub(crate) fn consume_fn_const_or_type(
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
     context: &str, // for panic
-) -> ImplMember {
+) -> Declaration {
     if let Some(TokenTree::Ident(ident)) = tokens.peek() {
-        match ident.to_string().as_str() {
+        let keyword = ident.to_string();
+        match keyword.as_str() {
             "type" => {
                 let assoc_ty = consume_ty_definition(tokens, attributes, vis_marker);
-                ImplMember::AssocTy(assoc_ty.unwrap())
+                Declaration::TyDefinition(assoc_ty.unwrap())
             }
             "default" | "const" | "async" | "unsafe" | "extern" | "fn" => {
                 if let Some(method) = consume_fn(tokens, attributes.clone(), vis_marker.clone()) {
-                    ImplMember::Method(method)
-                } else {
+                    Declaration::Function(method)
+                } else if keyword == "const" {
                     let constant = parse_const_or_static(tokens, attributes, vis_marker);
-                    ImplMember::Constant(constant)
+                    Declaration::Constant(constant)
+                } else if keyword == "unsafe" {
+                    let impl_decl = parse_impl(tokens, attributes);
+                    Declaration::Impl(impl_decl)
+                } else {
+                    unreachable!();
                 }
             }
             _ => panic!("unsupported {} item `{}`", context, ident),
@@ -180,10 +187,92 @@ pub(crate) fn parse_impl_body(token_group: Group) -> (GroupSpan, Vec<Attribute>,
 
         let attributes = consume_outer_attributes(&mut tokens);
         let vis_marker = consume_vis_marker(&mut tokens);
-        let item = consume_fn_const_or_type(&mut tokens, attributes, vis_marker, "impl");
+        let item = match consume_fn_const_or_type(&mut tokens, attributes, vis_marker, "impl") {
+            Declaration::Function(function) => ImplMember::Method(function),
+            Declaration::Constant(constant) => ImplMember::Constant(constant),
+            Declaration::TyDefinition(ty_def) => ImplMember::AssocTy(ty_def),
+            _ => panic!("unsupported impl item `{:?}`", tokens.peek()),
+        };
 
         body_items.push(item);
     }
 
     (GroupSpan::new(&token_group), inner_attributes, body_items)
+}
+
+pub(crate) fn parse_impl(tokens: &mut TokenIter, attributes: Vec<Attribute>) -> Impl {
+    let tk_unsafe = match tokens.peek() {
+        Some(TokenTree::Ident(ident)) if ident == "unsafe" => {
+            let ident = ident.clone();
+            tokens.next();
+            Some(ident)
+        }
+        _ => None,
+    };
+
+    let next_token = tokens.next();
+    let tk_impl = match next_token {
+        Some(TokenTree::Ident(ident)) if ident == "impl" => ident,
+        _ => panic!("Expected `impl` keyword, got {:?}", next_token),
+    };
+
+    let impl_generic_params = consume_generic_params(tokens);
+    let trait_or_self_ty = consume_stuff_until(
+        tokens,
+        |tk| match tk {
+            TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
+            TokenTree::Ident(ident) if ident == "for" || ident == "where" => true,
+            _ => false,
+        },
+        true,
+    );
+
+    let (tk_for, trait_ty, self_ty) = if let Some(tk_for) = consume_for(tokens) {
+        let self_ty = consume_stuff_until(
+            tokens,
+            |tk| match tk {
+                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
+                TokenTree::Ident(ident) if ident == "where" => true,
+                _ => false,
+            },
+            true,
+        );
+
+        (
+            Some(tk_for),
+            Some(TyExpr {
+                tokens: trait_or_self_ty,
+            }),
+            TyExpr { tokens: self_ty },
+        )
+    } else {
+        (
+            None,
+            None,
+            TyExpr {
+                tokens: trait_or_self_ty,
+            },
+        )
+    };
+
+    let where_clause = consume_where_clause(tokens);
+
+    let (tk_braces, inner_attributes, body_items) = match tokens.next().unwrap() {
+        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => parse_impl_body(group),
+        token => panic!("cannot parse impl: unexpected token {:?}", token),
+    };
+
+    Impl {
+        attributes,
+        tk_unsafe,
+        tk_impl,
+        impl_generic_params,
+        trait_ty,
+        tk_for,
+        self_ty,
+        where_clause,
+        body_items,
+        inner_attributes,
+        tk_braces,
+    }
 }

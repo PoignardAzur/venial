@@ -160,6 +160,7 @@ Module(
             Impl(
                 Impl {
                     attributes: [],
+                    tk_unsafe: None,
                     tk_impl: Ident(
                         impl,
                     ),
@@ -178,6 +179,7 @@ Module(
             Impl(
                 Impl {
                     attributes: [],
+                    tk_unsafe: None,
                     tk_impl: Ident(
                         impl,
                     ),

@@ -1,18 +1,14 @@
 use crate::error::Error;
-use crate::parse_impl::{
-    consume_fn_const_or_type, consume_for, parse_const_or_static, parse_impl_body,
-};
+use crate::parse_impl::{consume_fn_const_or_type, parse_const_or_static, parse_impl};
 use crate::parse_type::{
     consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
 };
 use crate::parse_utils::{
-    consume_inner_attributes, consume_outer_attributes, consume_stuff_until, consume_vis_marker,
-    parse_use_declarations,
+    consume_inner_attributes, consume_outer_attributes, consume_vis_marker, parse_use_declarations,
 };
-use crate::types::{Declaration, Enum, Impl, Module, Struct, StructFields, Union};
+use crate::types::{Declaration, Enum, Module, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
-use crate::{ImplMember, TyExpr};
 use proc_macro2::token_stream::IntoIter;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
 use std::iter::Peekable;
@@ -230,74 +226,14 @@ fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declarati
             })
         }
         Some(TokenTree::Ident(keyword)) if keyword == "impl" => {
-            // impl keyword
-            tokens.next().unwrap();
-
-            let impl_generic_params = consume_generic_params(tokens);
-            let trait_or_self_ty = consume_stuff_until(
-                tokens,
-                |tk| match tk {
-                    TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
-                    TokenTree::Ident(ident) if ident == "for" || ident == "where" => true,
-                    _ => false,
-                },
-                true,
-            );
-
-            let (tk_for, trait_ty, self_ty) = if let Some(tk_for) = consume_for(tokens) {
-                let self_ty = consume_stuff_until(
-                    tokens,
-                    |tk| match tk {
-                        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
-                        TokenTree::Ident(ident) if ident == "where" => true,
-                        _ => false,
-                    },
-                    true,
-                );
-
-                (
-                    Some(tk_for),
-                    Some(TyExpr {
-                        tokens: trait_or_self_ty,
-                    }),
-                    TyExpr { tokens: self_ty },
-                )
-            } else {
-                (
-                    None,
-                    None,
-                    TyExpr {
-                        tokens: trait_or_self_ty,
-                    },
-                )
-            };
-
-            let where_clause = consume_where_clause(tokens);
-
-            let (tk_braces, inner_attributes, body_items) = match tokens.next().unwrap() {
-                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                    parse_impl_body(group)
-                }
-                token => panic!("cannot parse impl: unexpected token {:?}", token),
-            };
-
-            Declaration::Impl(Impl {
-                attributes,
-                tk_impl: keyword,
-                impl_generic_params,
-                trait_ty,
-                tk_for,
-                self_ty,
-                where_clause,
-                body_items,
-                inner_attributes,
-                tk_braces,
-            })
+            let impl_decl = parse_impl(tokens, attributes);
+            Declaration::Impl(impl_decl)
         }
         Some(TokenTree::Ident(keyword)) if keyword == "static" => {
             let static_decl = parse_const_or_static(tokens, attributes, vis_marker);
             Declaration::Constant(static_decl)
         }
+        // Note: fn qualifiers appear always in this order in Rust: default const async unsafe extern fn
         Some(TokenTree::Ident(keyword)) if keyword == "use" => {
             let use_decl = parse_use_declarations(tokens, attributes, vis_marker);
 
@@ -311,11 +247,7 @@ fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declarati
             ) =>
         {
             // Reuse impl parsing
-            match consume_fn_const_or_type(tokens, attributes, vis_marker, "declaration") {
-                ImplMember::Method(function) => Declaration::Function(function),
-                ImplMember::Constant(constant) => Declaration::Constant(constant),
-                ImplMember::AssocTy(ty_def) => Declaration::TyDefinition(ty_def),
-            }
+            consume_fn_const_or_type(tokens, attributes, vis_marker, "declaration")
         }
         Some(token) => {
             panic!(

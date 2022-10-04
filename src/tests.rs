@@ -1125,7 +1125,7 @@ fn parse_impl_trait() {
 #[test]
 fn parse_impl_trait_generic() {
     let expr = quote!(
-        impl<'a, T, const N: i8> traits::MyTrait<T, N> for structs::MyStruct<'a, T>
+        unsafe impl<'a, T, const N: i8> traits::MyTrait<T, N> for structs::MyStruct<'a, T>
         where
             T: Clone,
         {

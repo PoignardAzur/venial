@@ -5,6 +5,7 @@ expression: impl_decl
 Impl(
     Impl {
         attributes: [],
+        tk_unsafe: None,
         tk_impl: Ident(
             impl,
         ),
