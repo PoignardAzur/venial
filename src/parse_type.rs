@@ -1,7 +1,7 @@
 use crate::error::Error;
 use crate::parse_utils::{
-    consume_colon2, consume_comma, consume_outer_attributes, consume_stuff_until,
-    consume_vis_marker, parse_ident,
+    consume_colon2, consume_comma, consume_ident, consume_outer_attributes, consume_stuff_until,
+    consume_vis_marker, parse_any_ident,
 };
 use crate::punctuated::Punctuated;
 use crate::types::{
@@ -17,15 +17,7 @@ type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
 
 // TODO - rename
 pub(crate) fn consume_declaration_name(tokens: &mut TokenIter) -> Ident {
-    let token = tokens
-        .next()
-        .expect("cannot parse declaration: expected identifier, found end-of-stream");
-    parse_ident(token).unwrap_or_else(|token| {
-        panic!(
-            "cannot parse declaration: expected identifier, found token {:?}",
-            token
-        );
-    })
+    parse_any_ident(tokens, "declaration")
 }
 
 pub(crate) fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParamList> {
@@ -60,7 +52,7 @@ pub(crate) fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericPa
             }
         };
 
-        let name = parse_ident(tokens.next().unwrap()).unwrap();
+        let name = parse_any_ident(tokens, "generic param name");
 
         let bound = match tokens.peek().unwrap() {
             TokenTree::Punct(punct) if punct.as_char() == ':' => {
@@ -223,20 +215,18 @@ pub(crate) fn consume_generic_args(tokens: &mut TokenIter) -> Option<GenericArgL
 }
 
 pub(crate) fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
-    let where_token: Ident;
-    match tokens.peek() {
-        Some(TokenTree::Ident(ident)) if ident == "where" => {
-            where_token = ident.clone();
-        }
-        _ => return None,
-    }
-    tokens.next();
+    let where_token = if let Some(token) = consume_ident(tokens, "where") {
+        token
+    } else {
+        return None;
+    };
 
     let mut items = Punctuated::new();
     loop {
         let token = tokens
             .peek()
             .expect("cannot parse where clause: expected tokens");
+
         match token {
             TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => break,
             TokenTree::Punct(punct) if punct.as_char() == ';' => break,
@@ -385,7 +375,7 @@ pub(crate) fn parse_named_fields(token_group: Group) -> NamedStructFields {
         let attributes = consume_outer_attributes(&mut tokens);
         let vis_marker = consume_vis_marker(&mut tokens);
 
-        let ident = parse_ident(tokens.next().unwrap()).unwrap();
+        let field_name = parse_any_ident(&mut tokens, "field name");
 
         let colon = match tokens.next() {
             Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct,
@@ -402,7 +392,7 @@ pub(crate) fn parse_named_fields(token_group: Group) -> NamedStructFields {
             NamedField {
                 attributes,
                 vis_marker,
-                name: ident,
+                name: field_name,
                 tk_colon: colon,
                 ty: TyExpr { tokens: ty_tokens },
             },
@@ -428,7 +418,7 @@ pub(crate) fn parse_enum_variants(tokens: TokenStream) -> Result<Punctuated<Enum
         let attributes = consume_outer_attributes(&mut tokens);
         let vis_marker = consume_vis_marker(&mut tokens);
 
-        let ident = parse_ident(tokens.next().unwrap()).unwrap();
+        let variant_name = parse_any_ident(&mut tokens, "enum variant name");
 
         let contents = match tokens.peek() {
             None => StructFields::Unit,
@@ -457,7 +447,7 @@ pub(crate) fn parse_enum_variants(tokens: TokenStream) -> Result<Punctuated<Enum
             EnumVariant {
                 attributes,
                 vis_marker,
-                name: ident,
+                name: variant_name,
                 contents,
                 value: enum_discriminant?,
             },

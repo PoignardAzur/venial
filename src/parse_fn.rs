@@ -2,7 +2,7 @@ use crate::parse_type::{
     consume_declaration_name, consume_field_type, consume_generic_params, consume_where_clause,
 };
 use crate::parse_utils::{
-    consume_comma, consume_outer_attributes, consume_stuff_until, parse_ident,
+    consume_comma, consume_ident, consume_outer_attributes, consume_stuff_until, parse_any_ident,
 };
 use crate::punctuated::Punctuated;
 use crate::types::{
@@ -15,38 +15,10 @@ use std::iter::Peekable;
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
 
 pub(crate) fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FnQualifiers {
-    let tk_default = match tokens.peek() {
-        Some(TokenTree::Ident(ident)) if ident == "default" => {
-            let ident = ident.clone();
-            tokens.next();
-            Some(ident)
-        }
-        _ => None,
-    };
-    let tk_const = match tokens.peek() {
-        Some(TokenTree::Ident(ident)) if ident == "const" => {
-            let ident = ident.clone();
-            tokens.next();
-            Some(ident)
-        }
-        _ => None,
-    };
-    let tk_async = match tokens.peek() {
-        Some(TokenTree::Ident(ident)) if ident == "async" => {
-            let ident = ident.clone();
-            tokens.next();
-            Some(ident)
-        }
-        _ => None,
-    };
-    let tk_unsafe = match tokens.peek() {
-        Some(TokenTree::Ident(ident)) if ident == "unsafe" => {
-            let ident = ident.clone();
-            tokens.next();
-            Some(ident)
-        }
-        _ => None,
-    };
+    let tk_default = consume_ident(tokens, "default");
+    let tk_const = consume_ident(tokens, "const");
+    let tk_async = consume_ident(tokens, "async");
+    let tk_unsafe = consume_ident(tokens, "unsafe");
 
     let tk_extern;
     let extern_abi;
@@ -99,22 +71,8 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
             }
             _ => None,
         };
-        let tk_mut = match tokens.peek() {
-            Some(TokenTree::Ident(ident)) if ident == "mut" => {
-                let mut_ident = ident.clone();
-                tokens.next();
-                Some(mut_ident)
-            }
-            _ => None,
-        };
-        let tk_self = match tokens.peek() {
-            Some(TokenTree::Ident(ident)) if ident == "self" => {
-                let self_ident = ident.clone();
-                tokens.next();
-                Some(self_ident)
-            }
-            _ => None,
-        };
+        let tk_mut = consume_ident(&mut tokens, "mut");
+        let tk_self = consume_ident(&mut tokens, "self");
 
         let param = if let Some(tk_self) = tk_self {
             FnParam::Receiver(FnReceiverParam {
@@ -125,7 +83,7 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
             })
         } else {
             // TODO - handle non-ident argument names
-            let ident = parse_ident(tokens.next().unwrap()).unwrap();
+            let param_name = parse_any_ident(&mut tokens, "fn param name");
             let tk_colon = match tokens.next() {
                 Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct.clone(),
                 _ => panic!("cannot parse fn params"),
@@ -134,7 +92,7 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
             FnParam::Typed(FnTypedParam {
                 attributes,
                 tk_mut,
-                name: ident,
+                name: param_name,
                 tk_colon,
                 ty: TyExpr { tokens: ty_tokens },
             })
