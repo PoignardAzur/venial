@@ -12,22 +12,25 @@ pub(crate) fn tokens_from_slice(slice: &[TokenTree]) -> TokenIter {
     stream.into_iter().peekable()
 }
 
-pub(crate) fn parse_any_ident(tokens: &mut TokenIter, context: &str) -> Ident {
+pub(crate) fn parse_any_ident(tokens: &mut TokenIter, panic_context: &str) -> Ident {
     let next_token = tokens.next();
     match next_token {
         Some(TokenTree::Ident(ident)) => ident,
         _ => panic!(
             "cannot parse {}: expected identifier, got {:?}",
-            context, next_token
+            panic_context, next_token
         ),
     }
 }
 
-pub(crate) fn parse_ident(tokens: &mut TokenIter, expected: &str) -> Ident {
+pub(crate) fn parse_ident(tokens: &mut TokenIter, expected: &str, panic_context: &str) -> Ident {
     let next_token = tokens.next();
     match next_token {
         Some(TokenTree::Ident(ident)) if ident == expected => ident,
-        _ => panic!("Expected `{}` ident, got {:?}", expected, next_token),
+        _ => panic!(
+            "cannot parse {}: expected `{}` ident, got {:?}",
+            panic_context, expected, next_token
+        ),
     }
 }
 
@@ -37,6 +40,28 @@ pub(crate) fn consume_ident(tokens: &mut TokenIter, expected: &str) -> Option<Id
             let ident = ident.clone();
             tokens.next();
             Some(ident)
+        }
+        _ => None,
+    }
+}
+
+pub(crate) fn parse_punct(tokens: &mut TokenIter, expected: char, panic_context: &str) -> Punct {
+    let next_token = tokens.next();
+    match next_token {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == expected => punct,
+        _ => panic!(
+            "cannot parse {}: expected `{}` punct, got {:?}",
+            panic_context, expected, next_token
+        ),
+    }
+}
+
+pub(crate) fn consume_punct(tokens: &mut TokenIter, expected: char) -> Option<Punct> {
+    match tokens.peek() {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == expected => {
+            let punct = punct.clone();
+            tokens.next();
+            Some(punct)
         }
         _ => None,
     }
@@ -155,7 +180,7 @@ pub(crate) fn parse_use_declarations(
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
 ) -> UseDeclaration {
-    let tk_use = parse_ident(tokens, "use");
+    let tk_use = parse_ident(tokens, "use", "use declaration");
 
     let import_tree = consume_stuff_until(
         tokens,
@@ -166,10 +191,7 @@ pub(crate) fn parse_use_declarations(
         true,
     );
 
-    let tk_semicolon = match tokens.next() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == ';' => punct,
-        _ => panic!("cannot parse use declaration: expected semicolon"),
-    };
+    let tk_semicolon = parse_punct(tokens, ';', "use declaration");
 
     UseDeclaration {
         attributes,
@@ -271,14 +293,7 @@ pub(crate) fn consume_stuff_until(
 }
 
 pub(crate) fn consume_comma(tokens: &mut TokenIter) -> Option<Punct> {
-    match tokens.peek() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => {
-            let punct = punct.clone();
-            tokens.next().unwrap();
-            Some(punct)
-        }
-        _ => None,
-    }
+    consume_punct(tokens, ',')
 }
 
 /// Parse `::`, as in path separator or turbofish.

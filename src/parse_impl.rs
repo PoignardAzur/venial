@@ -1,8 +1,8 @@
 use crate::parse_fn::consume_fn;
 use crate::parse_type::{consume_generic_params, consume_where_clause};
 use crate::parse_utils::{
-    consume_ident, consume_inner_attributes, consume_outer_attributes, consume_stuff_until,
-    consume_vis_marker, parse_any_ident, parse_ident,
+    consume_ident, consume_inner_attributes, consume_outer_attributes, consume_punct,
+    consume_stuff_until, consume_vis_marker, parse_any_ident, parse_ident, parse_punct,
 };
 use crate::types::{Constant, ImplMember, TyDefinition, ValueExpr};
 use crate::types_edition::GroupSpan;
@@ -32,11 +32,7 @@ pub(crate) fn parse_const_or_static(
     };
 
     let name = parse_any_ident(tokens, "const/static");
-
-    let tk_colon = match tokens.next() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct,
-        _ => panic!("cannot parse {}", tk_const_or_static),
-    };
+    let tk_colon = parse_punct(tokens, ':', "const/static");
 
     let ty_tokens = consume_stuff_until(
         tokens,
@@ -44,14 +40,7 @@ pub(crate) fn parse_const_or_static(
         true,
     );
 
-    let tk_equals = match tokens.peek() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => {
-            let punct = punct.clone();
-            tokens.next();
-            Some(punct)
-        }
-        _ => None,
-    };
+    let tk_equals = consume_punct(tokens, '=');
 
     let value_tokens = consume_stuff_until(
         tokens,
@@ -66,10 +55,7 @@ pub(crate) fn parse_const_or_static(
         })
     };
 
-    let tk_semicolon = match tokens.next() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == ';' => punct,
-        _ => panic!("cannot parse {}", tk_const_or_static),
-    };
+    let tk_semicolon = parse_punct(tokens, ';', "const/static");
 
     Constant {
         attributes,
@@ -90,13 +76,10 @@ pub(crate) fn consume_ty_definition(
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
 ) -> Option<TyDefinition> {
-    let tk_type = parse_ident(tokens, "type");
-    let name = parse_any_ident(tokens, "associated type");
-
-    let tk_equals = match tokens.next() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => punct,
-        _ => panic!("cannot parse associated type"),
-    };
+    let context = "associated type";
+    let tk_type = parse_ident(tokens, "type", context);
+    let name = parse_any_ident(tokens, context);
+    let tk_equals = parse_punct(tokens, '=', context);
 
     let ty_tokens = consume_stuff_until(
         tokens,
@@ -104,10 +87,7 @@ pub(crate) fn consume_ty_definition(
         true,
     );
 
-    let tk_semicolon = match tokens.next() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == ';' => punct,
-        _ => panic!("cannot parse associated type"),
-    };
+    let tk_semicolon = parse_punct(tokens, ';', context);
 
     Some(TyDefinition {
         attributes,
@@ -180,7 +160,7 @@ pub(crate) fn parse_impl_body(token_group: Group) -> (GroupSpan, Vec<Attribute>,
 
 pub(crate) fn parse_impl(tokens: &mut TokenIter, attributes: Vec<Attribute>) -> Impl {
     let tk_unsafe = consume_ident(tokens, "unsafe");
-    let tk_impl = parse_ident(tokens, "impl");
+    let tk_impl = parse_ident(tokens, "impl", "impl block");
 
     let impl_generic_params = consume_generic_params(tokens);
     let trait_or_self_ty = consume_stuff_until(
