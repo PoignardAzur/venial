@@ -572,27 +572,23 @@ impl GenericParam {
 
     /// Returns true if the generic param is a lifetime param.
     pub fn is_lifetime(&self) -> bool {
-        match &self.tk_prefix {
-            Some(TokenTree::Punct(punct)) if punct.as_char() == '\'' => true,
-            _ => false,
-        }
+        matches!(
+            &self.tk_prefix,
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '\''
+        )
     }
 
     /// Returns true if the generic param is a type param.
     pub fn is_ty(&self) -> bool {
-        #[allow(clippy::redundant_pattern_matching)]
-        match &self.tk_prefix {
-            Some(_) => false,
-            None => true,
-        }
+        self.tk_prefix.is_none()
     }
 
     /// Returns true if the generic param is a const param.
     pub fn is_const(&self) -> bool {
-        match &self.tk_prefix {
-            Some(TokenTree::Ident(ident)) if ident == "const" => true,
-            _ => false,
-        }
+        matches!(
+            &self.tk_prefix,
+            Some(TokenTree::Ident(ident)) if ident == "const"
+        )
     }
 }
 
