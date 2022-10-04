@@ -1,26 +1,16 @@
 use crate::parse_fn::consume_fn;
 use crate::parse_type::{consume_generic_params, consume_where_clause};
 use crate::parse_utils::{
-    consume_inner_attributes, consume_outer_attributes, consume_stuff_until, consume_vis_marker,
+    consume_ident, consume_inner_attributes, consume_outer_attributes, consume_stuff_until,
+    consume_vis_marker, parse_any_ident, parse_ident,
 };
 use crate::types::{Constant, ImplMember, TyDefinition, ValueExpr};
 use crate::types_edition::GroupSpan;
 use crate::{Attribute, Declaration, Impl, TyExpr, VisMarker};
-use proc_macro2::{Delimiter, Group, Ident, TokenTree};
+use proc_macro2::{Delimiter, Group, TokenTree};
 use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
-
-pub(crate) fn consume_for(tokens: &mut TokenIter) -> Option<Ident> {
-    match tokens.peek() {
-        Some(TokenTree::Ident(ident)) if ident == "for" => {
-            let tk_for = ident.clone();
-            tokens.next();
-            Some(tk_for)
-        }
-        _ => None,
-    }
-}
 
 pub(crate) fn parse_const_or_static(
     tokens: &mut TokenIter,
@@ -41,10 +31,7 @@ pub(crate) fn parse_const_or_static(
         _ => None,
     };
 
-    let name = match tokens.next() {
-        Some(TokenTree::Ident(ident)) => ident,
-        _ => panic!("cannot parse {}", tk_const_or_static),
-    };
+    let name = parse_any_ident(tokens, "const/static");
 
     let tk_colon = match tokens.next() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct,
@@ -103,17 +90,8 @@ pub(crate) fn consume_ty_definition(
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
 ) -> Option<TyDefinition> {
-    let tk_type = match tokens.next() {
-        Some(TokenTree::Ident(ident)) if ident == "type" => ident,
-        _ => {
-            return None;
-        }
-    };
-
-    let name = match tokens.next() {
-        Some(TokenTree::Ident(ident)) => ident,
-        _ => panic!("cannot parse associated type"),
-    };
+    let tk_type = parse_ident(tokens, "type");
+    let name = parse_any_ident(tokens, "associated type");
 
     let tk_equals = match tokens.next() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => punct,
@@ -201,20 +179,8 @@ pub(crate) fn parse_impl_body(token_group: Group) -> (GroupSpan, Vec<Attribute>,
 }
 
 pub(crate) fn parse_impl(tokens: &mut TokenIter, attributes: Vec<Attribute>) -> Impl {
-    let tk_unsafe = match tokens.peek() {
-        Some(TokenTree::Ident(ident)) if ident == "unsafe" => {
-            let ident = ident.clone();
-            tokens.next();
-            Some(ident)
-        }
-        _ => None,
-    };
-
-    let next_token = tokens.next();
-    let tk_impl = match next_token {
-        Some(TokenTree::Ident(ident)) if ident == "impl" => ident,
-        _ => panic!("Expected `impl` keyword, got {:?}", next_token),
-    };
+    let tk_unsafe = consume_ident(tokens, "unsafe");
+    let tk_impl = parse_ident(tokens, "impl");
 
     let impl_generic_params = consume_generic_params(tokens);
     let trait_or_self_ty = consume_stuff_until(
@@ -227,7 +193,7 @@ pub(crate) fn parse_impl(tokens: &mut TokenIter, attributes: Vec<Attribute>) -> 
         true,
     );
 
-    let (tk_for, trait_ty, self_ty) = if let Some(tk_for) = consume_for(tokens) {
+    let (tk_for, trait_ty, self_ty) = if let Some(tk_for) = consume_ident(tokens, "for") {
         let self_ty = consume_stuff_until(
             tokens,
             |tk| match tk {

@@ -12,12 +12,33 @@ pub(crate) fn tokens_from_slice(slice: &[TokenTree]) -> TokenIter {
     stream.into_iter().peekable()
 }
 
-pub(crate) fn parse_ident(token: TokenTree) -> Result<Ident, TokenTree> {
-    match token {
-        TokenTree::Group(_) => Err(token),
-        TokenTree::Ident(ident) => Ok(ident),
-        TokenTree::Punct(_) => Err(token),
-        TokenTree::Literal(_) => Err(token),
+pub(crate) fn parse_any_ident(tokens: &mut TokenIter, context: &str) -> Ident {
+    let next_token = tokens.next();
+    match next_token {
+        Some(TokenTree::Ident(ident)) => ident,
+        _ => panic!(
+            "cannot parse {}: expected identifier, got {:?}",
+            context, next_token
+        ),
+    }
+}
+
+pub(crate) fn parse_ident(tokens: &mut TokenIter, expected: &str) -> Ident {
+    let next_token = tokens.next();
+    match next_token {
+        Some(TokenTree::Ident(ident)) if ident == expected => ident,
+        _ => panic!("Expected `{}` ident, got {:?}", expected, next_token),
+    }
+}
+
+pub(crate) fn consume_ident(tokens: &mut TokenIter, expected: &str) -> Option<Ident> {
+    match tokens.peek() {
+        Some(TokenTree::Ident(ident)) if ident == expected => {
+            let ident = ident.clone();
+            tokens.next();
+            Some(ident)
+        }
+        _ => None,
     }
 }
 
@@ -134,12 +155,7 @@ pub(crate) fn parse_use_declarations(
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
 ) -> UseDeclaration {
-    let tk_use = match tokens.peek() {
-        Some(TokenTree::Ident(ident)) if ident == "use" => ident.clone(),
-        _ => panic!("expected `use`"),
-    };
-
-    tokens.next(); // `use` keyword
+    let tk_use = parse_ident(tokens, "use");
 
     let import_tree = consume_stuff_until(
         tokens,
