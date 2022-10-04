@@ -183,6 +183,7 @@ pub struct Union {
 #[derive(Clone, Debug)]
 pub struct Impl {
     pub attributes: Vec<Attribute>,
+    pub tk_unsafe: Option<Ident>,
     pub tk_impl: Ident,
     pub impl_generic_params: Option<GenericParamList>,
     pub trait_ty: Option<TyExpr>,
@@ -1016,6 +1017,7 @@ impl ToTokens for Impl {
         for attribute in &self.attributes {
             attribute.to_tokens(tokens);
         }
+        self.tk_unsafe.to_tokens(tokens);
         self.tk_impl.to_tokens(tokens);
         self.impl_generic_params.to_tokens(tokens);
         self.trait_ty.to_tokens(tokens);

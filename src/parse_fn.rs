@@ -195,7 +195,7 @@ pub(crate) fn consume_fn(
     let tk_fn_keyword = if let Some(TokenTree::Ident(ident)) = tokens.next() {
         if ident == "fn" {
             ident
-        } else if qualifiers.has_only_const() {
+        } else if qualifiers.has_only_const_xor_unsafe() {
             // rollback iterator, could be start of const declaration
             *tokens = before_start;
             return None;
