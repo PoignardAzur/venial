@@ -99,11 +99,7 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
 }
 
 pub(crate) fn consume_fn_return(tokens: &mut TokenIter) -> Option<([Punct; 2], TyExpr)> {
-    let dash = if let Some(token) = consume_punct(tokens, '-') {
-        token
-    } else {
-        return None;
-    };
+    let dash = consume_punct(tokens, '-')?;
 
     let tip = match tokens.next() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == '>' => punct,

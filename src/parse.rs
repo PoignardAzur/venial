@@ -4,7 +4,10 @@ use crate::parse_type::{
     consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
 };
-use crate::parse_utils::{consume_inner_attributes, consume_outer_attributes, consume_punct, consume_vis_marker, parse_use_declarations};
+use crate::parse_utils::{
+    consume_inner_attributes, consume_outer_attributes, consume_punct, consume_vis_marker,
+    parse_use_declarations,
+};
 use crate::types::{Declaration, Enum, Module, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
 use proc_macro2::token_stream::IntoIter;

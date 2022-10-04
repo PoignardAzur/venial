@@ -23,11 +23,7 @@ pub(crate) fn consume_declaration_name(tokens: &mut TokenIter) -> Ident {
 pub(crate) fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParamList> {
     let mut generic_params = Punctuated::new();
 
-    let gt = if let Some(token) = consume_punct(tokens, '<') {
-        token
-    } else {
-        return None;
-    };
+    let gt = consume_punct(tokens, '<')?;
 
     let lt: Punct;
     loop {
@@ -203,11 +199,7 @@ pub(crate) fn consume_generic_args(tokens: &mut TokenIter) -> Option<GenericArgL
 }
 
 pub(crate) fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause> {
-    let where_token = if let Some(token) = consume_ident(tokens, "where") {
-        token
-    } else {
-        return None;
-    };
+    let where_token = consume_ident(tokens, "where")?;
 
     let mut items = Punctuated::new();
     loop {
