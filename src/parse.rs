@@ -4,9 +4,7 @@ use crate::parse_type::{
     consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
 };
-use crate::parse_utils::{
-    consume_inner_attributes, consume_outer_attributes, consume_vis_marker, parse_use_declarations,
-};
+use crate::parse_utils::{consume_inner_attributes, consume_outer_attributes, consume_punct, consume_vis_marker, parse_use_declarations};
 use crate::types::{Declaration, Enum, Module, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
 use proc_macro2::token_stream::IntoIter;
@@ -100,14 +98,7 @@ fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declarati
                 where_clause = consume_where_clause(tokens);
             }
 
-            let semicolon = match tokens.peek() {
-                Some(TokenTree::Punct(punct)) if punct.as_char() == ';' => {
-                    let punct = punct.clone();
-                    tokens.next().unwrap();
-                    Some(punct)
-                }
-                _ => None,
-            };
+            let semicolon = consume_punct(tokens, ';');
 
             Declaration::Struct(Struct {
                 attributes,

@@ -1,7 +1,7 @@
 use crate::error::Error;
 use crate::parse_utils::{
-    consume_colon2, consume_comma, consume_ident, consume_outer_attributes, consume_stuff_until,
-    consume_vis_marker, parse_any_ident,
+    consume_colon2, consume_comma, consume_ident, consume_outer_attributes, consume_punct,
+    consume_stuff_until, consume_vis_marker, parse_any_ident, parse_punct,
 };
 use crate::punctuated::Punctuated;
 use crate::types::{
@@ -21,20 +21,15 @@ pub(crate) fn consume_declaration_name(tokens: &mut TokenIter) -> Ident {
 }
 
 pub(crate) fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParamList> {
-    let gt: Punct;
     let mut generic_params = Punctuated::new();
-    let lt: Punct;
 
-    match tokens.peek() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == '<' => {
-            gt = punct.clone();
-        }
-        _ => return None,
+    let gt = if let Some(token) = consume_punct(tokens, '<') {
+        token
+    } else {
+        return None;
     };
 
-    // consume '<'
-    tokens.next();
-
+    let lt: Punct;
     loop {
         let token = tokens
             .peek()
@@ -197,14 +192,7 @@ pub(crate) fn consume_generic_args(tokens: &mut TokenIter) -> Option<GenericArgL
         generic_args.push(parse_generic_arg(arg_tokens), comma);
     }
 
-    let tk_r_bracket = match tokens.peek() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == '>' => {
-            let lt = punct.clone();
-            tokens.next();
-            lt
-        }
-        _ => panic!("generic argument list must end with '>'"),
-    };
+    let tk_r_bracket = parse_punct(tokens, '>', "end of generic argument list");
 
     Some(GenericArgList {
         tk_turbofish_colons,
@@ -305,16 +293,11 @@ pub(crate) fn consume_field_type(tokens: &mut TokenIter) -> Vec<TokenTree> {
 pub(crate) fn consume_enum_discriminant(
     tokens: &mut TokenIter,
 ) -> Result<Option<EnumVariantValue>, Error> {
-    let equal: Punct;
-    match tokens.peek() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => {
-            equal = punct.clone();
-        }
-        _ => return Ok(None),
+    let tk_equal = if let Some(token) = consume_punct(tokens, '=') {
+        token
+    } else {
+        return Ok(None);
     };
-
-    // consume '='
-    tokens.next();
 
     let value_token = tokens.next().unwrap();
 
@@ -326,7 +309,7 @@ pub(crate) fn consume_enum_discriminant(
     }
 
     Ok(Some(EnumVariantValue {
-        tk_equal: equal,
+        tk_equal,
         value: value_token,
     }))
 }
@@ -376,14 +359,7 @@ pub(crate) fn parse_named_fields(token_group: Group) -> NamedStructFields {
         let vis_marker = consume_vis_marker(&mut tokens);
 
         let field_name = parse_any_ident(&mut tokens, "field name");
-
-        let colon = match tokens.next() {
-            Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct,
-            token => panic!(
-                "cannot parse named fields: expected ':', found token {:?}",
-                token
-            ),
-        };
+        let colon = parse_punct(&mut tokens, ':', "named fields");
 
         let ty_tokens = consume_field_type(&mut tokens);
         let comma = consume_comma(&mut tokens);

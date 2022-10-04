@@ -2,7 +2,8 @@ use crate::parse_type::{
     consume_declaration_name, consume_field_type, consume_generic_params, consume_where_clause,
 };
 use crate::parse_utils::{
-    consume_comma, consume_ident, consume_outer_attributes, consume_stuff_until, parse_any_ident,
+    consume_comma, consume_ident, consume_outer_attributes, consume_punct, consume_stuff_until,
+    parse_any_ident, parse_punct,
 };
 use crate::punctuated::Punctuated;
 use crate::types::{
@@ -63,14 +64,7 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
         }
         let attributes = consume_outer_attributes(&mut tokens);
 
-        let tk_ref = match tokens.peek() {
-            Some(TokenTree::Punct(punct)) if punct.as_char() == '&' => {
-                let ref_symbol = punct.clone();
-                tokens.next();
-                Some(ref_symbol)
-            }
-            _ => None,
-        };
+        let tk_ref = consume_punct(&mut tokens, '&');
         let tk_mut = consume_ident(&mut tokens, "mut");
         let tk_self = consume_ident(&mut tokens, "self");
 
@@ -84,10 +78,8 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
         } else {
             // TODO - handle non-ident argument names
             let param_name = parse_any_ident(&mut tokens, "fn param name");
-            let tk_colon = match tokens.next() {
-                Some(TokenTree::Punct(punct)) if punct.as_char() == ':' => punct.clone(),
-                _ => panic!("cannot parse fn params"),
-            };
+            let tk_colon = parse_punct(&mut tokens, ':', "fn params");
+
             let ty_tokens = consume_field_type(&mut tokens);
             FnParam::Typed(FnTypedParam {
                 attributes,
@@ -107,11 +99,11 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
 }
 
 pub(crate) fn consume_fn_return(tokens: &mut TokenIter) -> Option<([Punct; 2], TyExpr)> {
-    let dash = match tokens.peek() {
-        Some(TokenTree::Punct(punct)) if punct.as_char() == '-' => punct.clone(),
-        _ => return None,
+    let dash = if let Some(token) = consume_punct(tokens, '-') {
+        token
+    } else {
+        return None;
     };
-    tokens.next().unwrap();
 
     let tip = match tokens.next() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == '>' => punct,
