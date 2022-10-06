@@ -1279,7 +1279,10 @@ fn parse_mod() {
             }
 
             mod empty_mod {}
-            mod foreign_mod;
+            pub(crate) mod foreign_mod;
+
+            #[contain_it]
+            unsafe mod hazard_mod {}
         }
     };
 

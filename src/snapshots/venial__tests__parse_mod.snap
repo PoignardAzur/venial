@@ -26,6 +26,7 @@ Module(
             },
         ],
         vis_marker: None,
+        tk_unsafe: None,
         tk_mod: Ident(
             mod,
         ),
@@ -486,6 +487,7 @@ Module(
                 Module {
                     attributes: [],
                     vis_marker: None,
+                    tk_unsafe: None,
                     tk_mod: Ident(
                         mod,
                     ),
@@ -538,6 +540,7 @@ Module(
                 Module {
                     attributes: [],
                     vis_marker: None,
+                    tk_unsafe: None,
                     tk_mod: Ident(
                         mod,
                     ),
@@ -555,7 +558,12 @@ Module(
             Module(
                 Module {
                     attributes: [],
-                    vis_marker: None,
+                    vis_marker: Some(
+                        pub(
+                            crate,
+                        ),
+                    ),
+                    tk_unsafe: None,
                     tk_mod: Ident(
                         mod,
                     ),
@@ -569,6 +577,41 @@ Module(
                         },
                     ),
                     tk_braces: None,
+                    inner_attributes: [],
+                    members: [],
+                },
+            ),
+            Module(
+                Module {
+                    attributes: [
+                        Attribute {
+                            tk_hash: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_brackets: [],
+                            path: [
+                                contain_it,
+                            ],
+                            value: Empty,
+                        },
+                    ],
+                    vis_marker: None,
+                    tk_unsafe: Some(
+                        Ident(
+                            unsafe,
+                        ),
+                    ),
+                    tk_mod: Ident(
+                        mod,
+                    ),
+                    name: Ident(
+                        hazard_mod,
+                    ),
+                    tk_semicolon: None,
+                    tk_braces: Some(
+                        {},
+                    ),
                     inner_attributes: [],
                     members: [],
                 },

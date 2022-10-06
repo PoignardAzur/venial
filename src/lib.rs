@@ -66,6 +66,7 @@ mod error;
 mod parse;
 mod parse_fn;
 mod parse_impl;
+mod parse_mod;
 mod parse_type;
 mod parse_utils;
 mod punctuated;

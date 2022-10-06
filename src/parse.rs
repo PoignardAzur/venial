@@ -1,14 +1,14 @@
 use crate::error::Error;
-use crate::parse_impl::{consume_fn_const_or_type, parse_const_or_static, parse_impl};
+use crate::parse_impl::{
+    consume_either_fn_type_const_static_impl, parse_const_or_static, parse_impl,
+};
+use crate::parse_mod::{parse_mod, parse_use_declaration};
 use crate::parse_type::{
     consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
 };
-use crate::parse_utils::{
-    consume_inner_attributes, consume_outer_attributes, consume_punct, consume_vis_marker,
-    parse_use_declarations,
-};
-use crate::types::{Declaration, Enum, Module, Struct, StructFields, Union};
+use crate::parse_utils::{consume_outer_attributes, consume_punct, consume_vis_marker};
+use crate::types::{Declaration, Enum, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
 use proc_macro2::token_stream::IntoIter;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
@@ -63,7 +63,9 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
     parse_declaration_tokens(&mut tokens)
 }
 
-fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declaration, Error> {
+pub(crate) fn parse_declaration_tokens(
+    tokens: &mut Peekable<IntoIter>,
+) -> Result<Declaration, Error> {
     let attributes = consume_outer_attributes(tokens);
     let vis_marker = consume_vis_marker(tokens);
 
@@ -166,58 +168,8 @@ fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declarati
             })
         }
         Some(TokenTree::Ident(keyword)) if keyword == "mod" => {
-            // TODO some items currently unsupported: decl-macros, extern crate
-
-            // mod keyword
-            tokens.next().unwrap();
-
-            let module_name = consume_declaration_name(tokens);
-
-            let (group, tk_semicolon) = match tokens.next().unwrap() {
-                TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
-                    (Some(group), None)
-                }
-                TokenTree::Punct(punct) if punct.as_char() == ';' => (None, Some(punct)),
-                token => panic!(
-                    "cannot parse mod: expected `{{ }}` or `;`, but got token {:?}",
-                    token
-                ),
-            };
-
-            let inner_attributes;
-            let tk_braces;
-            let members;
-            if let Some(group) = group {
-                // Parse mod block body
-                let mut mod_members = vec![];
-                let mut tokens = group.stream().into_iter().peekable();
-
-                tk_braces = Some(GroupSpan::new(&group));
-                inner_attributes = consume_inner_attributes(&mut tokens);
-                loop {
-                    if tokens.peek().is_none() {
-                        break;
-                    }
-                    let item = parse_declaration_tokens(&mut tokens)?;
-                    mod_members.push(item);
-                }
-                members = mod_members;
-            } else {
-                tk_braces = None;
-                inner_attributes = vec![];
-                members = vec![];
-            }
-
-            Declaration::Module(Module {
-                attributes,
-                vis_marker,
-                tk_mod: keyword,
-                name: module_name,
-                tk_semicolon,
-                tk_braces,
-                inner_attributes,
-                members,
-            })
+            let mod_decl = parse_mod(tokens, attributes, vis_marker);
+            Declaration::Module(mod_decl)
         }
         Some(TokenTree::Ident(keyword)) if keyword == "impl" => {
             let impl_decl = parse_impl(tokens, attributes);
@@ -229,7 +181,7 @@ fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declarati
         }
         // Note: fn qualifiers appear always in this order in Rust: default const async unsafe extern fn
         Some(TokenTree::Ident(keyword)) if keyword == "use" => {
-            let use_decl = parse_use_declarations(tokens, attributes, vis_marker);
+            let use_decl = parse_use_declaration(tokens, attributes, vis_marker);
 
             Declaration::Use(use_decl)
         }
@@ -241,7 +193,7 @@ fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declarati
             ) =>
         {
             // Reuse impl parsing
-            consume_fn_const_or_type(tokens, attributes, vis_marker, "declaration")
+            consume_either_fn_type_const_static_impl(tokens, attributes, vis_marker, "declaration")
         }
         Some(token) => {
             panic!(

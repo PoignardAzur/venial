@@ -15,6 +15,14 @@ use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
 
+/// If venial fails to parse the declaration as a function, it can detect that it
+/// is either a constant (`const` ambiguity), an impl or a module (`unsafe` ambiguity).
+pub(crate) enum NotFunction {
+    Const,
+    Impl,
+    Mod,
+}
+
 pub(crate) fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FnQualifiers {
     let tk_default = consume_ident(tokens, "default");
     let tk_const = consume_ident(tokens, "const");
@@ -54,7 +62,7 @@ pub(crate) fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FnQualifiers {
     }
 }
 
-pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
+fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
     let mut fields = Punctuated::new();
 
     let mut tokens = tokens.into_iter().peekable();
@@ -98,7 +106,7 @@ pub(crate) fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
     fields
 }
 
-pub(crate) fn consume_fn_return(tokens: &mut TokenIter) -> Option<([Punct; 2], TyExpr)> {
+fn consume_fn_return(tokens: &mut TokenIter) -> Option<([Punct; 2], TyExpr)> {
     let dash = consume_punct(tokens, '-')?;
 
     let tip = match tokens.next() {
@@ -132,19 +140,37 @@ pub(crate) fn consume_fn(
     tokens: &mut TokenIter,
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
-) -> Option<Function> {
+) -> Result<Function, NotFunction> {
     // TODO consider multiple-lookahead instead of potentially cloning many tokens
     let before_start = tokens.clone();
     let qualifiers = consume_fn_qualifiers(tokens);
 
     // fn keyword, or const fallback
-    let tk_fn_keyword = if let Some(TokenTree::Ident(ident)) = tokens.next() {
+    let next_token = tokens.next();
+    let tk_fn_keyword = if let Some(TokenTree::Ident(ident)) = &next_token {
         if ident == "fn" {
-            ident
+            ident.clone()
         } else if qualifiers.has_only_const_xor_unsafe() {
+            // This is not a function, detect what else it is
+            // Note: detection already done here, because then we only need the lookahead/rollback once
+            let declaration_type = if qualifiers.tk_const.is_some() {
+                NotFunction::Const
+            } else if qualifiers.tk_unsafe.is_some() {
+                match &next_token {
+                    Some(TokenTree::Ident(ident)) if ident == "impl" => NotFunction::Impl,
+                    Some(TokenTree::Ident(ident)) if ident == "mod" => NotFunction::Mod,
+                    token => panic!(
+                        "expected 'fn', 'impl' or 'mod' after 'unsafe', got {:?}",
+                        token
+                    ),
+                }
+            } else {
+                unreachable!()
+            };
+
             // rollback iterator, could be start of const declaration
             *tokens = before_start;
-            return None;
+            return Err(declaration_type);
         } else {
             panic!("expected 'fn' keyword, got ident '{}'", ident)
         }
@@ -178,7 +204,7 @@ pub(crate) fn consume_fn(
         _ => panic!("cannot parse function"),
     };
 
-    Some(Function {
+    Ok(Function {
         attributes,
         vis_marker,
         qualifiers,

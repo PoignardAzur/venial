@@ -1,4 +1,5 @@
-use crate::parse_fn::consume_fn;
+use crate::parse_fn::{consume_fn, NotFunction};
+use crate::parse_mod::parse_mod;
 use crate::parse_type::{consume_generic_params, consume_where_clause};
 use crate::parse_utils::{
     consume_ident, consume_inner_attributes, consume_outer_attributes, consume_punct,
@@ -100,7 +101,7 @@ pub(crate) fn consume_ty_definition(
     })
 }
 
-pub(crate) fn consume_fn_const_or_type(
+pub(crate) fn consume_either_fn_type_const_static_impl(
     tokens: &mut TokenIter,
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
@@ -114,16 +115,20 @@ pub(crate) fn consume_fn_const_or_type(
                 Declaration::TyDefinition(assoc_ty.unwrap())
             }
             "default" | "const" | "async" | "unsafe" | "extern" | "fn" => {
-                if let Some(method) = consume_fn(tokens, attributes.clone(), vis_marker.clone()) {
-                    Declaration::Function(method)
-                } else if keyword == "const" {
-                    let constant = parse_const_or_static(tokens, attributes, vis_marker);
-                    Declaration::Constant(constant)
-                } else if keyword == "unsafe" {
-                    let impl_decl = parse_impl(tokens, attributes);
-                    Declaration::Impl(impl_decl)
-                } else {
-                    unreachable!();
+                match consume_fn(tokens, attributes.clone(), vis_marker.clone()) {
+                    Ok(method) => Declaration::Function(method),
+                    Err(NotFunction::Const) => {
+                        let constant = parse_const_or_static(tokens, attributes, vis_marker);
+                        Declaration::Constant(constant)
+                    }
+                    Err(NotFunction::Impl) => {
+                        let impl_decl = parse_impl(tokens, attributes);
+                        Declaration::Impl(impl_decl)
+                    }
+                    Err(NotFunction::Mod) => {
+                        let mod_decl = parse_mod(tokens, attributes, vis_marker);
+                        Declaration::Module(mod_decl)
+                    }
                 }
             }
             _ => panic!("unsupported {} item `{}`", context, ident),
@@ -145,7 +150,12 @@ pub(crate) fn parse_impl_body(token_group: Group) -> (GroupSpan, Vec<Attribute>,
 
         let attributes = consume_outer_attributes(&mut tokens);
         let vis_marker = consume_vis_marker(&mut tokens);
-        let item = match consume_fn_const_or_type(&mut tokens, attributes, vis_marker, "impl") {
+        let item = match consume_either_fn_type_const_static_impl(
+            &mut tokens,
+            attributes,
+            vis_marker,
+            "impl",
+        ) {
             Declaration::Function(function) => ImplMember::Method(function),
             Declaration::Constant(constant) => ImplMember::Constant(constant),
             Declaration::TyDefinition(ty_def) => ImplMember::AssocTy(ty_def),
