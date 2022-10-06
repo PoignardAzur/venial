@@ -1,14 +1,14 @@
 use crate::error::Error;
 use crate::parse_impl::{
-    consume_const_or_static, consume_fn_const_or_type, consume_for, parse_impl_body,
+    consume_fn_const_or_type, consume_for, parse_const_or_static, parse_impl_body,
 };
 use crate::parse_type::{
     consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
 };
 use crate::parse_utils::{
-    consume_inner_attributes, consume_outer_attributes, consume_stuff_until,
-    consume_use_declarations, consume_vis_marker,
+    consume_inner_attributes, consume_outer_attributes, consume_stuff_until, consume_vis_marker,
+    parse_use_declarations,
 };
 use crate::types::{Declaration, Enum, Impl, Module, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
@@ -67,7 +67,6 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
 }
 
 fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declaration, Error> {
-    // FIXME remove redundant '&mut' once the risk of merge conflicts is smaller
     let attributes = consume_outer_attributes(tokens);
     let vis_marker = consume_vis_marker(tokens);
 
@@ -196,7 +195,6 @@ fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declarati
             };
 
             let inner_attributes;
-            let use_declarations;
             let tk_braces;
             let members;
             if let Some(group) = group {
@@ -206,7 +204,6 @@ fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declarati
 
                 tk_braces = Some(GroupSpan::new(&group));
                 inner_attributes = consume_inner_attributes(&mut tokens);
-                use_declarations = consume_use_declarations(&mut tokens);
                 loop {
                     if tokens.peek().is_none() {
                         break;
@@ -218,7 +215,6 @@ fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declarati
             } else {
                 tk_braces = None;
                 inner_attributes = vec![];
-                use_declarations = vec![];
                 members = vec![];
             }
 
@@ -230,7 +226,6 @@ fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declarati
                 tk_semicolon,
                 tk_braces,
                 inner_attributes,
-                use_declarations,
                 members,
             })
         }
@@ -300,8 +295,13 @@ fn parse_declaration_tokens(tokens: &mut Peekable<IntoIter>) -> Result<Declarati
             })
         }
         Some(TokenTree::Ident(keyword)) if keyword == "static" => {
-            let static_decl = consume_const_or_static(tokens, attributes, vis_marker);
+            let static_decl = parse_const_or_static(tokens, attributes, vis_marker);
             Declaration::Constant(static_decl)
+        }
+        Some(TokenTree::Ident(keyword)) if keyword == "use" => {
+            let use_decl = parse_use_declarations(tokens, attributes, vis_marker);
+
+            Declaration::Use(use_decl)
         }
         // Note: fn qualifiers appear always in this order in Rust
         Some(TokenTree::Ident(keyword))

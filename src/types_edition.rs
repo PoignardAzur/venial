@@ -20,6 +20,7 @@ impl Declaration {
             Declaration::TyDefinition(ty_decl) => &ty_decl.attributes,
             Declaration::Function(function_decl) => &function_decl.attributes,
             Declaration::Constant(const_decl) => &const_decl.attributes,
+            Declaration::Use(use_decl) => &use_decl.attributes,
         }
     }
 
@@ -34,6 +35,7 @@ impl Declaration {
             Declaration::TyDefinition(ty_decl) => &mut ty_decl.attributes,
             Declaration::Function(function_decl) => &mut function_decl.attributes,
             Declaration::Constant(const_decl) => &mut const_decl.attributes,
+            Declaration::Use(use_decl) => &mut use_decl.attributes,
         }
     }
 
@@ -53,6 +55,7 @@ impl Declaration {
             Declaration::TyDefinition(_) => None,
             Declaration::Function(function_decl) => function_decl.generic_params.as_ref(),
             Declaration::Constant(_) => None,
+            Declaration::Use(_) => None,
         }
     }
 
@@ -72,6 +75,7 @@ impl Declaration {
             Declaration::TyDefinition(_) => None,
             Declaration::Function(function_decl) => function_decl.generic_params.as_mut(),
             Declaration::Constant(_) => None,
+            Declaration::Use(_) => None,
         }
     }
 
@@ -98,6 +102,7 @@ impl Declaration {
             Declaration::TyDefinition(ty_decl) => Some(ty_decl.name.clone()),
             Declaration::Function(function_decl) => Some(function_decl.name.clone()),
             Declaration::Constant(const_decl) => Some(const_decl.name.clone()),
+            Declaration::Use(_) => None,
         }
     }
 
