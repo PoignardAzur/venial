@@ -61,108 +61,67 @@ Module(
                 ),
             },
         ],
-        use_declarations: [
-            UseDeclaration {
-                tk_use: Ident(
-                    use,
-                ),
-                import_tree: [
-                    std,
-                    ":",
-                    ":",
-                    clone,
-                    ":",
-                    ":",
-                    Clone,
-                    as,
-                    Clown,
-                ],
-                tk_semicolon: Punct {
-                    char: ';',
-                    spacing: Alone,
-                },
-            },
-            UseDeclaration {
-                tk_use: Ident(
-                    use,
-                ),
-                import_tree: [
-                    std,
-                    ":",
-                    ":",
-                    cell,
-                    ":",
-                    ":",
-                    Group {
-                        delimiter: Brace,
-                        stream: TokenStream [
-                            Ident {
-                                sym: Cell,
-                            },
-                            Punct {
-                                char: ',',
-                                spacing: Alone,
-                            },
-                            Ident {
-                                sym: RefCell,
-                            },
-                        ],
-                    },
-                ],
-                tk_semicolon: Punct {
-                    char: ';',
-                    spacing: Alone,
-                },
-            },
-            UseDeclaration {
-                tk_use: Ident(
-                    use,
-                ),
-                import_tree: [
-                    crate,
-                    ":",
-                    ":",
-                    Group {
-                        delimiter: Brace,
-                        stream: TokenStream [
-                            Ident {
-                                sym: A,
-                            },
-                            Punct {
-                                char: ',',
-                                spacing: Alone,
-                            },
-                            Ident {
-                                sym: self,
-                            },
-                            Punct {
-                                char: ',',
-                                spacing: Alone,
-                            },
-                            Ident {
-                                sym: b,
-                            },
-                            Punct {
-                                char: ':',
-                                spacing: Joint,
-                            },
-                            Punct {
-                                char: ':',
-                                spacing: Alone,
-                            },
-                            Ident {
-                                sym: c,
-                            },
-                        ],
-                    },
-                ],
-                tk_semicolon: Punct {
-                    char: ';',
-                    spacing: Alone,
-                },
-            },
-        ],
         members: [
+            Use(
+                UseDeclaration {
+                    attributes: [],
+                    vis_marker: None,
+                    tk_use: Ident(
+                        use,
+                    ),
+                    import_tree: [
+                        std,
+                        ":",
+                        ":",
+                        clone,
+                        ":",
+                        ":",
+                        Clone,
+                        as,
+                        Clown,
+                    ],
+                    tk_semicolon: Punct {
+                        char: ';',
+                        spacing: Alone,
+                    },
+                },
+            ),
+            Use(
+                UseDeclaration {
+                    attributes: [],
+                    vis_marker: None,
+                    tk_use: Ident(
+                        use,
+                    ),
+                    import_tree: [
+                        std,
+                        ":",
+                        ":",
+                        cell,
+                        ":",
+                        ":",
+                        Group {
+                            delimiter: Brace,
+                            stream: TokenStream [
+                                Ident {
+                                    sym: Cell,
+                                },
+                                Punct {
+                                    char: ',',
+                                    spacing: Alone,
+                                },
+                                Ident {
+                                    sym: RefCell,
+                                },
+                            ],
+                        },
+                    ],
+                    tk_semicolon: Punct {
+                        char: ';',
+                        spacing: Alone,
+                    },
+                },
+            ),
             Struct(
                 Struct {
                     attributes: [],
@@ -338,6 +297,59 @@ Module(
                     ),
                 },
             ),
+            Use(
+                UseDeclaration {
+                    attributes: [],
+                    vis_marker: Some(
+                        pub,
+                    ),
+                    tk_use: Ident(
+                        use,
+                    ),
+                    import_tree: [
+                        crate,
+                        ":",
+                        ":",
+                        Group {
+                            delimiter: Brace,
+                            stream: TokenStream [
+                                Ident {
+                                    sym: A,
+                                },
+                                Punct {
+                                    char: ',',
+                                    spacing: Alone,
+                                },
+                                Ident {
+                                    sym: self,
+                                },
+                                Punct {
+                                    char: ',',
+                                    spacing: Alone,
+                                },
+                                Ident {
+                                    sym: b,
+                                },
+                                Punct {
+                                    char: ':',
+                                    spacing: Joint,
+                                },
+                                Punct {
+                                    char: ':',
+                                    spacing: Alone,
+                                },
+                                Ident {
+                                    sym: c,
+                                },
+                            ],
+                        },
+                    ],
+                    tk_semicolon: Punct {
+                        char: ';',
+                        spacing: Alone,
+                    },
+                },
+            ),
             Constant(
                 Constant {
                     attributes: [],
@@ -483,7 +495,6 @@ Module(
                         {},
                     ),
                     inner_attributes: [],
-                    use_declarations: [],
                     members: [
                         Function(
                             Function {
@@ -536,7 +547,6 @@ Module(
                         {},
                     ),
                     inner_attributes: [],
-                    use_declarations: [],
                     members: [],
                 },
             ),
@@ -558,7 +568,6 @@ Module(
                     ),
                     tk_braces: None,
                     inner_attributes: [],
-                    use_declarations: [],
                     members: [],
                 },
             ),

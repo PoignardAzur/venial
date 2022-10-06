@@ -129,40 +129,41 @@ pub(crate) fn consume_inner_attributes(tokens: &mut TokenIter) -> Vec<Attribute>
     consume_attributes_with_inner(tokens, true)
 }
 
-pub(crate) fn consume_use_declarations(tokens: &mut TokenIter) -> Vec<UseDeclaration> {
-    let mut result = vec![];
-    loop {
-        let tk_use = match tokens.peek() {
-            Some(TokenTree::Ident(ident)) if ident == "use" => ident.clone(),
-            _ => break,
-        };
+pub(crate) fn parse_use_declarations(
+    tokens: &mut TokenIter,
+    attributes: Vec<Attribute>,
+    vis_marker: Option<VisMarker>,
+) -> UseDeclaration {
+    let tk_use = match tokens.peek() {
+        Some(TokenTree::Ident(ident)) if ident == "use" => ident.clone(),
+        _ => panic!("expected `use`"),
+    };
 
-        tokens.next(); // `use` keyword
+    tokens.next(); // `use` keyword
 
-        let import_tree = consume_stuff_until(
-            tokens,
-            |token| match token {
-                TokenTree::Punct(punct) if punct.as_char() == ';' => true,
-                _ => false,
-            },
-            true,
-        );
+    let import_tree = consume_stuff_until(
+        tokens,
+        |token| match token {
+            TokenTree::Punct(punct) if punct.as_char() == ';' => true,
+            _ => false,
+        },
+        true,
+    );
 
-        let tk_semicolon = match tokens.next() {
-            Some(TokenTree::Punct(punct)) if punct.as_char() == ';' => punct.clone(),
-            _ => panic!("cannot parse use declaration: expected semicolon"),
-        };
+    let tk_semicolon = match tokens.next() {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == ';' => punct,
+        _ => panic!("cannot parse use declaration: expected semicolon"),
+    };
 
-        result.push(UseDeclaration {
-            tk_use,
-            import_tree: TyExpr {
-                tokens: import_tree,
-            },
-            tk_semicolon,
-        })
+    UseDeclaration {
+        attributes,
+        vis_marker,
+        tk_use,
+        import_tree: TyExpr {
+            tokens: import_tree,
+        },
+        tk_semicolon,
     }
-
-    result
 }
 
 pub(crate) fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {

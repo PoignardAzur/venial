@@ -1252,7 +1252,6 @@ fn parse_mod() {
 
             use std::clone::Clone as Clown;
             use std::cell::{Cell, RefCell};
-            use crate::{A, self, b::c};
 
             pub struct MyStruct {
                 field: i32,
@@ -1266,6 +1265,8 @@ fn parse_mod() {
             }
 
             fn f() -> bool { true }
+
+            pub use crate::{A, self, b::c};
 
             const C: i32 = -8 * 2;
 

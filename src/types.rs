@@ -35,6 +35,7 @@ pub enum Declaration {
     TyDefinition(TyDefinition),
     Function(Function),
     Constant(Constant),
+    Use(UseDeclaration),
 }
 
 /// Declaration of a struct.
@@ -138,7 +139,6 @@ pub struct Module {
     /// This is mutually exclusive with `tk_semicolon`.
     pub tk_braces: Option<GroupSpan>,
     pub inner_attributes: Vec<Attribute>,
-    pub use_declarations: Vec<UseDeclaration>,
     pub members: Vec<Declaration>,
 }
 
@@ -592,6 +592,8 @@ pub struct PathSegment {
 /// ```
 #[derive(Clone, Debug)]
 pub struct UseDeclaration {
+    pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
     /// The `use` keyword
     pub tk_use: Ident,
     /// Un-tokenized import paths between `use` and the finishing `;`
@@ -860,6 +862,7 @@ impl ToTokens for Declaration {
             Declaration::TyDefinition(ty_decl) => ty_decl.to_tokens(tokens),
             Declaration::Function(function_decl) => function_decl.to_tokens(tokens),
             Declaration::Constant(const_decl) => const_decl.to_tokens(tokens),
+            Declaration::Use(use_decl) => use_decl.to_tokens(tokens),
         }
     }
 }
@@ -999,9 +1002,6 @@ impl ToTokens for Module {
             tk_braces.quote_with(tokens, |tokens| {
                 for attribute in &self.inner_attributes {
                     attribute.to_tokens(tokens);
-                }
-                for use_decl in &self.use_declarations {
-                    use_decl.to_tokens(tokens);
                 }
                 for token in &self.members {
                     token.to_tokens(tokens);
@@ -1314,6 +1314,10 @@ impl ToTokens for ValueExpr {
 
 impl ToTokens for UseDeclaration {
     fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
         self.tk_use.to_tokens(tokens);
         self.import_tree.to_tokens(tokens);
         self.tk_semicolon.to_tokens(tokens);

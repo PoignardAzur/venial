@@ -21,7 +21,7 @@ pub(crate) fn consume_for(tokens: &mut TokenIter) -> Option<Ident> {
     }
 }
 
-pub(crate) fn consume_const_or_static(
+pub(crate) fn parse_const_or_static(
     tokens: &mut TokenIter,
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
@@ -157,7 +157,7 @@ pub(crate) fn consume_fn_const_or_type(
                 if let Some(method) = consume_fn(tokens, attributes.clone(), vis_marker.clone()) {
                     ImplMember::Method(method)
                 } else {
-                    let constant = consume_const_or_static(tokens, attributes, vis_marker);
+                    let constant = parse_const_or_static(tokens, attributes, vis_marker);
                     ImplMember::Constant(constant)
                 }
             }
