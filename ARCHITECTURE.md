@@ -10,8 +10,9 @@ The code tends to use using `match` rather `if let`, and `loop` rather than `whi
 ## Files
 
 - **`parse.rs` -** composition root.
-    - **`parse_fn.rs` -** parsing function declarations
+    - **`parse_fn.rs` -** parsing function declarations.
     - **`parse_impl.rs` -** parsing `impl` blocks.
+    - **`parse_mod.rs` -** parsing modules and `use` statements.
     - **`parse_type.rs` -** parsing chunks of type declarations (generic args, where clauses, enum variants, struct fields, etc).
     - **`parse_utils.rs` -** parsing attributes, paths, common token, `consume_stuff_until`.
 - **`types.rs` -** the types of all data structures returned by the parser; includes implementations of `std::fmt::Debug` and`quote::ToTokens`.

@@ -126,11 +126,17 @@ pub struct EnumVariant {
 ///     // ...
 /// }
 /// ```
+///
+/// See https://doc.rust-lang.org/reference/items/modules.html
 #[derive(Clone, Debug)]
 pub struct Module {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
+    /// `unsafe` keyword before mod, syntactically valid though unusual.
+    pub tk_unsafe: Option<Ident>,
+    /// `mod` keyword.
     pub tk_mod: Ident,
+    /// Module name.
     pub name: Ident,
     /// `;` token, only present for foreign mods, such as `mod my_module;`.
     /// This is mutually exclusive with `tk_braces` and all remaining fields.
@@ -138,7 +144,9 @@ pub struct Module {
     /// `{ }` group, only available for mods with a local block, such as `mod my_module { ... }`.
     /// This is mutually exclusive with `tk_semicolon`.
     pub tk_braces: Option<GroupSpan>,
+    /// List of all `#![inner]` attributes.
     pub inner_attributes: Vec<Attribute>,
+    /// Everything declared inside the module.
     pub members: Vec<Declaration>,
 }
 
@@ -994,6 +1002,7 @@ impl ToTokens for Module {
             attribute.to_tokens(tokens);
         }
         self.vis_marker.to_tokens(tokens);
+        self.tk_unsafe.to_tokens(tokens);
         self.tk_mod.to_tokens(tokens);
         self.name.to_tokens(tokens);
 

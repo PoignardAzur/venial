@@ -1,7 +1,6 @@
 use crate::parse_type::consume_generic_args;
 use crate::types::{Attribute, AttributeValue, Path, PathSegment, VisMarker};
 use crate::types_edition::GroupSpan;
-use crate::{TyExpr, UseDeclaration};
 use proc_macro2::{Delimiter, Ident, Punct, Spacing, TokenStream, TokenTree};
 use std::iter::Peekable;
 
@@ -173,35 +172,6 @@ pub(crate) fn consume_outer_attributes(tokens: &mut TokenIter) -> Vec<Attribute>
 /// Stops _before_ encountering any outer attributes such as `#[attribute]`.
 pub(crate) fn consume_inner_attributes(tokens: &mut TokenIter) -> Vec<Attribute> {
     consume_attributes_with_inner(tokens, true)
-}
-
-pub(crate) fn parse_use_declarations(
-    tokens: &mut TokenIter,
-    attributes: Vec<Attribute>,
-    vis_marker: Option<VisMarker>,
-) -> UseDeclaration {
-    let tk_use = parse_ident(tokens, "use", "use declaration");
-
-    let import_tree = consume_stuff_until(
-        tokens,
-        |token| match token {
-            TokenTree::Punct(punct) if punct.as_char() == ';' => true,
-            _ => false,
-        },
-        true,
-    );
-
-    let tk_semicolon = parse_punct(tokens, ';', "use declaration");
-
-    UseDeclaration {
-        attributes,
-        vis_marker,
-        tk_use,
-        import_tree: TyExpr {
-            tokens: import_tree,
-        },
-        tk_semicolon,
-    }
 }
 
 pub(crate) fn consume_vis_marker(tokens: &mut TokenIter) -> Option<VisMarker> {
