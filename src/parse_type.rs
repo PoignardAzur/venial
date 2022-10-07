@@ -15,6 +15,7 @@ use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
 
+// TODO - rename
 pub(crate) fn consume_declaration_name(tokens: &mut TokenIter) -> Ident {
     let token = tokens
         .next()
