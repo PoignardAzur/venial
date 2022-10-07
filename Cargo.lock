@@ -232,7 +232,7 @@ checksum = "7e8820f5d777f6224dc4be3632222971ac30164d4a258d595640799554ebfd99"
 
 [[package]]
 name = "venial"
-version = "0.4.0"
+version = "0.5.0"
 dependencies = [
  "insta",
  "proc-macro2",
