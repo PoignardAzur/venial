@@ -80,13 +80,26 @@ pub(crate) fn consume_ty_definition(
     let context = "associated type";
     let tk_type = parse_ident(tokens, "type", context);
     let name = parse_any_ident(tokens, context);
-    let tk_equals = parse_punct(tokens, '=', context);
 
-    let ty_tokens = consume_stuff_until(
-        tokens,
-        |tt| matches!(tt, TokenTree::Punct(punct) if punct.as_char() == ';'),
-        true,
-    );
+    let bound = consume_bound(tokens, |token| {
+        matches!(
+            token,
+            TokenTree::Punct(punct) if punct.as_char() == '=' || punct.as_char() == ';'
+        )
+    });
+
+    let tk_equals = consume_punct(tokens, '=');
+
+    let initializer_ty = if tk_equals.is_some() {
+        let ty_tokens = consume_stuff_until(
+            tokens,
+            |tt| matches!(tt, TokenTree::Punct(punct) if punct.as_char() == ';'),
+            true,
+        );
+        Some(TyExpr { tokens: ty_tokens })
+    } else {
+        None
+    };
 
     let tk_semicolon = parse_punct(tokens, ';', context);
 
@@ -95,8 +108,9 @@ pub(crate) fn consume_ty_definition(
         vis_marker,
         tk_type,
         name,
+        bound,
         tk_equals,
-        initializer_ty: TyExpr { tokens: ty_tokens },
+        initializer_ty,
         tk_semicolon,
     })
 }

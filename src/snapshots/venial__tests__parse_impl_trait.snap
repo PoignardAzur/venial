@@ -105,19 +105,24 @@ Impl(
                     name: Ident(
                         MyType,
                     ),
-                    tk_equals: Punct {
-                        char: '=',
-                        spacing: Alone,
-                    },
-                    initializer_ty: [
-                        std,
-                        ":",
-                        ":",
-                        string,
-                        ":",
-                        ":",
-                        String,
-                    ],
+                    bound: None,
+                    tk_equals: Some(
+                        Punct {
+                            char: '=',
+                            spacing: Alone,
+                        },
+                    ),
+                    initializer_ty: Some(
+                        [
+                            std,
+                            ":",
+                            ":",
+                            string,
+                            ":",
+                            ":",
+                            String,
+                        ],
+                    ),
                     tk_semicolon: Punct {
                         char: ';',
                         spacing: Alone,
