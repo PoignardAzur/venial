@@ -1,0 +1,75 @@
+---
+source: src/tests.rs
+expression: trait_decl
+---
+Trait(
+    Trait {
+        attributes: [
+            Attribute {
+                tk_hash: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_brackets: [],
+                path: [
+                    fancy,
+                    ":",
+                    ":",
+                    api,
+                ],
+                value: Empty,
+            },
+        ],
+        vis_marker: Some(
+            pub(
+                super,
+            ),
+        ),
+        tk_unsafe: Some(
+            Ident(
+                unsafe,
+            ),
+        ),
+        tk_trait: Ident(
+            trait,
+        ),
+        name: Ident(
+            MyTrait,
+        ),
+        generic_params: Some(
+            [
+                GenericParam {
+                    tk_prefix: "'",
+                    name: "p",
+                    bound: None,
+                },
+                GenericParam {
+                    name: "U",
+                    bound: None,
+                },
+                GenericParam {
+                    tk_prefix: "const",
+                    name: "N",
+                    bound: None,
+                },
+            ],
+        ),
+        bound: Some(
+            [
+                Supertrait,
+            ],
+        ),
+        where_clause: Some(
+            [
+                [
+                    Self,
+                    ":",
+                    Sized,
+                ],
+            ],
+        ),
+        tk_braces: {},
+        inner_attributes: [],
+        body_items: [],
+    },
+)

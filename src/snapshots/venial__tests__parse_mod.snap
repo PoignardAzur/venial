@@ -464,19 +464,24 @@ Module(
                     name: Ident(
                         MyType,
                     ),
-                    tk_equals: Punct {
-                        char: '=',
-                        spacing: Alone,
-                    },
-                    initializer_ty: [
-                        Rc,
-                        "<",
-                        RefCell,
-                        "<",
-                        MyStruct,
-                        ">",
-                        ">",
-                    ],
+                    bound: None,
+                    tk_equals: Some(
+                        Punct {
+                            char: '=',
+                            spacing: Alone,
+                        },
+                    ),
+                    initializer_ty: Some(
+                        [
+                            Rc,
+                            "<",
+                            RefCell,
+                            "<",
+                            MyStruct,
+                            ">",
+                            ">",
+                        ],
+                    ),
                     tk_semicolon: Punct {
                         char: ';',
                         spacing: Alone,

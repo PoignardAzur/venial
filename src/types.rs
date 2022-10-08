@@ -293,8 +293,9 @@ pub struct TyDefinition {
     pub vis_marker: Option<VisMarker>,
     pub tk_type: Ident,
     pub name: Ident,
-    pub tk_equals: Punct,
-    pub initializer_ty: TyExpr,
+    pub bound: Option<GenericBound>,
+    pub tk_equals: Option<Punct>,
+    pub initializer_ty: Option<TyExpr>,
     pub tk_semicolon: Punct,
 }
 
@@ -1013,6 +1014,7 @@ impl ToTokens for TyDefinition {
         self.vis_marker.to_tokens(tokens);
         self.tk_type.to_tokens(tokens);
         self.name.to_tokens(tokens);
+        self.bound.to_tokens(tokens);
         self.tk_equals.to_tokens(tokens);
         self.initializer_ty.to_tokens(tokens);
         self.tk_semicolon.to_tokens(tokens);

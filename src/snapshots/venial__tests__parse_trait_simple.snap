@@ -1,0 +1,280 @@
+---
+source: src/tests.rs
+expression: trait_decl
+---
+Trait(
+    Trait {
+        attributes: [],
+        vis_marker: None,
+        tk_unsafe: None,
+        tk_trait: Ident(
+            trait,
+        ),
+        name: Ident(
+            MyTrait,
+        ),
+        generic_params: None,
+        bound: None,
+        where_clause: None,
+        tk_braces: {},
+        inner_attributes: [
+            Attribute {
+                tk_hash: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_bang: Punct {
+                    char: '!',
+                    spacing: Alone,
+                },
+                tk_brackets: [],
+                path: [
+                    inner,
+                    ":",
+                    ":",
+                    attr,
+                ],
+                value: Empty,
+            },
+        ],
+        body_items: [
+            Method(
+                Function {
+                    attributes: [],
+                    vis_marker: None,
+                    qualifiers: FnQualifiers {
+                        tk_default: None,
+                        tk_const: None,
+                        tk_async: None,
+                        tk_unsafe: None,
+                        tk_extern: None,
+                        extern_abi: None,
+                    },
+                    tk_fn_keyword: Ident(
+                        fn,
+                    ),
+                    name: Ident(
+                        abstract,
+                    ),
+                    generic_params: None,
+                    tk_params_parens: (),
+                    params: [
+                        Receiver(
+                            FnReceiverParam {
+                                attributes: [],
+                                tk_ref: Some(
+                                    Punct {
+                                        char: '&',
+                                        spacing: Alone,
+                                    },
+                                ),
+                                tk_mut: None,
+                                tk_self: Ident(
+                                    self,
+                                ),
+                            },
+                        ),
+                    ],
+                    where_clause: None,
+                    tk_return_arrow: Some(
+                        [
+                            Punct {
+                                char: '-',
+                                spacing: Joint,
+                            },
+                            Punct {
+                                char: '>',
+                                spacing: Alone,
+                            },
+                        ],
+                    ),
+                    return_ty: Some(
+                        [
+                            i32,
+                        ],
+                    ),
+                    tk_semicolon: Some(
+                        Punct {
+                            char: ';',
+                            spacing: Alone,
+                        },
+                    ),
+                    body: None,
+                },
+            ),
+            Method(
+                Function {
+                    attributes: [],
+                    vis_marker: None,
+                    qualifiers: FnQualifiers {
+                        tk_default: None,
+                        tk_const: None,
+                        tk_async: None,
+                        tk_unsafe: None,
+                        tk_extern: None,
+                        extern_abi: None,
+                    },
+                    tk_fn_keyword: Ident(
+                        fn,
+                    ),
+                    name: Ident(
+                        with_default,
+                    ),
+                    generic_params: None,
+                    tk_params_parens: (),
+                    params: [],
+                    where_clause: None,
+                    tk_return_arrow: Some(
+                        [
+                            Punct {
+                                char: '-',
+                                spacing: Joint,
+                            },
+                            Punct {
+                                char: '>',
+                                spacing: Alone,
+                            },
+                        ],
+                    ),
+                    return_ty: Some(
+                        [
+                            bool,
+                        ],
+                    ),
+                    tk_semicolon: None,
+                    body: Some(
+                        Group {
+                            delimiter: Brace,
+                            stream: TokenStream [
+                                Ident {
+                                    sym: true,
+                                },
+                            ],
+                        },
+                    ),
+                },
+            ),
+            Constant(
+                Constant {
+                    attributes: [],
+                    vis_marker: None,
+                    tk_const_or_static: Ident(
+                        const,
+                    ),
+                    tk_mut: None,
+                    name: Ident(
+                        LONG_NAME,
+                    ),
+                    tk_colon: Punct {
+                        char: ':',
+                        spacing: Alone,
+                    },
+                    ty: [
+                        "&",
+                        "'",
+                        static,
+                        str,
+                    ],
+                    tk_equals: None,
+                    initializer: None,
+                    tk_semicolon: Punct {
+                        char: ';',
+                        spacing: Alone,
+                    },
+                },
+            ),
+            Constant(
+                Constant {
+                    attributes: [],
+                    vis_marker: None,
+                    tk_const_or_static: Ident(
+                        const,
+                    ),
+                    tk_mut: None,
+                    name: Ident(
+                        SHORT_NAME,
+                    ),
+                    tk_colon: Punct {
+                        char: ':',
+                        spacing: Alone,
+                    },
+                    ty: [
+                        char,
+                    ],
+                    tk_equals: Some(
+                        Punct {
+                            char: '=',
+                            spacing: Alone,
+                        },
+                    ),
+                    initializer: Some(
+                        [
+                            'T',
+                        ],
+                    ),
+                    tk_semicolon: Punct {
+                        char: ';',
+                        spacing: Alone,
+                    },
+                },
+            ),
+            AssocTy(
+                TyDefinition {
+                    attributes: [],
+                    vis_marker: None,
+                    tk_type: Ident(
+                        type,
+                    ),
+                    name: Ident(
+                        AssocType,
+                    ),
+                    bound: Some(
+                        [
+                            Bound,
+                        ],
+                    ),
+                    tk_equals: None,
+                    initializer_ty: None,
+                    tk_semicolon: Punct {
+                        char: ';',
+                        spacing: Alone,
+                    },
+                },
+            ),
+            AssocTy(
+                TyDefinition {
+                    attributes: [],
+                    vis_marker: None,
+                    tk_type: Ident(
+                        type,
+                    ),
+                    name: Ident(
+                        TypeWithDefault,
+                    ),
+                    bound: None,
+                    tk_equals: Some(
+                        Punct {
+                            char: '=',
+                            spacing: Alone,
+                        },
+                    ),
+                    initializer_ty: Some(
+                        [
+                            Rc,
+                            "<",
+                            RefCell,
+                            "<",
+                            MyStruct,
+                            ">",
+                            ">",
+                        ],
+                    ),
+                    tk_semicolon: Punct {
+                        char: ';',
+                        spacing: Alone,
+                    },
+                },
+            ),
+        ],
+    },
+)
