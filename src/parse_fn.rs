@@ -19,6 +19,7 @@ type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
 /// is either a constant (`const` ambiguity), an impl or a module (`unsafe` ambiguity).
 pub(crate) enum NotFunction {
     Const,
+    Trait,
     Impl,
     Mod,
 }
@@ -157,10 +158,11 @@ pub(crate) fn consume_fn(
                 NotFunction::Const
             } else if qualifiers.tk_unsafe.is_some() {
                 match &next_token {
+                    Some(TokenTree::Ident(ident)) if ident == "trait" => NotFunction::Trait,
                     Some(TokenTree::Ident(ident)) if ident == "impl" => NotFunction::Impl,
                     Some(TokenTree::Ident(ident)) if ident == "mod" => NotFunction::Mod,
                     token => panic!(
-                        "expected 'fn', 'impl' or 'mod' after 'unsafe', got {:?}",
+                        "expected one of 'fn|trait|impl|mod' after 'unsafe', got {:?}",
                         token
                     ),
                 }

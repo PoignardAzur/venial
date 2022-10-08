@@ -31,6 +31,7 @@ pub enum Declaration {
     Enum(Enum),
     Union(Union),
     Module(Module),
+    Trait(Trait),
     Impl(Impl),
     TyDefinition(TyDefinition),
     Function(Function),
@@ -169,6 +170,41 @@ pub struct Union {
     pub generic_params: Option<GenericParamList>,
     pub where_clause: Option<WhereClause>,
     pub fields: NamedStructFields,
+}
+
+/// Declaration of an trait
+///
+/// **Example input:**
+///
+/// ```no_run
+/// trait MyTrait {
+///     const N: i32;
+///     fn some_fn() -> i32;
+/// }
+/// ```
+#[derive(Clone, Debug)]
+pub struct Trait {
+    pub attributes: Vec<Attribute>,
+    pub vis_marker: Option<VisMarker>,
+    pub tk_unsafe: Option<Ident>,
+    pub tk_trait: Ident,
+    pub name: Ident,
+    pub generic_params: Option<GenericParamList>,
+    pub bound: Option<GenericBound>,
+    pub where_clause: Option<WhereClause>,
+    pub tk_braces: GroupSpan,
+    pub inner_attributes: Vec<Attribute>,
+    pub body_items: Vec<TraitMember>,
+}
+
+/// The group representing a `trait` block.
+#[derive(Clone, Debug)]
+#[non_exhaustive]
+pub enum TraitMember {
+    Method(Function),
+    Constant(Constant),
+    AssocTy(TyDefinition),
+    // other items like macro!{...} or macro!(...); invocations
 }
 
 /// Declaration of an `impl` block.
@@ -867,6 +903,7 @@ impl ToTokens for Declaration {
             Declaration::Enum(enum_decl) => enum_decl.to_tokens(tokens),
             Declaration::Union(union_decl) => union_decl.to_tokens(tokens),
             Declaration::Module(mod_decl) => mod_decl.to_tokens(tokens),
+            Declaration::Trait(trait_decl) => trait_decl.to_tokens(tokens),
             Declaration::Impl(impl_decl) => impl_decl.to_tokens(tokens),
             Declaration::TyDefinition(ty_decl) => ty_decl.to_tokens(tokens),
             Declaration::Function(function_decl) => function_decl.to_tokens(tokens),
@@ -1021,6 +1058,30 @@ impl ToTokens for Module {
     }
 }
 
+impl ToTokens for Trait {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
+        self.tk_unsafe.to_tokens(tokens);
+        self.tk_trait.to_tokens(tokens);
+        self.name.to_tokens(tokens);
+        self.generic_params.to_tokens(tokens);
+        self.bound.to_tokens(tokens);
+        self.where_clause.to_tokens(tokens);
+        self.tk_braces.quote_with(tokens, |tokens| {
+            for attribute in &self.inner_attributes {
+                attribute.to_tokens(tokens);
+            }
+
+            for item in self.body_items.iter() {
+                item.to_tokens(tokens)
+            }
+        });
+    }
+}
+
 impl ToTokens for Impl {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for attribute in &self.attributes {
@@ -1051,6 +1112,16 @@ impl ToTokens for ImplMember {
             ImplMember::Method(function) => function.to_tokens(tokens),
             ImplMember::Constant(constant) => constant.to_tokens(tokens),
             ImplMember::AssocTy(assoc_ty) => assoc_ty.to_tokens(tokens),
+        }
+    }
+}
+
+impl ToTokens for TraitMember {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        match self {
+            TraitMember::Method(function) => function.to_tokens(tokens),
+            TraitMember::Constant(constant) => constant.to_tokens(tokens),
+            TraitMember::AssocTy(assoc_ty) => assoc_ty.to_tokens(tokens),
         }
     }
 }
