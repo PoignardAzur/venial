@@ -20,6 +20,31 @@ pub(crate) fn consume_declaration_name(tokens: &mut TokenIter) -> Ident {
     parse_any_ident(tokens, "declaration")
 }
 
+pub(crate) fn consume_bound(
+    tokens: &mut TokenIter,
+    mut end_predicate: impl FnMut(&TokenTree) -> bool,
+) -> Option<GenericBound> {
+    match tokens.peek().unwrap() {
+        TokenTree::Punct(punct) if punct.as_char() == ':' => {
+            let colon = punct.clone();
+            // consume ':'
+            tokens.next();
+
+            let bound_tokens = consume_stuff_until(tokens, end_predicate, false);
+
+            Some(GenericBound {
+                tk_colon: colon,
+                tokens: bound_tokens,
+            })
+        }
+        TokenTree::Punct(punct) if punct.as_char() == '>' => None,
+        token if end_predicate(token) => None,
+        token => {
+            panic!("cannot parse generic bound: unexpected token {:?}", token)
+        }
+    }
+}
+
 pub(crate) fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericParamList> {
     let mut generic_params = Punctuated::new();
 
@@ -45,33 +70,10 @@ pub(crate) fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericPa
 
         let name = parse_any_ident(tokens, "generic param name");
 
-        let bound = match tokens.peek().unwrap() {
-            TokenTree::Punct(punct) if punct.as_char() == ':' => {
-                let colon = punct.clone();
-                // consume ':'
-                tokens.next();
-
-                let bound_tokens = consume_stuff_until(
-                    tokens,
-                    |token| match token {
-                        TokenTree::Punct(punct) if punct.as_char() == ',' => true,
-                        _ => false,
-                    },
-                    false,
-                );
-
-                Some(GenericBound {
-                    tk_colon: colon,
-                    tokens: bound_tokens,
-                })
-            }
-            TokenTree::Punct(punct) if punct.as_char() == ',' => None,
-            TokenTree::Punct(punct) if punct.as_char() == '>' => None,
-            token => {
-                panic!("cannot parse generic params: unexpected token {:?}", token)
-            }
-        };
-
+        let bound = consume_bound(
+            tokens,
+            |token| matches!(token, TokenTree::Punct(punct) if punct.as_char() == ','),
+        );
         let comma = consume_comma(tokens);
 
         generic_params.push(

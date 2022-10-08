@@ -1,6 +1,6 @@
 use crate::error::Error;
 use crate::parse_impl::{
-    consume_either_fn_type_const_static_impl, parse_const_or_static, parse_impl,
+    consume_either_fn_type_const_static_impl, parse_const_or_static, parse_impl, parse_trait,
 };
 use crate::parse_mod::{parse_mod, parse_use_declaration};
 use crate::parse_type::{
@@ -171,6 +171,10 @@ pub(crate) fn parse_declaration_tokens(
             let mod_decl = parse_mod(tokens, attributes, vis_marker);
             Declaration::Module(mod_decl)
         }
+        Some(TokenTree::Ident(keyword)) if keyword == "trait" => {
+            let trait_decl = parse_trait(tokens, attributes, vis_marker);
+            Declaration::Trait(trait_decl)
+        }
         Some(TokenTree::Ident(keyword)) if keyword == "impl" => {
             let impl_decl = parse_impl(tokens, attributes);
             Declaration::Impl(impl_decl)
@@ -197,12 +201,12 @@ pub(crate) fn parse_declaration_tokens(
         }
         Some(token) => {
             panic!(
-                "cannot parse declaration: expected keyword struct/enum/union/type/impl/mod/default/const/async/unsafe/extern/fn/static, found token {:?}",
+                "cannot parse declaration: expected keyword struct/enum/union/type/trait/impl/mod/default/const/async/unsafe/extern/fn/static, found token {:?}",
                 token
             );
         }
         None => {
-            panic!("cannot parse type: expected keyword struct/enum/union/type/impl/mod/default/const/async/unsafe/extern/fn/static, found end-of-stream");
+            panic!("cannot parse type: expected keyword struct/enum/union/type/trait/impl/mod/default/const/async/unsafe/extern/fn/static, found end-of-stream");
         }
     };
     Ok(declaration)

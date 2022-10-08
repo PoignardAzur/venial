@@ -1289,3 +1289,41 @@ fn parse_mod() {
     let mod_decl = parse_declaration_checked(expr);
     assert_debug_snapshot!(mod_decl);
 }
+
+// ==================
+// TRAIT DECLARATIONS
+// ==================
+
+#[test]
+fn parse_trait_simple() {
+    let expr = quote! {
+        trait MyTrait {
+            #![inner::attr]
+
+            fn abstract(&self) -> i32;
+            fn with_default() -> bool { true }
+
+            const LONG_NAME: &'static str;
+            const SHORT_NAME: char = 'T';
+
+            type AssocType: Bound;
+            type TypeWithDefault = Rc<RefCell<MyStruct>>;
+        }
+    };
+
+    let trait_decl = parse_declaration_checked(expr);
+    assert_debug_snapshot!(trait_decl);
+}
+
+#[test]
+fn parse_trait_decorated() {
+    let expr = quote! {
+        #[fancy::api]
+        pub(super) unsafe trait MyTrait<'p, U, const N> : Supertrait
+            where Self: Sized
+        {}
+    };
+
+    let trait_decl = parse_declaration_checked(expr);
+    assert_debug_snapshot!(trait_decl);
+}

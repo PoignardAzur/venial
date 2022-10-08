@@ -5,7 +5,7 @@ pub use crate::types::{
     StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
 use crate::types::{FnQualifiers, GenericArg, GenericArgList, Impl, Module, Path};
-use crate::{Constant, Punctuated, TyDefinition};
+use crate::{Constant, Punctuated, Trait, TyDefinition};
 use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 
 impl Declaration {
@@ -16,6 +16,7 @@ impl Declaration {
             Declaration::Enum(enum_decl) => &enum_decl.attributes,
             Declaration::Union(union_decl) => &union_decl.attributes,
             Declaration::Module(mod_decl) => &mod_decl.attributes,
+            Declaration::Trait(trait_decl) => &trait_decl.attributes,
             Declaration::Impl(impl_decl) => &impl_decl.attributes,
             Declaration::TyDefinition(ty_decl) => &ty_decl.attributes,
             Declaration::Function(function_decl) => &function_decl.attributes,
@@ -31,6 +32,7 @@ impl Declaration {
             Declaration::Enum(enum_decl) => &mut enum_decl.attributes,
             Declaration::Union(union_decl) => &mut union_decl.attributes,
             Declaration::Module(mod_decl) => &mut mod_decl.attributes,
+            Declaration::Trait(trait_decl) => &mut trait_decl.attributes,
             Declaration::Impl(impl_decl) => &mut impl_decl.attributes,
             Declaration::TyDefinition(ty_decl) => &mut ty_decl.attributes,
             Declaration::Function(function_decl) => &mut function_decl.attributes,
@@ -51,6 +53,7 @@ impl Declaration {
             Declaration::Enum(enum_decl) => enum_decl.generic_params.as_ref(),
             Declaration::Union(union_decl) => union_decl.generic_params.as_ref(),
             Declaration::Module(_) => None,
+            Declaration::Trait(trait_decl) => trait_decl.generic_params.as_ref(),
             Declaration::Impl(impl_decl) => impl_decl.impl_generic_params.as_ref(),
             Declaration::TyDefinition(_) => None,
             Declaration::Function(function_decl) => function_decl.generic_params.as_ref(),
@@ -71,6 +74,7 @@ impl Declaration {
             Declaration::Enum(enum_decl) => enum_decl.generic_params.as_mut(),
             Declaration::Union(union_decl) => union_decl.generic_params.as_mut(),
             Declaration::Module(_) => None,
+            Declaration::Trait(trait_decl) => trait_decl.generic_params.as_mut(),
             Declaration::Impl(impl_decl) => impl_decl.impl_generic_params.as_mut(),
             Declaration::TyDefinition(_) => None,
             Declaration::Function(function_decl) => function_decl.generic_params.as_mut(),
@@ -98,6 +102,7 @@ impl Declaration {
             Declaration::Enum(enum_decl) => Some(enum_decl.name.clone()),
             Declaration::Union(union_decl) => Some(union_decl.name.clone()),
             Declaration::Module(mod_decl) => Some(mod_decl.name.clone()),
+            Declaration::Trait(trait_decl) => Some(trait_decl.name.clone()),
             Declaration::Impl(_) => None,
             Declaration::TyDefinition(ty_decl) => Some(ty_decl.name.clone()),
             Declaration::Function(function_decl) => Some(function_decl.name.clone()),
@@ -134,6 +139,14 @@ impl Declaration {
     pub fn as_module(&self) -> Option<&Module> {
         match self {
             Declaration::Module(mod_decl) => Some(mod_decl),
+            _ => None,
+        }
+    }
+
+    /// Returns the [`Trait`] variant of the enum if possible.
+    pub fn as_trait(&self) -> Option<&Trait> {
+        match self {
+            Declaration::Trait(trait_decl) => Some(trait_decl),
             _ => None,
         }
     }

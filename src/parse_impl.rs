@@ -1,13 +1,13 @@
 use crate::parse_fn::{consume_fn, NotFunction};
 use crate::parse_mod::parse_mod;
-use crate::parse_type::{consume_generic_params, consume_where_clause};
+use crate::parse_type::{consume_bound, consume_generic_params, consume_where_clause};
 use crate::parse_utils::{
     consume_ident, consume_inner_attributes, consume_outer_attributes, consume_punct,
     consume_stuff_until, consume_vis_marker, parse_any_ident, parse_ident, parse_punct,
 };
 use crate::types::{Constant, ImplMember, TyDefinition, ValueExpr};
 use crate::types_edition::GroupSpan;
-use crate::{Attribute, Declaration, Impl, TyExpr, VisMarker};
+use crate::{Attribute, Declaration, Impl, Trait, TraitMember, TyExpr, VisMarker};
 use proc_macro2::{Delimiter, Group, TokenTree};
 use std::iter::Peekable;
 
@@ -121,6 +121,10 @@ pub(crate) fn consume_either_fn_type_const_static_impl(
                         let constant = parse_const_or_static(tokens, attributes, vis_marker);
                         Declaration::Constant(constant)
                     }
+                    Err(NotFunction::Trait) => {
+                        let trait_decl = parse_trait(tokens, attributes, vis_marker);
+                        Declaration::Trait(trait_decl)
+                    }
                     Err(NotFunction::Impl) => {
                         let impl_decl = parse_impl(tokens, attributes);
                         Declaration::Impl(impl_decl)
@@ -226,6 +230,52 @@ pub(crate) fn parse_impl(tokens: &mut TokenIter, attributes: Vec<Attribute>) -> 
         trait_ty,
         tk_for,
         self_ty,
+        where_clause,
+        body_items,
+        inner_attributes,
+        tk_braces,
+    }
+}
+
+pub(crate) fn parse_trait(
+    tokens: &mut TokenIter,
+    attributes: Vec<Attribute>,
+    vis_marker: Option<VisMarker>,
+) -> Trait {
+    let tk_unsafe = consume_ident(tokens, "unsafe");
+    let tk_trait = parse_ident(tokens, "trait", "trait declaration");
+    let name = parse_any_ident(tokens, "trait name");
+    let generic_params = consume_generic_params(tokens);
+    let bound = consume_bound(tokens, |token| match token {
+        TokenTree::Ident(ident) if ident == "where" => true,
+        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
+        _ => false,
+    });
+    let where_clause = consume_where_clause(tokens);
+
+    // For trait body, at the moment reuse impl parsing
+    let (tk_braces, inner_attributes, body_items) = match tokens.next().unwrap() {
+        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => parse_impl_body(group),
+        token => panic!("cannot parse trait: unexpected token {:?}", token),
+    };
+
+    let body_items = body_items
+        .into_iter()
+        .map(|item| match item {
+            ImplMember::Method(function) => TraitMember::Method(function),
+            ImplMember::Constant(constant) => TraitMember::Constant(constant),
+            ImplMember::AssocTy(assoc_ty) => TraitMember::AssocTy(assoc_ty),
+        })
+        .collect();
+
+    Trait {
+        attributes,
+        vis_marker,
+        tk_unsafe,
+        tk_trait,
+        name,
+        generic_params,
+        bound,
         where_clause,
         body_items,
         inner_attributes,
