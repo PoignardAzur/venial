@@ -37,7 +37,6 @@ pub(crate) fn consume_bound(
                 tokens: bound_tokens,
             })
         }
-        TokenTree::Punct(punct) if punct.as_char() == '>' => None,
         token if end_predicate(token) => None,
         token => {
             panic!("cannot parse generic bound: unexpected token {:?}", token)
@@ -72,7 +71,7 @@ pub(crate) fn consume_generic_params(tokens: &mut TokenIter) -> Option<GenericPa
 
         let bound = consume_bound(
             tokens,
-            |token| matches!(token, TokenTree::Punct(punct) if punct.as_char() == ','),
+            |token| matches!(token, TokenTree::Punct(punct) if punct.as_char() == ',' || punct.as_char() == '>'),
         );
         let comma = consume_comma(tokens);
 
