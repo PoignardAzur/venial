@@ -60,7 +60,14 @@ use std::iter::Peekable;
 
 pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
     let mut tokens = tokens.into_iter().peekable();
-    parse_declaration_tokens(&mut tokens)
+    let declaration = parse_declaration_tokens(&mut tokens);
+    if tokens.peek().is_some() {
+        panic!(
+            "cannot parse declaration, unexpected trailing tokens: {}",
+            tokens.collect::<TokenStream>()
+        );
+    }
+    declaration
 }
 
 pub(crate) fn parse_declaration_tokens(
