@@ -128,7 +128,7 @@ pub struct EnumVariant {
 /// }
 /// ```
 ///
-/// See https://doc.rust-lang.org/reference/items/modules.html
+/// See also: <https://doc.rust-lang.org/reference/items/modules.html>
 #[derive(Clone, Debug)]
 pub struct Module {
     pub attributes: Vec<Attribute>,
@@ -361,7 +361,7 @@ pub enum FnParam {
 /// Possible parameters captures by this are `self`, `mut self`, `&self` or `&mut self`.
 /// Reference lifetimes are not yet supported.
 ///
-/// Parameters of the form `self: Pin<&mut Self>` are recognized as [`FunctionTypedParameter`].
+/// Parameters of the form `self: Pin<&mut Self>` are recognized as [`FnTypedParam`].
 #[derive(Clone, Debug)]
 pub struct FnReceiverParam {
     pub attributes: Vec<Attribute>,
@@ -428,7 +428,7 @@ pub struct NamedField {
 /// # struct Foo;
 /// ```
 ///
-/// See also: https://doc.rust-lang.org/reference/attributes.html
+/// See also: <https://doc.rust-lang.org/reference/attributes.html>
 #[derive(Clone)]
 pub struct Attribute {
     /// `#`, always present
