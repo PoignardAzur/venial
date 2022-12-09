@@ -135,7 +135,7 @@ impl Declaration {
         }
     }
 
-    /// Returns the [`Mod`] variant of the enum if possible.
+    /// Returns the [`Module`] variant of the enum if possible.
     pub fn as_module(&self) -> Option<&Module> {
         match self {
             Declaration::Module(mod_decl) => Some(mod_decl),
