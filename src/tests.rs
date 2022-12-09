@@ -122,6 +122,17 @@ fn parse_empty_enum() {
     assert_debug_snapshot!(enum_type);
 }
 
+#[test]
+#[should_panic = "unexpected trailing tokens after declaration"]
+fn reject_trailing_tokens() {
+    let declaration = parse_declaration_checked(quote::quote! {
+        struct Good {}
+        trailing junk
+    });
+
+    println!("This should have panicked: {:#?}", declaration);
+}
+
 // ==========
 // VISIBILITY
 // ==========
