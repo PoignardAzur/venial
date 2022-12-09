@@ -14,9 +14,6 @@ use proc_macro2::token_stream::IntoIter;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
 use std::iter::Peekable;
 
-// TODO - Return Result<...>, handle case where TokenStream is valid declaration,
-// but not a type or function.
-
 /// Parses the token stream of a type declaration.
 ///
 /// For instance, if you're implementing a derive macro, you can pass the
@@ -28,6 +25,8 @@ use std::iter::Peekable;
 /// type declaration. If the token stream is from an attribute or a derive
 /// macro, there should be no way for this to happen, as Rust will emit an
 /// error instead of calling this macro.
+///
+/// Panics if there are leftover tokens.
 ///
 /// ## Example
 ///
@@ -57,15 +56,34 @@ use std::iter::Peekable;
 ///     E = (FOO + BAR),  // Ok
 /// }
 /// ```
-
 pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
     let mut tokens = tokens.into_iter().peekable();
-    parse_declaration_tokens(&mut tokens)
+    let declaration = consume_declaration(&mut tokens);
+
+    if tokens.peek().is_some() {
+        panic!(
+            "unexpected trailing tokens after declaration: {}",
+            tokens.collect::<TokenStream>()
+        );
+    }
+
+    declaration
 }
 
-pub(crate) fn parse_declaration_tokens(
-    tokens: &mut Peekable<IntoIter>,
-) -> Result<Declaration, Error> {
+/// Consume a type declaration from a token stream.
+///
+/// This is the same as [parse_declaration], except it doesn't panic if there are
+/// leftover tokens.
+///
+/// ## Panics
+///
+/// Panics if given a token stream that doesn't parse as a valid Rust
+/// type declaration.
+///
+/// ## Errors
+///
+/// Venial doesn't support enum discriminants with multiple non-grouped tokens.
+pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Declaration, Error> {
     let attributes = consume_outer_attributes(tokens);
     let vis_marker = consume_vis_marker(tokens);
 

@@ -74,6 +74,6 @@ mod types;
 mod types_edition;
 
 pub use error::Error;
-pub use parse::parse_declaration;
+pub use parse::{consume_declaration, parse_declaration};
 pub use punctuated::Punctuated;
 pub use types::*;

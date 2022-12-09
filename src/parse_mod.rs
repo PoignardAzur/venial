@@ -1,4 +1,4 @@
-use crate::parse::parse_declaration_tokens;
+use crate::parse::consume_declaration;
 use crate::parse_type::consume_declaration_name;
 use crate::parse_utils::{
     consume_ident, consume_inner_attributes, consume_stuff_until, parse_ident, parse_punct,
@@ -43,7 +43,7 @@ pub(crate) fn parse_mod(
             if tokens.peek().is_none() {
                 break;
             }
-            let item = parse_declaration_tokens(&mut tokens)
+            let item = consume_declaration(&mut tokens)
                 .unwrap_or_else(|e| panic!("declaration in mod: {}", e));
             mod_members.push(item);
         }
