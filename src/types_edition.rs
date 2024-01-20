@@ -11,6 +11,8 @@ use quote::spanned::Spanned;
 
 impl Declaration {
     /// Returns the [`Vec<Attribute>`] of the declaration.
+    ///
+    /// This method is provided for convenience, but it's more idiomatic to match on Declaration and use the same method in the matching variant.
     pub fn attributes(&self) -> &Vec<Attribute> {
         match self {
             Declaration::Struct(struct_decl) => &struct_decl.attributes,
@@ -27,6 +29,8 @@ impl Declaration {
     }
 
     /// Returns the [`Vec<Attribute>`] of the declaration.
+    ///
+    /// This method is provided for convenience, but it's more idiomatic to match on Declaration and use the same method in the matching variant.
     pub fn attributes_mut(&mut self) -> &mut Vec<Attribute> {
         match self {
             Declaration::Struct(struct_decl) => &mut struct_decl.attributes,
@@ -48,6 +52,8 @@ impl Declaration {
     /// Some for `impl<A> MyTrait for MyType<A>` and None for `enum MyEnum { ... }`.
     ///
     /// `TyDefinition` and `Constant` variants never have a generic parameter list.
+    ///
+    /// This method is provided for convenience, but it's more idiomatic to match on Declaration and use the same method in the matching variant.
     pub fn generic_params(&self) -> Option<&GenericParamList> {
         match self {
             Declaration::Struct(struct_decl) => struct_decl.generic_params.as_ref(),
@@ -69,6 +75,8 @@ impl Declaration {
     /// Some for `impl<A> MyTrait for MyType<A>` and None for `enum MyEnum { ... }`.
     ///
     /// `TyDefinition` and `Constant` variants never have a generic parameter list.
+    ///
+    /// This method is provided for convenience, but it's more idiomatic to match on Declaration and use the same method in the matching variant.
     pub fn generic_params_mut(&mut self) -> Option<&mut GenericParamList> {
         match self {
             Declaration::Struct(struct_decl) => struct_decl.generic_params.as_mut(),
@@ -182,6 +190,31 @@ impl Declaration {
             Declaration::Constant(const_decl) => Some(const_decl),
             _ => None,
         }
+    }
+
+    /// Venial doesn't have an equivalent for the syn split_for_impl() method.
+    ///
+    /// Given the syn use-case:
+    ///
+    /// ```ignore
+    /// let (impl_generics, ty_generics, where_clause) = generics.split_for_impl();
+    /// quote! {
+    ///     impl #impl_generics MyTrait for #name #ty_generics #where_clause {
+    ///         // ...
+    ///     }
+    /// }
+    /// ```
+    ///
+    /// Venial doesn't have an "all-in-one" method. You would instead write:
+    ///
+    /// ```no_run
+    /// # let input: venial::Declaration = None.unwrap();
+    /// let impl_generics = input.generic_params().unwrap();
+    /// let ty_generics = input.generic_params().unwrap().as_inline_args();
+    /// ```
+    #[deprecated = "Documentation item"]
+    pub fn __no_split_for_impl__() -> ! {
+        unimplemented!();
     }
 }
 
