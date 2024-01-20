@@ -18,9 +18,9 @@ use crate::Punctuated;
 /// enum MyEnum {
 ///     // ...
 /// }
-/// # #[cfg(FALSE)]
 /// union MyUnion {
 ///     // ...
+///     # x: i32,
 /// }
 /// fn foobar() {}
 /// ```
