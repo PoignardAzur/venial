@@ -142,7 +142,7 @@ fn consume_attributes_with_inner(tokens: &mut TokenIter, expect_inner: bool) -> 
             Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => {
                 let tk_equals = punct.clone();
                 attribute_tokens.next();
-                let value = attribute_tokens.into_iter().collect();
+                let value = attribute_tokens.collect();
                 AttributeValue::Equals(tk_equals, value)
             }
             _ => unreachable!(),
