@@ -7,6 +7,7 @@ pub use crate::types::{
 use crate::types::{FnQualifiers, GenericArg, GenericArgList, Impl, Module, Path};
 use crate::{Constant, Punctuated, Trait, TyDefinition};
 use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
+use quote::spanned::Spanned;
 
 impl Declaration {
     /// Returns the [`Vec<Attribute>`] of the declaration.
@@ -720,6 +721,46 @@ impl TyExpr {
         let tokens = tokens_from_slice(&self.tokens);
 
         consume_path(tokens)
+    }
+}
+
+macro_rules! implement_span {
+    ($Kind:ident) => {
+        impl $Kind {
+            /// Returns span of this item.
+            pub fn span(&self) -> Span {
+                self.__span()
+            }
+        }
+    };
+}
+
+implement_span!(Attribute);
+implement_span!(AttributeValue);
+implement_span!(Declaration);
+implement_span!(Enum);
+implement_span!(EnumVariant);
+implement_span!(EnumVariantValue);
+implement_span!(Function);
+
+implement_span!(GenericBound);
+implement_span!(GenericParam);
+implement_span!(GenericParamList);
+implement_span!(NamedField);
+implement_span!(Struct);
+
+implement_span!(StructFields);
+implement_span!(TupleField);
+implement_span!(TyExpr);
+implement_span!(Union);
+implement_span!(VisMarker);
+implement_span!(WhereClause);
+implement_span!(WhereClauseItem);
+
+impl InlineGenericArgs<'_> {
+    /// Returns span of this item.
+    pub fn span(&self) -> Span {
+        self.__span()
     }
 }
 
