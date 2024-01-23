@@ -621,6 +621,158 @@ Module(
                     members: [],
                 },
             ),
+            Macro(
+                Macro {
+                    attributes: [],
+                    name: Ident(
+                        decl_macro,
+                    ),
+                    tk_bang: Punct {
+                        char: '!',
+                        spacing: Alone,
+                    },
+                    tk_declared_name: None,
+                    tk_braces_or_parens: (),
+                    inner_tokens: [
+                        Ident {
+                            sym: args,
+                        },
+                        Punct {
+                            char: ',',
+                            spacing: Alone,
+                        },
+                        Literal {
+                            lit: 32,
+                        },
+                        Punct {
+                            char: ';',
+                            spacing: Alone,
+                        },
+                        Punct {
+                            char: '+',
+                            spacing: Alone,
+                        },
+                        Punct {
+                            char: '*',
+                            spacing: Alone,
+                        },
+                    ],
+                    tk_semicolon: Some(
+                        Punct {
+                            char: ';',
+                            spacing: Alone,
+                        },
+                    ),
+                },
+            ),
+            Macro(
+                Macro {
+                    attributes: [
+                        Attribute {
+                            tk_hash: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_brackets: [],
+                            path: [
+                                macro_export,
+                            ],
+                            value: Empty,
+                        },
+                    ],
+                    name: Ident(
+                        macro_rules,
+                    ),
+                    tk_bang: Punct {
+                        char: '!',
+                        spacing: Alone,
+                    },
+                    tk_declared_name: Some(
+                        Ident(
+                            stringificate,
+                        ),
+                    ),
+                    tk_braces_or_parens: {},
+                    inner_tokens: [
+                        Group {
+                            delimiter: Parenthesis,
+                            stream: TokenStream [],
+                        },
+                        Punct {
+                            char: '=',
+                            spacing: Joint,
+                        },
+                        Punct {
+                            char: '>',
+                            spacing: Alone,
+                        },
+                        Group {
+                            delimiter: Brace,
+                            stream: TokenStream [
+                                Literal {
+                                    lit: "<None>",
+                                },
+                            ],
+                        },
+                        Group {
+                            delimiter: Parenthesis,
+                            stream: TokenStream [
+                                Punct {
+                                    char: '$',
+                                    spacing: Alone,
+                                },
+                                Ident {
+                                    sym: item,
+                                },
+                                Punct {
+                                    char: ':',
+                                    spacing: Alone,
+                                },
+                                Ident {
+                                    sym: item,
+                                },
+                            ],
+                        },
+                        Punct {
+                            char: '=',
+                            spacing: Joint,
+                        },
+                        Punct {
+                            char: '>',
+                            spacing: Alone,
+                        },
+                        Group {
+                            delimiter: Brace,
+                            stream: TokenStream [
+                                Ident {
+                                    sym: stringify,
+                                },
+                                Punct {
+                                    char: '!',
+                                    spacing: Alone,
+                                },
+                                Group {
+                                    delimiter: Parenthesis,
+                                    stream: TokenStream [
+                                        Punct {
+                                            char: '$',
+                                            spacing: Alone,
+                                        },
+                                        Ident {
+                                            sym: item,
+                                        },
+                                    ],
+                                },
+                            ],
+                        },
+                        Punct {
+                            char: ';',
+                            spacing: Alone,
+                        },
+                    ],
+                    tk_semicolon: None,
+                },
+            ),
         ],
     },
 )

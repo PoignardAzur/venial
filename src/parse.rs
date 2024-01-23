@@ -1,4 +1,5 @@
 use crate::error::Error;
+use crate::parse_fn::consume_macro;
 use crate::parse_impl::{
     consume_either_fn_type_const_static_impl, parse_const_or_static, parse_impl, parse_trait,
 };
@@ -218,13 +219,17 @@ pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Declaratio
             consume_either_fn_type_const_static_impl(tokens, attributes, vis_marker, "declaration")
         }
         Some(token) => {
-            panic!(
-                "cannot parse declaration: expected keyword struct/enum/union/type/trait/impl/mod/default/const/async/unsafe/extern/fn/static, found token {:?}",
-                token
-            );
+            if let Some(macro_) = consume_macro(tokens, attributes) {
+                Declaration::Macro(macro_)
+            } else {
+                panic!(
+                    "cannot parse declaration: expected keyword struct/enum/union/type/trait/impl/mod/default/const/async/unsafe/extern/fn/static or macro, found token {:?}",
+                    token
+                );
+            }
         }
         None => {
-            panic!("cannot parse type: expected keyword struct/enum/union/type/trait/impl/mod/default/const/async/unsafe/extern/fn/static, found end-of-stream");
+            panic!("cannot parse type: expected keyword struct/enum/union/type/trait/impl/mod/default/const/async/unsafe/extern/fn/static or macro, found end-of-stream");
         }
     };
     Ok(declaration)

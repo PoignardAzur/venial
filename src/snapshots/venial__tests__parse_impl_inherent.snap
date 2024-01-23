@@ -260,6 +260,93 @@ Impl(
                     },
                 },
             ),
+            Macro(
+                Macro {
+                    attributes: [
+                        Attribute {
+                            tk_hash: Punct {
+                                char: '#',
+                                spacing: Alone,
+                            },
+                            tk_brackets: [],
+                            path: [
+                                clippy,
+                                ":",
+                                ":",
+                                allow,
+                            ],
+                            value: Group(
+                                [
+                                    venial,
+                                ],
+                                (),
+                            ),
+                        },
+                    ],
+                    name: Ident(
+                        fn_macro,
+                    ),
+                    tk_bang: Punct {
+                        char: '!',
+                        spacing: Alone,
+                    },
+                    tk_declared_name: None,
+                    tk_braces_or_parens: (),
+                    inner_tokens: [
+                        Ident {
+                            sym: MyTrait,
+                        },
+                    ],
+                    tk_semicolon: Some(
+                        Punct {
+                            char: ';',
+                            spacing: Alone,
+                        },
+                    ),
+                },
+            ),
+            Macro(
+                Macro {
+                    attributes: [],
+                    name: Ident(
+                        block_macro,
+                    ),
+                    tk_bang: Punct {
+                        char: '!',
+                        spacing: Alone,
+                    },
+                    tk_declared_name: None,
+                    tk_braces_or_parens: {},
+                    inner_tokens: [
+                        Ident {
+                            sym: fn,
+                        },
+                        Ident {
+                            sym: inner_fn,
+                        },
+                        Group {
+                            delimiter: Parenthesis,
+                            stream: TokenStream [],
+                        },
+                        Punct {
+                            char: '-',
+                            spacing: Joint,
+                        },
+                        Punct {
+                            char: '>',
+                            spacing: Alone,
+                        },
+                        Ident {
+                            sym: bool,
+                        },
+                        Punct {
+                            char: ';',
+                            spacing: Alone,
+                        },
+                    ],
+                    tk_semicolon: None,
+                },
+            ),
         ],
     },
 )

@@ -25,6 +25,7 @@ impl Declaration {
             Declaration::Function(function_decl) => &function_decl.attributes,
             Declaration::Constant(const_decl) => &const_decl.attributes,
             Declaration::Use(use_decl) => &use_decl.attributes,
+            Declaration::Macro(macro_decl) => &macro_decl.attributes,
         }
     }
 
@@ -43,6 +44,7 @@ impl Declaration {
             Declaration::Function(function_decl) => &mut function_decl.attributes,
             Declaration::Constant(const_decl) => &mut const_decl.attributes,
             Declaration::Use(use_decl) => &mut use_decl.attributes,
+            Declaration::Macro(macro_decl) => &mut macro_decl.attributes,
         }
     }
 
@@ -66,6 +68,7 @@ impl Declaration {
             Declaration::Function(function_decl) => function_decl.generic_params.as_ref(),
             Declaration::Constant(_) => None,
             Declaration::Use(_) => None,
+            Declaration::Macro(_) => None,
         }
     }
 
@@ -89,6 +92,7 @@ impl Declaration {
             Declaration::Function(function_decl) => function_decl.generic_params.as_mut(),
             Declaration::Constant(_) => None,
             Declaration::Use(_) => None,
+            Declaration::Macro(_) => None,
         }
     }
 
@@ -117,6 +121,7 @@ impl Declaration {
             Declaration::Function(function_decl) => Some(function_decl.name.clone()),
             Declaration::Constant(const_decl) => Some(const_decl.name.clone()),
             Declaration::Use(_) => None,
+            Declaration::Macro(macro_) => Some(macro_.name.clone()),
         }
     }
 

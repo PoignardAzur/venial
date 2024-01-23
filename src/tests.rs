@@ -595,6 +595,20 @@ fn parse_complex_enum_variant() {
     assert_debug_snapshot!(enum_type_3);
 }
 
+#[test]
+#[should_panic] // FIXME
+fn parse_enum_with_macro() {
+    let enum_decl = parse_declaration(quote!(
+        enum Hello {
+            A = 1,
+            macroified! { B = 2 },
+            macroified!(B; 2),
+        }
+    ));
+
+    assert_debug_snapshot!(enum_decl);
+}
+
 // =================
 // TYPE CORNER CASES
 // =================
@@ -930,6 +944,22 @@ fn parse_struct_declaration(tokens: TokenStream) -> Struct {
 }
 
 #[test]
+#[should_panic] // FIXME
+fn parse_struct_with_macro() {
+    let struct_decl = parse_struct_declaration(quote!(
+        struct Hello {
+            a: A,
+            b: B,
+            transmogrify! {
+                c: C,
+            }
+        }
+    ));
+
+    assert_quote_snapshot!(struct_decl);
+}
+
+#[test]
 fn add_lifetime() {
     let basic_type = parse_struct_declaration(quote!(
         struct Hello {
@@ -1089,6 +1119,13 @@ fn parse_impl_inherent() {
             pub(crate) fn set_value(&mut self, s: String) {}
 
             pub const CONSTANT: i8 = 24 + 7;
+
+            #[clippy::allow(venial)]
+            fn_macro!(MyTrait);
+
+            block_macro! {
+                fn inner_fn() -> bool;
+            }
         }
     );
 
@@ -1126,6 +1163,13 @@ fn parse_impl_trait() {
             const fn set_value(&mut self, s: String) {}
 
             const CONSTANT: i8 = 24 + 7;
+
+            #[clippy::allow(venial)]
+            fn_macro!(MyTrait);
+
+            block_macro! {
+                fn inner_fn() -> bool;
+            }
         }
     );
 
@@ -1294,6 +1338,16 @@ fn parse_mod() {
 
             #[contain_it]
             unsafe mod hazard_mod {}
+
+            decl_macro!(args, 32; + *);
+
+            #[macro_export]
+            macro_rules! stringificate {
+                () => { "<None>" }
+                ($item:item) => {
+                    stringify!($item)
+                };
+            }
         }
     };
 
@@ -1319,6 +1373,13 @@ fn parse_trait_simple() {
 
             type AssocType: Bound;
             type TypeWithDefault = Rc<RefCell<MyStruct>>;
+
+            decl_macro!();
+
+            python! {
+                def hello(b):
+                    return "hello world" if b else "bye world"
+            }
         }
     };
 

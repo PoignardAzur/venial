@@ -2,14 +2,14 @@ use crate::parse_type::{
     consume_declaration_name, consume_field_type, consume_generic_params, consume_where_clause,
 };
 use crate::parse_utils::{
-    consume_comma, consume_ident, consume_outer_attributes, consume_punct, consume_stuff_until,
-    parse_any_ident, parse_punct,
+    consume_any_ident, consume_comma, consume_ident, consume_outer_attributes, consume_punct,
+    consume_stuff_until, parse_any_ident, parse_punct,
 };
 use crate::punctuated::Punctuated;
 use crate::types::{
     FnParam, FnQualifiers, FnReceiverParam, FnTypedParam, Function, GroupSpan, TyExpr,
 };
-use crate::{Attribute, VisMarker};
+use crate::{Attribute, Macro, VisMarker};
 use proc_macro2::{Delimiter, Ident, Punct, TokenStream, TokenTree};
 use std::iter::Peekable;
 
@@ -118,7 +118,7 @@ fn consume_fn_return(tokens: &mut TokenIter) -> Option<([Punct; 2], TyExpr)> {
     Some((
         [dash, tip],
         TyExpr {
-            tokens: (consume_stuff_until(
+            tokens: consume_stuff_until(
                 tokens,
                 |token| match token {
                     TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => true,
@@ -127,7 +127,7 @@ fn consume_fn_return(tokens: &mut TokenIter) -> Option<([Punct; 2], TyExpr)> {
                     _ => false,
                 },
                 true,
-            )),
+            ),
         },
     ))
 }
@@ -187,7 +187,7 @@ pub(crate) fn consume_fn(
         TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
             (parse_fn_params(group.stream()), GroupSpan::new(&group))
         }
-        _ => panic!("cannot parse function"),
+        _ => panic!("cannot parse function; missing parameter list"),
     };
 
     let (tk_return_arrow, return_ty) = if let Some((arrow, ty)) = consume_fn_return(tokens) {
@@ -203,7 +203,7 @@ pub(crate) fn consume_fn(
             (Some(group.clone()), None)
         }
         TokenTree::Punct(punct) if punct.as_char() == ';' => (None, Some(punct.clone())),
-        _ => panic!("cannot parse function"),
+        _ => panic!("cannot parse function; missing body or `;`"),
     };
 
     Ok(Function {
@@ -220,5 +220,49 @@ pub(crate) fn consume_fn(
         return_ty,
         tk_semicolon,
         body: function_body,
+    })
+}
+
+pub(crate) fn consume_macro(tokens: &mut TokenIter, attributes: Vec<Attribute>) -> Option<Macro> {
+    // TODO consider multiple-lookahead instead of potentially cloning many tokens
+    let before_start = tokens.clone();
+
+    match consume_macro_inner(tokens, attributes) {
+        Some(macro_) => Some(macro_),
+        None => {
+            // rollback iterator, could be start of const declaration
+            *tokens = before_start;
+            None
+        }
+    }
+}
+
+fn consume_macro_inner(tokens: &mut TokenIter, attributes: Vec<Attribute>) -> Option<Macro> {
+    let name = consume_any_ident(tokens)?;
+    let tk_bang = consume_punct(tokens, '!')?;
+    let tk_declared_name = consume_any_ident(tokens);
+
+    let (is_paren, macro_body) = match tokens.next().expect("unexpected end of macro") {
+        TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => (true, group),
+        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => (false, group),
+        _ => panic!("cannot parse macro; missing `{{}}` or `()` group"),
+    };
+
+    let inner_tokens = macro_body.stream().into_iter().collect();
+
+    let tk_semicolon = if is_paren {
+        Some(parse_punct(tokens, ';', "macro invocation semicolon"))
+    } else {
+        None
+    };
+
+    Some(Macro {
+        attributes,
+        name,
+        tk_bang,
+        tk_declared_name,
+        tk_braces_or_parens: GroupSpan::new(&macro_body),
+        inner_tokens,
+        tk_semicolon,
     })
 }
