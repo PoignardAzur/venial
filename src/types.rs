@@ -27,16 +27,38 @@ use crate::Punctuated;
 #[non_exhaustive]
 #[derive(Clone, Debug)]
 pub enum Declaration {
+    /// `struct` declaration.
     Struct(Struct),
+
+    /// `enum` declaration.
     Enum(Enum),
+
+    /// `union` declaration.
     Union(Union),
+
+    /// `mod` declaration (with a `{}` block, or to refer to separate files as in `mod file;`).
     Module(Module),
+
+    /// `trait` declaration.
     Trait(Trait),
+
+    /// `impl` block (inherent or trait implementation).
     Impl(Impl),
+
+    /// `type` declaration.
     TyDefinition(TyDefinition),
+
+    /// `fn` declaration.
     Function(Function),
+
+    /// `const` or `static` declaration.
     Constant(Constant),
+
+    /// `use` statement.
     Use(UseDeclaration),
+
+    /// Macro invocation.
+    Macro(Macro),
 }
 
 /// Declaration of a struct.
@@ -204,7 +226,7 @@ pub enum TraitMember {
     Method(Function),
     Constant(Constant),
     AssocTy(TyDefinition),
-    // other items like macro!{...} or macro!(...); invocations
+    Macro(Macro),
 }
 
 /// Declaration of an `impl` block.
@@ -246,7 +268,7 @@ pub enum ImplMember {
     Method(Function),
     Constant(Constant),
     AssocTy(TyDefinition),
-    // other items like macro!{...} or macro!(...); invocations
+    Macro(Macro),
 }
 
 /// Constant or static declaration.
@@ -665,6 +687,44 @@ pub struct EnumVariantValue {
     pub value: TokenTree,
 }
 
+/// A macro invocation or `macro_rules!` declaration.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// # macro_rules! lazy_static { ($($tt:tt)*) => {  } };
+/// lazy_static! {
+///     /// Some doc comment.
+///     static ref EXAMPLE: u8 = 42;
+/// }
+/// ```
+///
+/// Declarations of declarative macros are also supported; their only syntactical difference is an identifier (here `my_macro`):
+/// ```no_run
+/// macro_rules! my_macro {
+///    ($($tt:tt)*) => { $($tt)* };
+/// }
+/// ```
+#[derive(Clone, Debug)]
+pub struct Macro {
+    /// Any attributes, such as `#[macro_export]`.
+    pub attributes: Vec<Attribute>,
+    /// Name of the invoked macro. In case of a macro declaration, this is `macro_rules`.
+    pub name: Ident,
+    /// The `!` token.
+    pub tk_bang: Punct,
+    /// Only set for `macro_rules!` declarations.
+    ///
+    /// In `macro_rules! my_macro { ... }`, this is `my_macro`.
+    pub tk_declared_name: Option<Ident>,
+    /// The `{}` or `()` group around the macro invocation.
+    pub tk_braces_or_parens: GroupSpan,
+    /// Unparsed tokens in the macro invocation.
+    pub inner_tokens: Vec<TokenTree>,
+    /// The `;` token, in case `()` is used.
+    pub tk_semicolon: Option<Punct>,
+}
+
 /// Information about a [`Group`]. This can be used to recreate the group
 /// from its inner token sequence, or to create a new group with a
 /// modified token sequence but the original group's span information.
@@ -910,6 +970,7 @@ impl ToTokens for Declaration {
             Declaration::Function(function_decl) => function_decl.to_tokens(tokens),
             Declaration::Constant(const_decl) => const_decl.to_tokens(tokens),
             Declaration::Use(use_decl) => use_decl.to_tokens(tokens),
+            Declaration::Macro(macro_decl) => macro_decl.to_tokens(tokens),
         }
     }
 }
@@ -1114,6 +1175,7 @@ impl ToTokens for ImplMember {
             ImplMember::Method(function) => function.to_tokens(tokens),
             ImplMember::Constant(constant) => constant.to_tokens(tokens),
             ImplMember::AssocTy(assoc_ty) => assoc_ty.to_tokens(tokens),
+            ImplMember::Macro(macro_) => macro_.to_tokens(tokens),
         }
     }
 }
@@ -1124,6 +1186,7 @@ impl ToTokens for TraitMember {
             TraitMember::Method(function) => function.to_tokens(tokens),
             TraitMember::Constant(constant) => constant.to_tokens(tokens),
             TraitMember::AssocTy(assoc_ty) => assoc_ty.to_tokens(tokens),
+            TraitMember::Macro(macro_) => macro_.to_tokens(tokens),
         }
     }
 }
@@ -1412,6 +1475,21 @@ impl ToTokens for EnumVariantValue {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.tk_equal.to_tokens(tokens);
         self.value.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for Macro {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.name.to_tokens(tokens);
+        self.tk_bang.to_tokens(tokens);
+        self.tk_declared_name.to_tokens(tokens);
+        self.tk_braces_or_parens.quote_with(tokens, |tokens| {
+            tokens.extend(self.inner_tokens.iter().cloned());
+        });
+        self.tk_semicolon.to_tokens(tokens);
     }
 }
 

@@ -1,4 +1,4 @@
-use crate::parse_fn::{consume_fn, NotFunction};
+use crate::parse_fn::{consume_fn, consume_macro, NotFunction};
 use crate::parse_mod::parse_mod;
 use crate::parse_type::{consume_bound, consume_generic_params, consume_where_clause};
 use crate::parse_utils::{
@@ -9,6 +9,7 @@ use crate::types::{Constant, ImplMember, TyDefinition, ValueExpr};
 use crate::types_edition::GroupSpan;
 use crate::{Attribute, Declaration, Impl, Trait, TraitMember, TyExpr, VisMarker};
 use proc_macro2::{Delimiter, Group, TokenTree};
+use quote::ToTokens;
 use std::iter::Peekable;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
@@ -149,7 +150,18 @@ pub(crate) fn consume_either_fn_type_const_static_impl(
                     }
                 }
             }
-            _ => panic!("unsupported {} item `{}`", context, ident),
+            ident => {
+                if let Some(vis_marker) = vis_marker {
+                    panic!(
+                        "unsupported visibility marker `{}`",
+                        vis_marker.to_token_stream()
+                    );
+                }
+                match consume_macro(tokens, attributes.clone()) {
+                    Some(macro_) => Declaration::Macro(macro_),
+                    None => panic!("unsupported {} item `{}`", context, ident),
+                }
+            }
         }
     } else {
         panic!("unsupported {} element: {:?}", context, tokens.peek())
@@ -177,6 +189,7 @@ pub(crate) fn parse_impl_body(token_group: Group) -> (GroupSpan, Vec<Attribute>,
             Declaration::Function(function) => ImplMember::Method(function),
             Declaration::Constant(constant) => ImplMember::Constant(constant),
             Declaration::TyDefinition(ty_def) => ImplMember::AssocTy(ty_def),
+            Declaration::Macro(macro_) => ImplMember::Macro(macro_),
             _ => panic!("unsupported impl item `{:?}`", tokens.peek()),
         };
 
@@ -279,6 +292,7 @@ pub(crate) fn parse_trait(
             ImplMember::Method(function) => TraitMember::Method(function),
             ImplMember::Constant(constant) => TraitMember::Constant(constant),
             ImplMember::AssocTy(assoc_ty) => TraitMember::AssocTy(assoc_ty),
+            ImplMember::Macro(macro_) => TraitMember::Macro(macro_),
         })
         .collect();
 

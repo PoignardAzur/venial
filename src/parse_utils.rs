@@ -33,6 +33,17 @@ pub(crate) fn parse_ident(tokens: &mut TokenIter, expected: &str, panic_context:
     }
 }
 
+pub(crate) fn consume_any_ident(tokens: &mut TokenIter) -> Option<Ident> {
+    match tokens.peek() {
+        Some(TokenTree::Ident(ident)) => {
+            let ident = ident.clone();
+            tokens.next();
+            Some(ident)
+        }
+        _ => None,
+    }
+}
+
 pub(crate) fn consume_ident(tokens: &mut TokenIter, expected: &str) -> Option<Ident> {
     match tokens.peek() {
         Some(TokenTree::Ident(ident)) if ident == expected => {
