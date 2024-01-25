@@ -14,8 +14,6 @@ pub(crate) fn parse_mod(
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
 ) -> Module {
-    // TODO some items currently unsupported: decl-macros, extern crate
-
     let tk_unsafe = consume_ident(tokens, "unsafe");
     let tk_mod = parse_ident(tokens, "mod", "module declaration");
     let module_name = consume_declaration_name(tokens);

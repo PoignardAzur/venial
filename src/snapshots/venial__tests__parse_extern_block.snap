@@ -1,0 +1,140 @@
+---
+source: src/tests.rs
+expression: filled_extern
+---
+ExternBlock(
+    ExternBlock {
+        attributes: [
+            Attribute {
+                tk_hash: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_brackets: [],
+                path: [
+                    decorated,
+                ],
+                value: Empty,
+            },
+        ],
+        vis_marker: Some(
+            pub(
+                crate,
+            ),
+        ),
+        tk_unsafe: None,
+        tk_extern: Ident(
+            extern,
+        ),
+        extern_abi: Some(
+            Literal {
+                lit: "stdcall",
+            },
+        ),
+        tk_braces: {},
+        inner_attributes: [
+            Attribute {
+                tk_hash: Punct {
+                    char: '#',
+                    spacing: Alone,
+                },
+                tk_bang: Punct {
+                    char: '!',
+                    spacing: Alone,
+                },
+                tk_brackets: [],
+                path: [
+                    allow,
+                ],
+                value: Group(
+                    [
+                        unused_variables,
+                    ],
+                    (),
+                ),
+            },
+        ],
+        body_items: [
+            Macro(
+                Macro {
+                    attributes: [],
+                    name: Ident(
+                        some_macro,
+                    ),
+                    tk_bang: Punct {
+                        char: '!',
+                        spacing: Alone,
+                    },
+                    tk_declared_name: None,
+                    tk_braces_or_parens: (),
+                    inner_tokens: [],
+                    tk_semicolon: Some(
+                        Punct {
+                            char: ';',
+                            spacing: Alone,
+                        },
+                    ),
+                },
+            ),
+            Method(
+                Function {
+                    attributes: [],
+                    vis_marker: None,
+                    qualifiers: FnQualifiers {
+                        tk_default: None,
+                        tk_const: None,
+                        tk_async: None,
+                        tk_unsafe: None,
+                        tk_extern: None,
+                        extern_abi: None,
+                    },
+                    tk_fn_keyword: Ident(
+                        fn,
+                    ),
+                    name: Ident(
+                        c_function,
+                    ),
+                    generic_params: None,
+                    tk_params_parens: (),
+                    params: [],
+                    where_clause: None,
+                    tk_return_arrow: None,
+                    return_ty: None,
+                    tk_semicolon: Some(
+                        Punct {
+                            char: ';',
+                            spacing: Alone,
+                        },
+                    ),
+                    body: None,
+                },
+            ),
+            Constant(
+                Constant {
+                    attributes: [],
+                    vis_marker: None,
+                    tk_const_or_static: Ident(
+                        static,
+                    ),
+                    tk_mut: None,
+                    name: Ident(
+                        S,
+                    ),
+                    tk_colon: Punct {
+                        char: ':',
+                        spacing: Alone,
+                    },
+                    ty: [
+                        i32,
+                    ],
+                    tk_equals: None,
+                    initializer: None,
+                    tk_semicolon: Punct {
+                        char: ';',
+                        spacing: Alone,
+                    },
+                },
+            ),
+        ],
+    },
+)

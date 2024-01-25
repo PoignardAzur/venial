@@ -5,7 +5,9 @@ use quote::{ToTokens, TokenStreamExt as _};
 
 use crate::Punctuated;
 
-/// The declaration of a Rust type.
+/// The declaration of a Rust item.
+///
+/// See also <https://doc.rust-lang.org/reference/items.html>.
 ///
 /// **Example input:**
 ///
@@ -59,6 +61,12 @@ pub enum Declaration {
 
     /// Macro invocation.
     Macro(Macro),
+
+    /// Extern block.
+    ExternBlock(ExternBlock),
+
+    /// Extern crate declaration.
+    ExternCrate(ExternCrate),
 }
 
 /// Declaration of a struct.
@@ -725,6 +733,77 @@ pub struct Macro {
     pub tk_semicolon: Option<Punct>,
 }
 
+/// An `extern` block.
+///
+/// See also <https://doc.rust-lang.org/reference/items/external-blocks.html>.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// # macro_rules! some_macro { () => {} };
+/// extern "stdcall" {
+///    #![allow(unused_variables)]
+///
+///    some_macro!();
+///    fn f();
+///    static S: i32;
+/// }
+#[derive(Clone, Debug)]
+pub struct ExternBlock {
+    /// Any attributes before the `extern` declaration.
+    pub attributes: Vec<Attribute>,
+    /// Visibility such as `pub`, `pub(crate)` etc.
+    pub vis_marker: Option<VisMarker>,
+    /// Optional `unsafe` keyword.
+    pub tk_unsafe: Option<Ident>,
+    /// `extern` keyword.
+    pub tk_extern: Ident,
+    /// Optional ABI string, e.g. `"stdcall"`.
+    pub extern_abi: Option<Literal>,
+    /// The `{}` marking the block.
+    pub tk_braces: GroupSpan,
+    /// Any `#![...]` attributes inside the block.
+    pub inner_attributes: Vec<Attribute>,
+    /// Members inside the extern block.
+    ///
+    /// Note that Rust syntax only allows macros, static items or functions. venial is slightly less strict here.
+    /// Since a subset of [`ImplMember`] is valid in Rust, that type is used.
+    pub body_items: Vec<ImplMember>,
+}
+
+/// Extern crate declaration.
+///
+/// See also <https://doc.rust-lang.org/reference/items/extern-crates.html>.
+///
+/// **Example input:**
+///
+/// ```no_run
+/// extern crate std;
+/// extern crate std as ruststd;
+/// extern crate self as _;
+/// ```
+#[derive(Clone, Debug)]
+pub struct ExternCrate {
+    /// Any attributes before the `extern crate` declaration.
+    pub attributes: Vec<Attribute>,
+    /// Visibility such as `pub`, `pub(crate)` etc.
+    pub vis_marker: Option<VisMarker>,
+    /// `extern` keyword.
+    pub tk_extern: Ident,
+    /// `crate` keyword.
+    pub tk_crate: Ident,
+    /// Name of the crate. Can also be `self`.
+    pub name: Ident,
+    /// Optional `as` keyword.
+    pub tk_as: Option<Ident>,
+    /// Crate alias (only present if `as` is present).
+    pub alias: Option<Ident>,
+    /// `_` token (as an alternative to `alias`, only if `as` is present).
+    pub tk_underscore: Option<Ident>,
+    /// `;` token.
+    pub tk_semicolon: Punct,
+}
+
 /// Information about a [`Group`]. This can be used to recreate the group
 /// from its inner token sequence, or to create a new group with a
 /// modified token sequence but the original group's span information.
@@ -971,6 +1050,8 @@ impl ToTokens for Declaration {
             Declaration::Constant(const_decl) => const_decl.to_tokens(tokens),
             Declaration::Use(use_decl) => use_decl.to_tokens(tokens),
             Declaration::Macro(macro_decl) => macro_decl.to_tokens(tokens),
+            Declaration::ExternBlock(block_decl) => block_decl.to_tokens(tokens),
+            Declaration::ExternCrate(crate_decl) => crate_decl.to_tokens(tokens),
         }
     }
 }
@@ -1489,6 +1570,42 @@ impl ToTokens for Macro {
         self.tk_braces_or_parens.quote_with(tokens, |tokens| {
             tokens.extend(self.inner_tokens.iter().cloned());
         });
+        self.tk_semicolon.to_tokens(tokens);
+    }
+}
+
+impl ToTokens for ExternBlock {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
+        self.tk_unsafe.to_tokens(tokens);
+        self.tk_extern.to_tokens(tokens);
+        self.extern_abi.to_tokens(tokens);
+        self.tk_braces.quote_with(tokens, |tokens| {
+            for attribute in &self.inner_attributes {
+                attribute.to_tokens(tokens);
+            }
+            for item in &self.body_items {
+                item.to_tokens(tokens);
+            }
+        });
+    }
+}
+
+impl ToTokens for ExternCrate {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        for attribute in &self.attributes {
+            attribute.to_tokens(tokens);
+        }
+        self.vis_marker.to_tokens(tokens);
+        self.tk_extern.to_tokens(tokens);
+        self.tk_crate.to_tokens(tokens);
+        self.name.to_tokens(tokens);
+        self.tk_as.to_tokens(tokens);
+        self.alias.to_tokens(tokens);
+        self.tk_underscore.to_tokens(tokens);
         self.tk_semicolon.to_tokens(tokens);
     }
 }

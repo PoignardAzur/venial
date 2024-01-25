@@ -1397,3 +1397,53 @@ fn parse_trait_decorated() {
     let trait_decl = parse_declaration_checked(expr);
     assert_debug_snapshot!(trait_decl);
 }
+
+// ====================
+// EXTERN CRATE + BLOCK
+// ====================
+
+#[test]
+fn parse_extern_block() {
+    let filled_extern = quote! {
+        #[decorated]
+        pub(crate) extern "stdcall" {
+           #![allow(unused_variables)]
+
+           some_macro!();
+           fn c_function();
+           static S: i32;
+        }
+    };
+
+    let unsafe_extern = quote! {
+        unsafe extern {}
+    };
+
+    let filled_extern = parse_declaration_checked(filled_extern);
+    assert_debug_snapshot!(filled_extern);
+
+    let unsafe_extern = parse_declaration_checked(unsafe_extern);
+    assert_debug_snapshot!(unsafe_extern);
+}
+
+#[test]
+fn parse_extern_crate() {
+    let simple_crate = quote! {
+        extern crate std;
+    };
+    let as_crate = quote! {
+        extern crate std as ruststd;
+    };
+    let as_underscore_crate = quote! {
+        extern crate self as _;
+    };
+
+    let simple_crate = parse_declaration_checked(simple_crate);
+    assert_debug_snapshot!(simple_crate);
+
+    let as_crate = parse_declaration_checked(as_crate);
+    assert_debug_snapshot!(as_crate);
+
+    let as_underscore_crate = parse_declaration_checked(as_underscore_crate);
+    assert_debug_snapshot!(as_underscore_crate);
+}

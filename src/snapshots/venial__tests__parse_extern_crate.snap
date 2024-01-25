@@ -1,0 +1,26 @@
+---
+source: src/tests.rs
+expression: simple_crate
+---
+ExternCrate(
+    ExternCrate {
+        attributes: [],
+        vis_marker: None,
+        tk_extern: Ident(
+            extern,
+        ),
+        tk_crate: Ident(
+            crate,
+        ),
+        name: Ident(
+            std,
+        ),
+        tk_as: None,
+        alias: None,
+        tk_underscore: None,
+        tk_semicolon: Punct {
+            char: ';',
+            spacing: Alone,
+        },
+    },
+)
