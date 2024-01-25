@@ -595,18 +595,17 @@ fn parse_complex_enum_variant() {
     assert_debug_snapshot!(enum_type_3);
 }
 
+// Macros in enum item position are illegal in Rust.
 #[test]
-#[should_panic] // FIXME
+#[should_panic]
 fn parse_enum_with_macro() {
-    let enum_decl = parse_declaration(quote!(
+    let _ = parse_declaration(quote!(
         enum Hello {
             A = 1,
             macroified! { B = 2 },
             macroified!(B; 2),
         }
     ));
-
-    assert_debug_snapshot!(enum_decl);
 }
 
 // =================
@@ -943,10 +942,11 @@ fn parse_struct_declaration(tokens: TokenStream) -> Struct {
     }
 }
 
+// Macros in struct field position are illegal in Rust.
 #[test]
-#[should_panic] // FIXME
+#[should_panic]
 fn parse_struct_with_macro() {
-    let struct_decl = parse_struct_declaration(quote!(
+    let _ = parse_struct_declaration(quote!(
         struct Hello {
             a: A,
             b: B,
@@ -955,8 +955,6 @@ fn parse_struct_with_macro() {
             }
         }
     ));
-
-    assert_quote_snapshot!(struct_decl);
 }
 
 #[test]
