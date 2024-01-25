@@ -1,0 +1,22 @@
+---
+source: src/tests.rs
+expression: unsafe_extern
+---
+ExternBlock(
+    ExternBlock {
+        attributes: [],
+        vis_marker: None,
+        tk_unsafe: Some(
+            Ident(
+                unsafe,
+            ),
+        ),
+        tk_extern: Ident(
+            extern,
+        ),
+        extern_abi: None,
+        tk_braces: {},
+        inner_attributes: [],
+        body_items: [],
+    },
+)

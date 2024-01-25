@@ -1,0 +1,34 @@
+---
+source: src/tests.rs
+expression: as_underscore_crate
+---
+ExternCrate(
+    ExternCrate {
+        attributes: [],
+        vis_marker: None,
+        tk_extern: Ident(
+            extern,
+        ),
+        tk_crate: Ident(
+            crate,
+        ),
+        name: Ident(
+            self,
+        ),
+        tk_as: Some(
+            Ident(
+                as,
+            ),
+        ),
+        alias: Some(
+            Ident(
+                _,
+            ),
+        ),
+        tk_underscore: None,
+        tk_semicolon: Punct {
+            char: ';',
+            spacing: Alone,
+        },
+    },
+)

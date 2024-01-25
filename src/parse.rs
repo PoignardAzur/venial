@@ -202,13 +202,12 @@ pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Declaratio
             let static_decl = parse_const_or_static(tokens, attributes, vis_marker);
             Declaration::Constant(static_decl)
         }
-        // Note: fn qualifiers appear always in this order in Rust: default const async unsafe extern fn
         Some(TokenTree::Ident(keyword)) if keyword == "use" => {
             let use_decl = parse_use_declaration(tokens, attributes, vis_marker);
 
             Declaration::Use(use_decl)
         }
-        // Note: fn qualifiers appear always in this order in Rust
+        // Note: fn qualifiers appear always in this order in Rust: default const async unsafe extern fn
         Some(TokenTree::Ident(keyword))
             if matches!(
                 keyword.to_string().as_str(),
@@ -216,7 +215,12 @@ pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Declaratio
             ) =>
         {
             // Reuse impl parsing
-            consume_either_fn_type_const_static_impl(tokens, attributes, vis_marker, "declaration")
+            consume_either_fn_type_const_static_impl(
+                tokens,
+                attributes,
+                vis_marker,
+                "fn/type/const/static/extern/extern crate",
+            )
         }
         Some(token) => {
             if let Some(macro_) = consume_macro(tokens, attributes) {

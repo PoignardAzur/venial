@@ -17,11 +17,16 @@ type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
 
 /// If venial fails to parse the declaration as a function, it can detect that it
 /// is either a constant (`const` ambiguity), an impl or a module (`unsafe` ambiguity).
+
+#[derive(Debug)]
 pub(crate) enum NotFunction {
     Const,
+    Static,
     Trait,
     Impl,
     Mod,
+    ExternCrate,
+    ExternBlock,
 }
 
 pub(crate) fn consume_fn_qualifiers(tokens: &mut TokenIter) -> FnQualifiers {
@@ -148,36 +153,61 @@ pub(crate) fn consume_fn(
 
     // fn keyword, or const fallback
     let next_token = tokens.next();
-    let tk_fn_keyword = if let Some(TokenTree::Ident(ident)) = &next_token {
-        if ident == "fn" {
-            ident.clone()
-        } else if qualifiers.has_only_const_xor_unsafe() {
-            // This is not a function, detect what else it is
-            // Note: detection already done here, because then we only need the lookahead/rollback once
-            let declaration_type = if qualifiers.tk_const.is_some() {
-                NotFunction::Const
-            } else if qualifiers.tk_unsafe.is_some() {
-                match &next_token {
-                    Some(TokenTree::Ident(ident)) if ident == "trait" => NotFunction::Trait,
-                    Some(TokenTree::Ident(ident)) if ident == "impl" => NotFunction::Impl,
-                    Some(TokenTree::Ident(ident)) if ident == "mod" => NotFunction::Mod,
-                    token => panic!(
-                        "expected one of 'fn|trait|impl|mod' after 'unsafe', got {:?}",
-                        token
-                    ),
-                }
-            } else {
-                unreachable!()
-            };
+    let tk_fn_keyword = match &next_token {
+        Some(TokenTree::Ident(ident)) => {
+            if ident == "fn" {
+                ident.clone()
+            } else if qualifiers.tk_extern.is_some() && ident == "crate" {
+                *tokens = before_start; // rollback
+                return Err(NotFunction::ExternCrate);
+            } else if ident == "static" {
+                // rollback iterator, could be start of const declaration
+                *tokens = before_start;
+                return Err(NotFunction::Static);
+            } else if qualifiers.has_only_const_xor_unsafe() {
+                // This is not a function, detect what else it is.
+                // Note: detection already done here, because then we only need the lookahead/rollback once.
+                let declaration_type = if qualifiers.tk_const.is_some() {
+                    NotFunction::Const
+                } else if qualifiers.tk_unsafe.is_some() {
+                    if ident == "trait" {
+                        NotFunction::Trait
+                    } else if ident == "impl" {
+                        NotFunction::Impl
+                    } else if ident == "mod" {
+                        NotFunction::Mod
+                    } else {
+                        panic!("expected one of 'fn|trait|impl|mod' after 'unsafe', got {ident:?}")
+                    }
+                } else {
+                    unreachable!()
+                };
 
-            // rollback iterator, could be start of const declaration
-            *tokens = before_start;
-            return Err(declaration_type);
-        } else {
-            panic!("expected 'fn' keyword, got ident '{}'", ident)
+                // rollback iterator, could be start of const declaration
+                *tokens = before_start;
+                return Err(declaration_type);
+            } else {
+                panic!("expected 'fn' keyword, got ident '{}'", ident)
+            }
         }
-    } else {
-        panic!("expected 'fn' keyword")
+
+        // extern "C" { ...
+        Some(TokenTree::Literal(_)) if qualifiers.tk_extern.is_some() => {
+            *tokens = before_start; // rollback
+            return Err(NotFunction::ExternBlock);
+        }
+
+        // extern { ...
+        Some(TokenTree::Group(group))
+            if qualifiers.tk_extern.is_some() && group.delimiter() == Delimiter::Brace =>
+        {
+            *tokens = before_start; // rollback
+            return Err(NotFunction::ExternBlock);
+        }
+
+        _ => {
+            panic!("expected 'fn' keyword")
+        }
     };
 
     let fn_name = consume_declaration_name(tokens);

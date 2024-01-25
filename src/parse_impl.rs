@@ -1,3 +1,4 @@
+use crate::parse_extern::{parse_extern_block, parse_extern_crate};
 use crate::parse_fn::{consume_fn, consume_macro, NotFunction};
 use crate::parse_mod::parse_mod;
 use crate::parse_type::{consume_bound, consume_generic_params, consume_where_clause};
@@ -116,6 +117,7 @@ pub(crate) fn consume_ty_definition(
     })
 }
 
+// TODO could accept a mask, allowing only certain sub-items. This could be made to reject e.g. extern crate in impl blocks.
 pub(crate) fn consume_either_fn_type_const_static_impl(
     tokens: &mut TokenIter,
     attributes: Vec<Attribute>,
@@ -129,12 +131,18 @@ pub(crate) fn consume_either_fn_type_const_static_impl(
                 let assoc_ty = consume_ty_definition(tokens, attributes, vis_marker);
                 Declaration::TyDefinition(assoc_ty.unwrap())
             }
-            "default" | "const" | "async" | "unsafe" | "extern" | "fn" => {
+
+            // Note: `static` is only used for extern "abi" {} blocks. Checked in call site.
+            "default" | "const" | "static" | "async" | "unsafe" | "extern" | "fn" => {
                 match consume_fn(tokens, attributes.clone(), vis_marker.clone()) {
                     Ok(method) => Declaration::Function(method),
                     Err(NotFunction::Const) => {
                         let constant = parse_const_or_static(tokens, attributes, vis_marker);
                         Declaration::Constant(constant)
+                    }
+                    Err(NotFunction::Static) => {
+                        let static_decl = parse_const_or_static(tokens, attributes, vis_marker);
+                        Declaration::Constant(static_decl)
                     }
                     Err(NotFunction::Trait) => {
                         let trait_decl = parse_trait(tokens, attributes, vis_marker);
@@ -147,6 +155,14 @@ pub(crate) fn consume_either_fn_type_const_static_impl(
                     Err(NotFunction::Mod) => {
                         let mod_decl = parse_mod(tokens, attributes, vis_marker);
                         Declaration::Module(mod_decl)
+                    }
+                    Err(NotFunction::ExternBlock) => {
+                        let extern_decl = parse_extern_block(tokens, attributes, vis_marker);
+                        Declaration::ExternBlock(extern_decl)
+                    }
+                    Err(NotFunction::ExternCrate) => {
+                        let crate_decl = parse_extern_crate(tokens, attributes, vis_marker);
+                        Declaration::ExternCrate(crate_decl)
                     }
                 }
             }
@@ -168,7 +184,10 @@ pub(crate) fn consume_either_fn_type_const_static_impl(
     }
 }
 
-pub(crate) fn parse_impl_body(token_group: Group) -> (GroupSpan, Vec<Attribute>, Vec<ImplMember>) {
+pub(crate) fn parse_impl_body(
+    token_group: Group,
+    allow_static: bool,
+) -> (GroupSpan, Vec<Attribute>, Vec<ImplMember>) {
     let mut body_items = vec![];
 
     let mut tokens = token_group.stream().into_iter().peekable();
@@ -187,7 +206,14 @@ pub(crate) fn parse_impl_body(token_group: Group) -> (GroupSpan, Vec<Attribute>,
             "impl",
         ) {
             Declaration::Function(function) => ImplMember::Method(function),
-            Declaration::Constant(constant) => ImplMember::Constant(constant),
+            Declaration::Constant(const_) if const_.tk_const_or_static == "const" => {
+                // `const` can appear in impl/trait blocks.
+                ImplMember::Constant(const_)
+            }
+            Declaration::Constant(static_) if allow_static => {
+                // `static` can appear in `extern "abi" {}` blocks.
+                ImplMember::Constant(static_)
+            }
             Declaration::TyDefinition(ty_def) => ImplMember::AssocTy(ty_def),
             Declaration::Macro(macro_) => ImplMember::Macro(macro_),
             _ => panic!("unsupported impl item `{:?}`", tokens.peek()),
@@ -245,7 +271,9 @@ pub(crate) fn parse_impl(tokens: &mut TokenIter, attributes: Vec<Attribute>) -> 
     let where_clause = consume_where_clause(tokens);
 
     let (tk_braces, inner_attributes, body_items) = match tokens.next().unwrap() {
-        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => parse_impl_body(group),
+        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
+            parse_impl_body(group, false)
+        }
         token => panic!("cannot parse impl: unexpected token {:?}", token),
     };
 
@@ -282,7 +310,9 @@ pub(crate) fn parse_trait(
 
     // For trait body, at the moment reuse impl parsing
     let (tk_braces, inner_attributes, body_items) = match tokens.next().unwrap() {
-        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => parse_impl_body(group),
+        TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
+            parse_impl_body(group, false)
+        }
         token => panic!("cannot parse trait: unexpected token {:?}", token),
     };
 

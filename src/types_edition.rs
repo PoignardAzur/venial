@@ -26,6 +26,8 @@ impl Declaration {
             Declaration::Constant(const_decl) => &const_decl.attributes,
             Declaration::Use(use_decl) => &use_decl.attributes,
             Declaration::Macro(macro_decl) => &macro_decl.attributes,
+            Declaration::ExternBlock(block_decl) => &block_decl.attributes,
+            Declaration::ExternCrate(crate_decl) => &crate_decl.attributes,
         }
     }
 
@@ -45,6 +47,8 @@ impl Declaration {
             Declaration::Constant(const_decl) => &mut const_decl.attributes,
             Declaration::Use(use_decl) => &mut use_decl.attributes,
             Declaration::Macro(macro_decl) => &mut macro_decl.attributes,
+            Declaration::ExternBlock(block_decl) => &mut block_decl.attributes,
+            Declaration::ExternCrate(crate_decl) => &mut crate_decl.attributes,
         }
     }
 
@@ -69,6 +73,8 @@ impl Declaration {
             Declaration::Constant(_) => None,
             Declaration::Use(_) => None,
             Declaration::Macro(_) => None,
+            Declaration::ExternBlock(_) => None,
+            Declaration::ExternCrate(_) => None,
         }
     }
 
@@ -93,6 +99,8 @@ impl Declaration {
             Declaration::Constant(_) => None,
             Declaration::Use(_) => None,
             Declaration::Macro(_) => None,
+            Declaration::ExternBlock(_) => None,
+            Declaration::ExternCrate(_) => None,
         }
     }
 
@@ -122,6 +130,8 @@ impl Declaration {
             Declaration::Constant(const_decl) => Some(const_decl.name.clone()),
             Declaration::Use(_) => None,
             Declaration::Macro(macro_) => Some(macro_.name.clone()),
+            Declaration::ExternBlock(_) => None,
+            Declaration::ExternCrate(crate_) => Some(crate_.name.clone()),
         }
     }
 
