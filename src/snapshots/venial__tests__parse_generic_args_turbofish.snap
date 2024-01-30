@@ -1,6 +1,6 @@
 ---
 source: src/tests.rs
-expression: parsed
+expression: generic_args
 ---
 GenericArgList {
     tk_turbofish_colons: "::",

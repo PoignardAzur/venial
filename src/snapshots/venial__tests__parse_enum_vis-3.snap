@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 202
 expression: enum_type_crate
 ---
 Enum(

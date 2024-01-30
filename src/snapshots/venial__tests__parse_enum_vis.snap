@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 200
 expression: enum_type_pub
 ---
 Enum(

@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 535
 expression: enum_type_3
 ---
 Ok(

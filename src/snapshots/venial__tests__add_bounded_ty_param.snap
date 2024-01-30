@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 885
 expression: tokens
 ---
 struct Hello < T : Clone > { a : A , b : B , }

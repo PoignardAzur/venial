@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 912
 expression: tokens
 ---
 struct Hello < const N : u32 > { a : A , b : B , }
