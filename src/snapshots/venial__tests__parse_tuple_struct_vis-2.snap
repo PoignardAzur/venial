@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 156
 expression: struct_type_pub_crate
 ---
 Struct(

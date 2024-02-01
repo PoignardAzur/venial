@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 534
 expression: enum_type_2
 ---
 Err(

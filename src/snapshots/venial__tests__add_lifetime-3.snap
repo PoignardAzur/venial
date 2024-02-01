@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 829
 expression: tokens
 ---
 struct Hello < 'b , 'a , A , B > { a : & 'a A , b : B , }

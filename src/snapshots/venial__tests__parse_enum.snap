@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 70
 expression: enum_type
 ---
 Enum(

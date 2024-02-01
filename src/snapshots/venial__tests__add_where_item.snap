@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 939
 expression: tokens
 ---
 struct Hello where Self : Sized { a : A , b : B , }

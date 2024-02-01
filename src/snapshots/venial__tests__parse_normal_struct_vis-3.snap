@@ -1,6 +1,5 @@
 ---
 source: src/tests.rs
-assertion_line: 183
 expression: struct_type_crate
 ---
 Struct(
