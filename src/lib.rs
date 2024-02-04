@@ -51,6 +51,49 @@
 //! assert_eq!(enum_type.variants[1].0.name, "Circle");
 //! assert_eq!(enum_type.variants[2].0.name, "Triangle");
 //! ```
+//!
+//! ## Spans
+//!
+//! Spans mark the beginning and end of tokens in the source code and can be used to generate precise error messages, highlighting certain parts.
+//! Item types provide a `span()` method that returns their respective span.
+//!
+//! Note that Rust's `proc_macro` crate [does not support span joining in stable][span-join]. That means that if you want items to hold the full
+//! full span of the input, you'll need a nightly compiler. Otherwise, the span will typically only include the first token-tree in the sequence.
+//!
+//! For example, if you have a [`NamedField`] you'd like to highlight in an error message, you can use `named_field.span()`.
+//! On nightly, a custom error could be rendered as follows:
+//!
+//! ```text
+//! error: my_attribute cannot be applied in this context
+//!   --> crate/rust/src/file.rs:58:5
+//!    |
+//! 58 | /     #[my_attribute]
+//! 59 | |     field: i32,
+//!    | |______________^
+//! ```
+//!
+//! However, on stable, the span might only refer to the first token tree (here `#`):
+//!
+//! ```text
+//! error: my_attribute cannot be applied in this context
+//!   --> crate/rust/src/file.rs:58:5
+//!    |
+//! 58 |      #[my_attribute]
+//!    |      ^
+//! ```
+//!
+//! You can however control this behavior more precisely by choosing which sub-tokens to highlight. On stable compilers, you might want to
+//! put focus on the field name `named_field.name.span()` instead of the entire field `named_field.span()`. This would yield:
+//!
+//! ```text
+//! error: my_attribute cannot be applied in this context
+//!  --> crate/rust/src/file.rs:58:5
+//!    |
+//! 59 |     field: i32,
+//!    |     ^^^^^
+//! ```
+//!
+//! [span-join]: https://doc.rust-lang.org/proc_macro/struct.Span.html#method.join
 
 // Implementation guidelines and naming conventions:
 // - `parse_xxx` functions return `T`.
