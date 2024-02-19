@@ -28,7 +28,7 @@ use crate::Punctuated;
 /// ```
 #[non_exhaustive]
 #[derive(Clone, Debug)]
-pub enum Declaration {
+pub enum Item {
     /// `struct` declaration.
     Struct(Struct),
 
@@ -178,7 +178,7 @@ pub struct Module {
     /// List of all `#![inner]` attributes.
     pub inner_attributes: Vec<Attribute>,
     /// Everything declared inside the module.
-    pub members: Vec<Declaration>,
+    pub members: Vec<Item>,
 }
 
 /// Declaration of an union.
@@ -1036,22 +1036,22 @@ impl GroupSpan {
     }
 }
 
-impl ToTokens for Declaration {
+impl ToTokens for Item {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            Declaration::Struct(struct_decl) => struct_decl.to_tokens(tokens),
-            Declaration::Enum(enum_decl) => enum_decl.to_tokens(tokens),
-            Declaration::Union(union_decl) => union_decl.to_tokens(tokens),
-            Declaration::Module(mod_decl) => mod_decl.to_tokens(tokens),
-            Declaration::Trait(trait_decl) => trait_decl.to_tokens(tokens),
-            Declaration::Impl(impl_decl) => impl_decl.to_tokens(tokens),
-            Declaration::TyDefinition(ty_decl) => ty_decl.to_tokens(tokens),
-            Declaration::Function(function_decl) => function_decl.to_tokens(tokens),
-            Declaration::Constant(const_decl) => const_decl.to_tokens(tokens),
-            Declaration::Use(use_decl) => use_decl.to_tokens(tokens),
-            Declaration::Macro(macro_decl) => macro_decl.to_tokens(tokens),
-            Declaration::ExternBlock(block_decl) => block_decl.to_tokens(tokens),
-            Declaration::ExternCrate(crate_decl) => crate_decl.to_tokens(tokens),
+            Item::Struct(struct_decl) => struct_decl.to_tokens(tokens),
+            Item::Enum(enum_decl) => enum_decl.to_tokens(tokens),
+            Item::Union(union_decl) => union_decl.to_tokens(tokens),
+            Item::Module(mod_decl) => mod_decl.to_tokens(tokens),
+            Item::Trait(trait_decl) => trait_decl.to_tokens(tokens),
+            Item::Impl(impl_decl) => impl_decl.to_tokens(tokens),
+            Item::TyDefinition(ty_decl) => ty_decl.to_tokens(tokens),
+            Item::Function(function_decl) => function_decl.to_tokens(tokens),
+            Item::Constant(const_decl) => const_decl.to_tokens(tokens),
+            Item::Use(use_decl) => use_decl.to_tokens(tokens),
+            Item::Macro(macro_decl) => macro_decl.to_tokens(tokens),
+            Item::ExternBlock(block_decl) => block_decl.to_tokens(tokens),
+            Item::ExternCrate(crate_decl) => crate_decl.to_tokens(tokens),
         }
     }
 }

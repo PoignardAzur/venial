@@ -1,4 +1,4 @@
-use crate::{parse_declaration, Declaration, GenericParam, Struct, TyExpr, WhereClauseItem};
+use crate::{parse_declaration, Item, GenericParam, Struct, TyExpr, WhereClauseItem};
 
 use crate::parse_type::consume_generic_args;
 use crate::types::GenericArgList;
@@ -16,7 +16,7 @@ macro_rules! assert_quote_snapshot {
     }};
 }
 
-fn parse_declaration_checked(tokens: TokenStream) -> Declaration {
+fn parse_declaration_checked(tokens: TokenStream) -> Item {
     let initial_tokens = tokens.clone();
     let declaration = parse_declaration(tokens).unwrap();
 
@@ -937,7 +937,7 @@ fn parse_fn_self_param() {
 
 fn parse_struct_declaration(tokens: TokenStream) -> Struct {
     match parse_declaration(tokens).unwrap() {
-        Declaration::Struct(struct_decl) => struct_decl,
+        Item::Struct(struct_decl) => struct_decl,
         _ => panic!("not a struct"),
     }
 }

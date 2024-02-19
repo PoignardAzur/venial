@@ -9,7 +9,7 @@ use crate::parse_type::{
     parse_named_fields, parse_tuple_fields,
 };
 use crate::parse_utils::{consume_outer_attributes, consume_punct, consume_vis_marker};
-use crate::types::{Declaration, Enum, Struct, StructFields, Union};
+use crate::types::{Item, Enum, Struct, StructFields, Union};
 use crate::types_edition::GroupSpan;
 use proc_macro2::token_stream::IntoIter;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
@@ -32,7 +32,7 @@ use std::iter::Peekable;
 /// ## Example
 ///
 /// ```
-/// # use venial::{parse_declaration, Declaration};
+/// # use venial::{parse_declaration, Item};
 /// # use quote::quote;
 /// let struct_type = parse_declaration(quote!(
 ///     struct Hello {
@@ -40,7 +40,7 @@ use std::iter::Peekable;
 ///         bar: Bar,
 ///     }
 /// ));
-/// assert!(matches!(struct_type, Ok(Declaration::Struct(_))));
+/// assert!(matches!(struct_type, Ok(Item::Struct(_))));
 /// ```
 ///
 /// ## Errors
@@ -57,7 +57,7 @@ use std::iter::Peekable;
 ///     E = (FOO + BAR),  // Ok
 /// }
 /// ```
-pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
+pub fn parse_declaration(tokens: TokenStream) -> Result<Item, Error> {
     let mut tokens = tokens.into_iter().peekable();
     let declaration = consume_declaration(&mut tokens);
 
@@ -84,7 +84,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Declaration, Error> {
 /// ## Errors
 ///
 /// Venial doesn't support enum discriminants with multiple non-grouped tokens.
-pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Declaration, Error> {
+pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Item, Error> {
     let attributes = consume_outer_attributes(tokens);
     let vis_marker = consume_vis_marker(tokens);
 
@@ -124,7 +124,7 @@ pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Declaratio
 
             let semicolon = consume_punct(tokens, ';');
 
-            Declaration::Struct(Struct {
+            Item::Struct(Struct {
                 attributes,
                 vis_marker,
                 tk_struct: keyword,
@@ -150,7 +150,7 @@ pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Declaratio
                 token => panic!("cannot parse enum: unexpected token {:?}", token),
             };
 
-            Declaration::Enum(Enum {
+            Item::Enum(Enum {
                 attributes,
                 vis_marker,
                 tk_enum: keyword,
@@ -176,7 +176,7 @@ pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Declaratio
                 token => panic!("cannot parse union: unexpected token {:?}", token),
             };
 
-            Declaration::Union(Union {
+            Item::Union(Union {
                 attributes,
                 vis_marker,
                 tk_union: keyword,
@@ -188,24 +188,24 @@ pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Declaratio
         }
         Some(TokenTree::Ident(keyword)) if keyword == "mod" => {
             let mod_decl = parse_mod(tokens, attributes, vis_marker);
-            Declaration::Module(mod_decl)
+            Item::Module(mod_decl)
         }
         Some(TokenTree::Ident(keyword)) if keyword == "trait" => {
             let trait_decl = parse_trait(tokens, attributes, vis_marker);
-            Declaration::Trait(trait_decl)
+            Item::Trait(trait_decl)
         }
         Some(TokenTree::Ident(keyword)) if keyword == "impl" => {
             let impl_decl = parse_impl(tokens, attributes);
-            Declaration::Impl(impl_decl)
+            Item::Impl(impl_decl)
         }
         Some(TokenTree::Ident(keyword)) if keyword == "static" => {
             let static_decl = parse_const_or_static(tokens, attributes, vis_marker);
-            Declaration::Constant(static_decl)
+            Item::Constant(static_decl)
         }
         Some(TokenTree::Ident(keyword)) if keyword == "use" => {
             let use_decl = parse_use_declaration(tokens, attributes, vis_marker);
 
-            Declaration::Use(use_decl)
+            Item::Use(use_decl)
         }
         // Note: fn qualifiers appear always in this order in Rust: default const async unsafe extern fn
         Some(TokenTree::Ident(keyword))
@@ -224,7 +224,7 @@ pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Declaratio
         }
         Some(token) => {
             if let Some(macro_) = consume_macro(tokens, attributes) {
-                Declaration::Macro(macro_)
+                Item::Macro(macro_)
             } else {
                 panic!(
                     "cannot parse declaration: expected keyword struct/enum/union/type/trait/impl/mod/default/const/async/unsafe/extern/fn/static or macro, found token {:?}",

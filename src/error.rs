@@ -22,7 +22,7 @@ use std::fmt::{Debug, Display};
 /// # extern crate proc_macro;
 /// #
 /// # use proc_macro2::TokenStream;
-/// # use venial::{parse_declaration, Declaration, Struct, Error};
+/// # use venial::{parse_declaration, Item, Struct, Error};
 /// #
 /// # const IGNORE: &str = stringify! {
 /// #[proc_macro_derive(MyDerive)]
@@ -32,7 +32,7 @@ use std::fmt::{Debug, Display};
 ///
 ///     let parse_res = match input {
 ///         Err(error) => Err(error),
-///         Ok(Declaration::Struct(struct_decl)) => parse_my_struct(struct_decl),
+///         Ok(Item::Struct(struct_decl)) => parse_my_struct(struct_decl),
 ///         Ok(_) => Err(Error::new("Error in my_derive macro: only structs are accepted")),
 ///     };
 ///

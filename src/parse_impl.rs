@@ -8,7 +8,7 @@ use crate::parse_utils::{
 };
 use crate::types::{Constant, ImplMember, TyDefinition, ValueExpr};
 use crate::types_edition::GroupSpan;
-use crate::{Attribute, Declaration, Impl, Trait, TraitMember, TyExpr, VisMarker};
+use crate::{Attribute, Item, Impl, Trait, TraitMember, TyExpr, VisMarker};
 use proc_macro2::{Delimiter, Group, TokenTree};
 use quote::ToTokens;
 use std::iter::Peekable;
@@ -123,46 +123,46 @@ pub(crate) fn consume_either_fn_type_const_static_impl(
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
     context: &str, // for panic
-) -> Declaration {
+) -> Item {
     if let Some(TokenTree::Ident(ident)) = tokens.peek() {
         let keyword = ident.to_string();
         match keyword.as_str() {
             "type" => {
                 let assoc_ty = consume_ty_definition(tokens, attributes, vis_marker);
-                Declaration::TyDefinition(assoc_ty.unwrap())
+                Item::TyDefinition(assoc_ty.unwrap())
             }
 
             // Note: `static` is only used for extern "abi" {} blocks. Checked in call site.
             "default" | "const" | "static" | "async" | "unsafe" | "extern" | "fn" => {
                 match consume_fn(tokens, attributes.clone(), vis_marker.clone()) {
-                    Ok(method) => Declaration::Function(method),
+                    Ok(method) => Item::Function(method),
                     Err(NotFunction::Const) => {
                         let constant = parse_const_or_static(tokens, attributes, vis_marker);
-                        Declaration::Constant(constant)
+                        Item::Constant(constant)
                     }
                     Err(NotFunction::Static) => {
                         let static_decl = parse_const_or_static(tokens, attributes, vis_marker);
-                        Declaration::Constant(static_decl)
+                        Item::Constant(static_decl)
                     }
                     Err(NotFunction::Trait) => {
                         let trait_decl = parse_trait(tokens, attributes, vis_marker);
-                        Declaration::Trait(trait_decl)
+                        Item::Trait(trait_decl)
                     }
                     Err(NotFunction::Impl) => {
                         let impl_decl = parse_impl(tokens, attributes);
-                        Declaration::Impl(impl_decl)
+                        Item::Impl(impl_decl)
                     }
                     Err(NotFunction::Mod) => {
                         let mod_decl = parse_mod(tokens, attributes, vis_marker);
-                        Declaration::Module(mod_decl)
+                        Item::Module(mod_decl)
                     }
                     Err(NotFunction::ExternBlock) => {
                         let extern_decl = parse_extern_block(tokens, attributes, vis_marker);
-                        Declaration::ExternBlock(extern_decl)
+                        Item::ExternBlock(extern_decl)
                     }
                     Err(NotFunction::ExternCrate) => {
                         let crate_decl = parse_extern_crate(tokens, attributes, vis_marker);
-                        Declaration::ExternCrate(crate_decl)
+                        Item::ExternCrate(crate_decl)
                     }
                 }
             }
@@ -174,7 +174,7 @@ pub(crate) fn consume_either_fn_type_const_static_impl(
                     );
                 }
                 match consume_macro(tokens, attributes.clone()) {
-                    Some(macro_) => Declaration::Macro(macro_),
+                    Some(macro_) => Item::Macro(macro_),
                     None => panic!("unsupported {} item `{}`", context, ident),
                 }
             }
@@ -205,17 +205,17 @@ pub(crate) fn parse_impl_body(
             vis_marker,
             "impl",
         ) {
-            Declaration::Function(function) => ImplMember::Method(function),
-            Declaration::Constant(const_) if const_.tk_const_or_static == "const" => {
+            Item::Function(function) => ImplMember::Method(function),
+            Item::Constant(const_) if const_.tk_const_or_static == "const" => {
                 // `const` can appear in impl/trait blocks.
                 ImplMember::Constant(const_)
             }
-            Declaration::Constant(static_) if allow_static => {
+            Item::Constant(static_) if allow_static => {
                 // `static` can appear in `extern "abi" {}` blocks.
                 ImplMember::Constant(static_)
             }
-            Declaration::TyDefinition(ty_def) => ImplMember::AssocTy(ty_def),
-            Declaration::Macro(macro_) => ImplMember::Macro(macro_),
+            Item::TyDefinition(ty_def) => ImplMember::AssocTy(ty_def),
+            Item::Macro(macro_) => ImplMember::Macro(macro_),
             _ => panic!("unsupported impl item `{:?}`", tokens.peek()),
         };
 
