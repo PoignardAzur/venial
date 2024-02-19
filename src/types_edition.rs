@@ -1,8 +1,8 @@
 use crate::parse_utils::{consume_path, tokens_from_slice};
 pub use crate::types::{
-    Attribute, AttributeValue, Item, Enum, EnumVariant, EnumVariantValue, Function,
-    GenericBound, GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, NamedField, Struct,
-    Fields, TupleField, TypeExpr, Union, VisMarker, WhereClause, WhereClauseItem,
+    Attribute, AttributeValue, Enum, EnumVariant, EnumVariantValue, Fields, Function, GenericBound,
+    GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, Item, NamedField, Struct,
+    TupleField, TypeExpr, Union, VisMarker, WhereClause, WhereClausePredicate,
 };
 use crate::types::{FnQualifiers, GenericArg, GenericArgList, Impl, Module, Path};
 use crate::{Constant, Punctuated, Trait, TypeAlias};
@@ -346,14 +346,14 @@ macro_rules! implement_common_methods {
                 self
             }
 
-            /// Builder method, add a [`WhereClauseItem`] to `self.where_clause`.
+            /// Builder method, add a [`WhereClausePredicate`] to `self.where_clause`.
             ///
             /// Creates a default [`WhereClause`] if `self.where_clause` is None.
-            pub fn with_where_item(mut self, item: WhereClauseItem) -> Self {
+            pub fn with_where_predicate(mut self, pred: WhereClausePredicate) -> Self {
                 if let Some(where_clause) = self.where_clause {
-                    self.where_clause = Some(where_clause.with_item(item));
+                    self.where_clause = Some(where_clause.with_predicate(pred));
                 } else {
-                    self.where_clause = Some(WhereClause::from_item(item));
+                    self.where_clause = Some(WhereClause::from_predicate(pred));
                 }
                 self
             }
@@ -431,7 +431,7 @@ macro_rules! implement_common_methods {
                 let mut where_clause = self.where_clause.clone().unwrap_or_default();
 
                 for param in self.get_type_params() {
-                    let item = WhereClauseItem {
+                    let pred = WhereClausePredicate {
                         left_side: vec![param.name.clone().into()],
                         bound: GenericBound {
                             tk_colon: Punct::new(':', Spacing::Alone),
@@ -439,7 +439,7 @@ macro_rules! implement_common_methods {
                         },
                     };
 
-                    where_clause = where_clause.with_item(item);
+                    where_clause = where_clause.with_predicate(pred);
                 }
 
                 where_clause
@@ -708,19 +708,19 @@ impl<'a> InlineGenericArgs<'a> {
 }
 
 impl WhereClause {
-    /// Create where-clause with a single item.
-    pub fn from_item(item: WhereClauseItem) -> Self {
-        Self::default().with_item(item)
+    /// Create where-clause with a single predicate.
+    pub fn from_predicate(item: WhereClausePredicate) -> Self {
+        Self::default().with_predicate(item)
     }
 
-    /// Builder method, add an item to the where-clause.
-    pub fn with_item(mut self, item: WhereClauseItem) -> Self {
+    /// Builder method, add a predicate to the where-clause.
+    pub fn with_predicate(mut self, item: WhereClausePredicate) -> Self {
         self.items.push(item, None);
         self
     }
 }
 
-impl WhereClauseItem {
+impl WhereClausePredicate {
     /// Helper method to create a WhereClauseItem from a quote.
     ///
     /// # Panics
@@ -751,7 +751,7 @@ impl WhereClauseItem {
 
         let bound_tokens = tokens.collect();
 
-        WhereClauseItem {
+        WhereClausePredicate {
             left_side,
             bound: GenericBound {
                 tk_colon: colon,
@@ -803,7 +803,7 @@ implement_span!(TypeExpr);
 implement_span!(Union);
 implement_span!(VisMarker);
 implement_span!(WhereClause);
-implement_span!(WhereClauseItem);
+implement_span!(WhereClausePredicate);
 
 impl InlineGenericArgs<'_> {
     /// Returns span of this item.

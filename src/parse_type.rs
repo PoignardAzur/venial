@@ -5,9 +5,9 @@ use crate::parse_utils::{
 };
 use crate::punctuated::Punctuated;
 use crate::types::{
-    EnumVariant, EnumVariantValue, GenericArg, GenericArgList, GenericBound, GenericParam,
-    GenericParamList, NamedField, NamedFields, Fields, TupleField, TupleFields,
-    TypeExpr, WhereClause, WhereClauseItem,
+    EnumVariant, EnumVariantValue, Fields, GenericArg, GenericArgList, GenericBound, GenericParam,
+    GenericParamList, NamedField, NamedFields, TupleField, TupleFields, TypeExpr, WhereClause,
+    WhereClausePredicate,
 };
 use crate::types_edition::GroupSpan;
 use proc_macro2::{Delimiter, Group, Ident, Punct, TokenStream, TokenTree};
@@ -246,7 +246,7 @@ pub(crate) fn consume_where_clause(tokens: &mut TokenIter) -> Option<WhereClause
         let comma = consume_comma(tokens);
 
         items.push(
-            WhereClauseItem {
+            WhereClausePredicate {
                 left_side,
                 bound: GenericBound {
                     tk_colon: colon,

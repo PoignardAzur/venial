@@ -1,5 +1,5 @@
 use crate::parse_type::{
-    consume_item_name, consume_field_type, consume_generic_params, consume_where_clause,
+    consume_field_type, consume_generic_params, consume_item_name, consume_where_clause,
 };
 use crate::parse_utils::{
     consume_any_ident, consume_comma, consume_ident, consume_outer_attributes, consume_punct,

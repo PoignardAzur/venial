@@ -624,7 +624,7 @@ pub struct InlineGenericArgs<'a>(pub(crate) &'a GenericParamList);
 #[derive(Clone)]
 pub struct WhereClause {
     pub tk_where: Ident,
-    pub items: Punctuated<WhereClauseItem>,
+    pub items: Punctuated<WhereClausePredicate>,
 }
 
 /// Item in a where clause.
@@ -635,7 +635,7 @@ pub struct WhereClause {
 /// struct MyStruct<T>(T) where T: Clone;
 /// ```
 #[derive(Clone)]
-pub struct WhereClauseItem {
+pub struct WhereClausePredicate {
     pub left_side: Vec<TokenTree>,
     pub bound: GenericBound,
 }
@@ -1026,7 +1026,7 @@ impl std::fmt::Debug for WhereClause {
     }
 }
 
-impl std::fmt::Debug for WhereClauseItem {
+impl std::fmt::Debug for WhereClausePredicate {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         let mut list = f.debug_list();
         for token in quote::quote!(#self) {
@@ -1550,7 +1550,7 @@ impl ToTokens for WhereClause {
     }
 }
 
-impl ToTokens for WhereClauseItem {
+impl ToTokens for WhereClausePredicate {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for token in &self.left_side {
             tokens.append(token.clone());

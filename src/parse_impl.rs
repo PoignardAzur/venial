@@ -8,7 +8,7 @@ use crate::parse_utils::{
 };
 use crate::types::{Constant, ImplMember, TypeAlias, ValueExpr};
 use crate::types_edition::GroupSpan;
-use crate::{Attribute, Item, Impl, Trait, TraitMember, TypeExpr, VisMarker};
+use crate::{Attribute, Impl, Item, Trait, TraitMember, TypeExpr, VisMarker};
 use proc_macro2::{Delimiter, Group, TokenTree};
 use quote::ToTokens;
 use std::iter::Peekable;
