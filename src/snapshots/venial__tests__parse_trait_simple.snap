@@ -219,7 +219,7 @@ Trait(
                 },
             ),
             AssocTy(
-                TyDefinition {
+                TypeAlias {
                     attributes: [],
                     vis_marker: None,
                     tk_type: Ident(
@@ -242,7 +242,7 @@ Trait(
                 },
             ),
             AssocTy(
-                TyDefinition {
+                TypeAlias {
                     attributes: [],
                     vis_marker: None,
                     tk_type: Ident(

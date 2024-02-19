@@ -6,7 +6,7 @@ use crate::parse_utils::{
     consume_ident, consume_inner_attributes, consume_outer_attributes, consume_punct,
     consume_stuff_until, consume_vis_marker, parse_any_ident, parse_ident, parse_punct,
 };
-use crate::types::{Constant, ImplMember, TyDefinition, ValueExpr};
+use crate::types::{Constant, ImplMember, TypeAlias, ValueExpr};
 use crate::types_edition::GroupSpan;
 use crate::{Attribute, Item, Impl, Trait, TraitMember, TyExpr, VisMarker};
 use proc_macro2::{Delimiter, Group, TokenTree};
@@ -78,7 +78,7 @@ pub(crate) fn consume_ty_definition(
     tokens: &mut TokenIter,
     attributes: Vec<Attribute>,
     vis_marker: Option<VisMarker>,
-) -> Option<TyDefinition> {
+) -> Option<TypeAlias> {
     let context = "associated type";
     let tk_type = parse_ident(tokens, "type", context);
     let name = parse_any_ident(tokens, context);
@@ -105,7 +105,7 @@ pub(crate) fn consume_ty_definition(
 
     let tk_semicolon = parse_punct(tokens, ';', context);
 
-    Some(TyDefinition {
+    Some(TypeAlias {
         attributes,
         vis_marker,
         tk_type,
@@ -129,7 +129,7 @@ pub(crate) fn consume_either_fn_type_const_static_impl(
         match keyword.as_str() {
             "type" => {
                 let assoc_ty = consume_ty_definition(tokens, attributes, vis_marker);
-                Item::TyDefinition(assoc_ty.unwrap())
+                Item::TypeAlias(assoc_ty.unwrap())
             }
 
             // Note: `static` is only used for extern "abi" {} blocks. Checked in call site.
@@ -214,7 +214,7 @@ pub(crate) fn parse_impl_body(
                 // `static` can appear in `extern "abi" {}` blocks.
                 ImplMember::Constant(static_)
             }
-            Item::TyDefinition(ty_def) => ImplMember::AssocTy(ty_def),
+            Item::TypeAlias(ty_def) => ImplMember::AssocTy(ty_def),
             Item::Macro(macro_) => ImplMember::Macro(macro_),
             _ => panic!("unsupported impl item `{:?}`", tokens.peek()),
         };
