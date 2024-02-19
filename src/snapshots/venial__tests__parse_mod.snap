@@ -63,7 +63,7 @@ Module(
             },
         ],
         members: [
-            Use(
+            UseDeclaration(
                 UseDeclaration {
                     attributes: [],
                     vis_marker: None,
@@ -87,7 +87,7 @@ Module(
                     },
                 },
             ),
-            Use(
+            UseDeclaration(
                 UseDeclaration {
                     attributes: [],
                     vis_marker: None,
@@ -300,7 +300,7 @@ Module(
                     ),
                 },
             ),
-            Use(
+            UseDeclaration(
                 UseDeclaration {
                     attributes: [],
                     vis_marker: Some(
