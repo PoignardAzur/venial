@@ -47,7 +47,7 @@ Impl(
             },
         ],
         body_items: [
-            Method(
+            AssocFunction(
                 Function {
                     attributes: [],
                     vis_marker: None,
@@ -136,7 +136,7 @@ Impl(
                     ),
                 },
             ),
-            Method(
+            AssocFunction(
                 Function {
                     attributes: [
                         Attribute {
@@ -221,7 +221,7 @@ Impl(
                     ),
                 },
             ),
-            Constant(
+            AssocConstant(
                 Constant {
                     attributes: [],
                     vis_marker: Some(

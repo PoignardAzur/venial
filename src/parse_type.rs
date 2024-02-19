@@ -6,7 +6,7 @@ use crate::parse_utils::{
 use crate::punctuated::Punctuated;
 use crate::types::{
     EnumVariant, EnumVariantValue, GenericArg, GenericArgList, GenericBound, GenericParam,
-    GenericParamList, NamedField, NamedStructFields, StructFields, TupleField, TupleStructFields,
+    GenericParamList, NamedField, NamedFields, Fields, TupleField, TupleFields,
     TypeExpr, WhereClause, WhereClauseItem,
 };
 use crate::types_edition::GroupSpan;
@@ -307,7 +307,7 @@ pub(crate) fn consume_enum_discriminant(
     }))
 }
 
-pub(crate) fn parse_tuple_fields(token_group: Group) -> TupleStructFields {
+pub(crate) fn parse_tuple_fields(token_group: Group) -> TupleFields {
     let mut fields = Punctuated::new();
 
     let mut tokens = token_group.stream().into_iter().peekable();
@@ -333,13 +333,13 @@ pub(crate) fn parse_tuple_fields(token_group: Group) -> TupleStructFields {
         );
     }
 
-    TupleStructFields {
+    TupleFields {
         fields,
         tk_parens: GroupSpan::new(&token_group),
     }
 }
 
-pub(crate) fn parse_named_fields(token_group: Group) -> NamedStructFields {
+pub(crate) fn parse_named_fields(token_group: Group) -> NamedFields {
     let mut fields = Punctuated::new();
 
     let mut tokens = token_group.stream().into_iter().peekable();
@@ -369,7 +369,7 @@ pub(crate) fn parse_named_fields(token_group: Group) -> NamedStructFields {
         );
     }
 
-    NamedStructFields {
+    NamedFields {
         fields,
         tk_braces: GroupSpan::new(&token_group),
     }
@@ -390,20 +390,20 @@ pub(crate) fn parse_enum_variants(tokens: TokenStream) -> Result<Punctuated<Enum
         let variant_name = parse_any_ident(&mut tokens, "enum variant name");
 
         let contents = match tokens.peek() {
-            None => StructFields::Unit,
-            Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => StructFields::Unit,
-            Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => StructFields::Unit,
+            None => Fields::Unit,
+            Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => Fields::Unit,
+            Some(TokenTree::Punct(punct)) if punct.as_char() == '=' => Fields::Unit,
             Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Parenthesis => {
                 let group = group.clone();
                 // Consume group
                 tokens.next();
-                StructFields::Tuple(parse_tuple_fields(group))
+                Fields::Tuple(parse_tuple_fields(group))
             }
             Some(TokenTree::Group(group)) if group.delimiter() == Delimiter::Brace => {
                 let group = group.clone();
                 // Consume group
                 tokens.next();
-                StructFields::Named(parse_named_fields(group))
+                Fields::Named(parse_named_fields(group))
             }
             token => panic!("cannot parse enum variant: unexpected token {:?}", token),
         };
@@ -417,7 +417,7 @@ pub(crate) fn parse_enum_variants(tokens: TokenStream) -> Result<Punctuated<Enum
                 attributes,
                 vis_marker,
                 name: variant_name,
-                contents,
+                fields: contents,
                 value: enum_discriminant?,
             },
             comma,

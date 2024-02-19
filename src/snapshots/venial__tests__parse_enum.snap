@@ -21,7 +21,7 @@ Enum(
                 name: Ident(
                     A,
                 ),
-                contents: Unit,
+                fields: Unit,
                 value: None,
             },
             EnumVariant {
@@ -30,7 +30,7 @@ Enum(
                 name: Ident(
                     B,
                 ),
-                contents: Tuple(
+                fields: Tuple(
                     [
                         TupleField {
                             attributes: [],
@@ -56,7 +56,7 @@ Enum(
                 name: Ident(
                     C,
                 ),
-                contents: Named(
+                fields: Named(
                     [
                         NamedField {
                             attributes: [],

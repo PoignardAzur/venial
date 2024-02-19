@@ -38,7 +38,7 @@ Trait(
             },
         ],
         body_items: [
-            Method(
+            AssocFunction(
                 Function {
                     attributes: [],
                     vis_marker: None,
@@ -102,7 +102,7 @@ Trait(
                     body: None,
                 },
             ),
-            Method(
+            AssocFunction(
                 Function {
                     attributes: [],
                     vis_marker: None,
@@ -154,7 +154,7 @@ Trait(
                     ),
                 },
             ),
-            Constant(
+            AssocConstant(
                 Constant {
                     attributes: [],
                     vis_marker: None,
@@ -183,7 +183,7 @@ Trait(
                     },
                 },
             ),
-            Constant(
+            AssocConstant(
                 Constant {
                     attributes: [],
                     vis_marker: None,
