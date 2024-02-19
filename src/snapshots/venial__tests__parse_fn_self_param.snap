@@ -28,6 +28,7 @@ Ok(
                     FnReceiverParam {
                         attributes: [],
                         tk_ref: None,
+                        lifetime: None,
                         tk_mut: None,
                         tk_self: Ident(
                             self,

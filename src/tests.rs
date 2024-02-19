@@ -874,6 +874,26 @@ fn parse_fn_lifetimes() {
     assert_debug_snapshot!(func);
 }
 
+#[test]
+fn parse_fn_receiver_lifetime() {
+    let func = parse_item(quote!(
+        fn prototype(&'lifetime self);
+    ))
+    .unwrap();
+
+    assert_debug_snapshot!(func);
+}
+
+#[test]
+fn parse_fn_mut_receiver_lifetime() {
+    let func = parse_item(quote!(
+        fn prototype<'a>(&'a mut self);
+    ))
+    .unwrap();
+
+    assert_debug_snapshot!(func);
+}
+
 // FIXME
 #[test]
 #[should_panic]

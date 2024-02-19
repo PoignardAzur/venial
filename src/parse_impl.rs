@@ -6,9 +6,10 @@ use crate::parse_utils::{
     consume_ident, consume_inner_attributes, consume_outer_attributes, consume_punct,
     consume_stuff_until, consume_vis_marker, parse_any_ident, parse_ident, parse_punct,
 };
-use crate::types::{Constant, ImplMember, TypeAlias, ValueExpr};
-use crate::types_edition::GroupSpan;
-use crate::{Attribute, Impl, Item, Trait, TraitMember, TypeExpr, VisMarker};
+use crate::types::{
+    Attribute, Constant, GroupSpan, Impl, ImplMember, Item, Trait, TraitMember, TypeAlias,
+    TypeExpr, ValueExpr, VisMarker,
+};
 use proc_macro2::{Delimiter, Group, TokenTree};
 use quote::ToTokens;
 use std::iter::Peekable;

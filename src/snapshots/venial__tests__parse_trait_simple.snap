@@ -68,6 +68,7 @@ Trait(
                                         spacing: Alone,
                                     },
                                 ),
+                                lifetime: None,
                                 tk_mut: None,
                                 tk_self: Ident(
                                     self,

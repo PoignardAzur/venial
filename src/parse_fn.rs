@@ -1,5 +1,6 @@
 use crate::parse_type::{
-    consume_field_type, consume_generic_params, consume_item_name, consume_where_clause,
+    consume_field_type, consume_generic_params, consume_item_name, consume_lifetime,
+    consume_where_clause,
 };
 use crate::parse_utils::{
     consume_any_ident, consume_comma, consume_ident, consume_outer_attributes, consume_punct,
@@ -79,6 +80,7 @@ fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
         let attributes = consume_outer_attributes(&mut tokens);
 
         let tk_ref = consume_punct(&mut tokens, '&');
+        let lifetime = consume_lifetime(&mut tokens, false);
         let tk_mut = consume_ident(&mut tokens, "mut");
         let tk_self = consume_ident(&mut tokens, "self");
 
@@ -86,6 +88,7 @@ fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
             FnParam::Receiver(FnReceiverParam {
                 attributes,
                 tk_ref,
+                lifetime,
                 tk_mut,
                 tk_self,
             })
