@@ -41,8 +41,8 @@ pub(crate) fn parse_mod(
             if tokens.peek().is_none() {
                 break;
             }
-            let item = consume_item(&mut tokens)
-                .unwrap_or_else(|e| panic!("declaration in mod: {}", e));
+            let item =
+                consume_item(&mut tokens).unwrap_or_else(|e| panic!("declaration in mod: {}", e));
             mod_members.push(item);
         }
         members = mod_members;

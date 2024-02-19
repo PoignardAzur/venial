@@ -1,4 +1,4 @@
-use crate::{parse_item, Item, GenericParam, Struct, TypeExpr, WhereClauseItem};
+use crate::{parse_item, GenericParam, Item, Struct, TypeExpr, WhereClausePredicate};
 
 use crate::parse_type::consume_generic_args;
 use crate::types::GenericArgList;
@@ -1090,9 +1090,10 @@ fn add_where_item() {
         }
     ));
 
-    let basic_type = basic_type.with_where_item(WhereClauseItem::parse(quote!(Self: Sized)));
+    let basic_type =
+        basic_type.with_where_predicate(WhereClausePredicate::parse(quote!(Self: Sized)));
     let type_with_args =
-        type_with_args.with_where_item(WhereClauseItem::parse(quote!(Self: Sized)));
+        type_with_args.with_where_predicate(WhereClausePredicate::parse(quote!(Self: Sized)));
 
     assert_quote_snapshot!(basic_type);
     assert_quote_snapshot!(type_with_args);
