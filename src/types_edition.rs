@@ -5,7 +5,7 @@ pub use crate::types::{
     StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
 use crate::types::{FnQualifiers, GenericArg, GenericArgList, Impl, Module, Path};
-use crate::{Constant, Punctuated, Trait, TyDefinition};
+use crate::{Constant, Punctuated, Trait, TypeAlias};
 use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::spanned::Spanned;
 
@@ -21,7 +21,7 @@ impl Item {
             Item::Module(mod_decl) => &mod_decl.attributes,
             Item::Trait(trait_decl) => &trait_decl.attributes,
             Item::Impl(impl_decl) => &impl_decl.attributes,
-            Item::TyDefinition(ty_decl) => &ty_decl.attributes,
+            Item::TypeAlias(ty_decl) => &ty_decl.attributes,
             Item::Function(function_decl) => &function_decl.attributes,
             Item::Constant(const_decl) => &const_decl.attributes,
             Item::Use(use_decl) => &use_decl.attributes,
@@ -42,7 +42,7 @@ impl Item {
             Item::Module(mod_decl) => &mut mod_decl.attributes,
             Item::Trait(trait_decl) => &mut trait_decl.attributes,
             Item::Impl(impl_decl) => &mut impl_decl.attributes,
-            Item::TyDefinition(ty_decl) => &mut ty_decl.attributes,
+            Item::TypeAlias(ty_decl) => &mut ty_decl.attributes,
             Item::Function(function_decl) => &mut function_decl.attributes,
             Item::Constant(const_decl) => &mut const_decl.attributes,
             Item::Use(use_decl) => &mut use_decl.attributes,
@@ -68,7 +68,7 @@ impl Item {
             Item::Module(_) => None,
             Item::Trait(trait_decl) => trait_decl.generic_params.as_ref(),
             Item::Impl(impl_decl) => impl_decl.impl_generic_params.as_ref(),
-            Item::TyDefinition(_) => None,
+            Item::TypeAlias(_) => None,
             Item::Function(function_decl) => function_decl.generic_params.as_ref(),
             Item::Constant(_) => None,
             Item::Use(_) => None,
@@ -94,7 +94,7 @@ impl Item {
             Item::Module(_) => None,
             Item::Trait(trait_decl) => trait_decl.generic_params.as_mut(),
             Item::Impl(impl_decl) => impl_decl.impl_generic_params.as_mut(),
-            Item::TyDefinition(_) => None,
+            Item::TypeAlias(_) => None,
             Item::Function(function_decl) => function_decl.generic_params.as_mut(),
             Item::Constant(_) => None,
             Item::Use(_) => None,
@@ -125,7 +125,7 @@ impl Item {
             Item::Module(mod_decl) => Some(mod_decl.name.clone()),
             Item::Trait(trait_decl) => Some(trait_decl.name.clone()),
             Item::Impl(_) => None,
-            Item::TyDefinition(ty_decl) => Some(ty_decl.name.clone()),
+            Item::TypeAlias(ty_decl) => Some(ty_decl.name.clone()),
             Item::Function(function_decl) => Some(function_decl.name.clone()),
             Item::Constant(const_decl) => Some(const_decl.name.clone()),
             Item::Use(_) => None,
@@ -183,10 +183,10 @@ impl Item {
         }
     }
 
-    /// Returns the [`TyDefinition`] variant of the enum if possible.
-    pub fn as_ty_definition(&self) -> Option<&TyDefinition> {
+    /// Returns the [`TypeAlias`] variant of the enum if possible.
+    pub fn as_ty_definition(&self) -> Option<&TypeAlias> {
         match self {
-            Item::TyDefinition(ty_decl) => Some(ty_decl),
+            Item::TypeAlias(ty_decl) => Some(ty_decl),
             _ => None,
         }
     }

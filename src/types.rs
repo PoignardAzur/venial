@@ -48,7 +48,7 @@ pub enum Item {
     Impl(Impl),
 
     /// `type` declaration.
-    TyDefinition(TyDefinition),
+    TypeAlias(TypeAlias),
 
     /// `fn` declaration.
     Function(Function),
@@ -241,7 +241,7 @@ pub struct Trait {
 pub enum TraitMember {
     Method(Function),
     Constant(Constant),
-    AssocTy(TyDefinition),
+    AssocTy(TypeAlias),
     Macro(Macro),
 }
 
@@ -285,7 +285,7 @@ pub struct Impl {
 pub enum ImplMember {
     Method(Function),
     Constant(Constant),
-    AssocTy(TyDefinition),
+    AssocTy(TypeAlias),
     Macro(Macro),
 }
 
@@ -333,7 +333,7 @@ pub struct Constant {
 /// type MyType = i32;
 /// ```
 #[derive(Clone, Debug)]
-pub struct TyDefinition {
+pub struct TypeAlias {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
     pub tk_type: Ident,
@@ -1067,7 +1067,7 @@ impl ToTokens for Item {
             Item::Module(mod_decl) => mod_decl.to_tokens(tokens),
             Item::Trait(trait_decl) => trait_decl.to_tokens(tokens),
             Item::Impl(impl_decl) => impl_decl.to_tokens(tokens),
-            Item::TyDefinition(ty_decl) => ty_decl.to_tokens(tokens),
+            Item::TypeAlias(ty_decl) => ty_decl.to_tokens(tokens),
             Item::Function(function_decl) => function_decl.to_tokens(tokens),
             Item::Constant(const_decl) => const_decl.to_tokens(tokens),
             Item::Use(use_decl) => use_decl.to_tokens(tokens),
@@ -1170,7 +1170,7 @@ impl ToTokens for Constant {
     }
 }
 
-impl ToTokens for TyDefinition {
+impl ToTokens for TypeAlias {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for attribute in &self.attributes {
             attribute.to_tokens(tokens);

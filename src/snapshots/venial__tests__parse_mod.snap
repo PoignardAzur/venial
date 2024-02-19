@@ -454,8 +454,8 @@ Module(
                     },
                 },
             ),
-            TyDefinition(
-                TyDefinition {
+            TypeAlias(
+                TypeAlias {
                     attributes: [],
                     vis_marker: None,
                     tk_type: Ident(

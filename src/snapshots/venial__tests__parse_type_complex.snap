@@ -2,8 +2,8 @@
 source: src/tests.rs
 expression: ty_decl
 ---
-TyDefinition(
-    TyDefinition {
+TypeAlias(
+    TypeAlias {
         attributes: [
             Attribute {
                 tk_hash: Punct {

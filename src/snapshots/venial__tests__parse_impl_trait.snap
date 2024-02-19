@@ -71,7 +71,7 @@ Impl(
         ],
         body_items: [
             AssocTy(
-                TyDefinition {
+                TypeAlias {
                     attributes: [
                         Attribute {
                             tk_hash: Punct {
