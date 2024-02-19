@@ -22,13 +22,13 @@ use std::fmt::{Debug, Display};
 /// # extern crate proc_macro;
 /// #
 /// # use proc_macro2::TokenStream;
-/// # use venial::{parse_declaration, Item, Struct, Error};
+/// # use venial::{parse_item, Item, Struct, Error};
 /// #
 /// # const IGNORE: &str = stringify! {
 /// #[proc_macro_derive(MyDerive)]
 /// # };
 /// pub fn my_derive(input: TokenStream) -> TokenStream {
-///     let input = parse_declaration(input);
+///     let input = parse_item(input);
 ///
 ///     let parse_res = match input {
 ///         Err(error) => Err(error),

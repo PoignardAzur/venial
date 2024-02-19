@@ -1,5 +1,5 @@
 use crate::parse_type::{
-    consume_declaration_name, consume_field_type, consume_generic_params, consume_where_clause,
+    consume_item_name, consume_field_type, consume_generic_params, consume_where_clause,
 };
 use crate::parse_utils::{
     consume_any_ident, consume_comma, consume_ident, consume_outer_attributes, consume_punct,
@@ -210,7 +210,7 @@ pub(crate) fn consume_fn(
         }
     };
 
-    let fn_name = consume_declaration_name(tokens);
+    let fn_name = consume_item_name(tokens);
     let generic_params = consume_generic_params(tokens);
 
     let (params, tk_params_parens) = match tokens.next().unwrap() {

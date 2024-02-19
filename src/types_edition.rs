@@ -110,9 +110,9 @@ impl Item {
     /// In that case, `None` is returned.
     ///
     /// ```
-    /// # use venial::parse_declaration;
+    /// # use venial::parse_item;
     /// # use quote::quote;
-    /// let struct_type = parse_declaration(quote!(
+    /// let struct_type = parse_item(quote!(
     ///     struct Hello(A, B);
     /// )).unwrap();
     /// assert_eq!(struct_type.name().unwrap().to_string(), "Hello");
@@ -240,9 +240,9 @@ impl Struct {
     /// If the struct is a tuple struct, integer strings will be returned.
     ///
     /// ```
-    /// # use venial::parse_declaration;
+    /// # use venial::parse_item;
     /// # use quote::quote;
-    /// let struct_type = parse_declaration(quote!(
+    /// let struct_type = parse_item(quote!(
     ///     struct Hello {
     ///         a: Foo,
     ///         b: Bar,
@@ -254,9 +254,9 @@ impl Struct {
     /// ```
     ///
     /// ```
-    /// # use venial::parse_declaration;
+    /// # use venial::parse_item;
     /// # use quote::quote;
-    /// let tuple_type = parse_declaration(quote!(
+    /// let tuple_type = parse_item(quote!(
     ///     struct Hello(Foo, Bar);
     /// )).unwrap();
     /// let tuple_type = tuple_type.as_struct().unwrap();
@@ -315,9 +315,9 @@ impl Enum {
     /// Returns true if every single variant is empty.
     ///
     /// ```
-    /// # use venial::parse_declaration;
+    /// # use venial::parse_item;
     /// # use quote::quote;
-    /// let enum_type = parse_declaration(quote!(
+    /// let enum_type = parse_item(quote!(
     ///     enum MyEnum { A, B, C, D }
     /// )).unwrap();
     /// let enum_type = enum_type.as_enum().unwrap();

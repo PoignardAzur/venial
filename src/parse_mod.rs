@@ -1,5 +1,5 @@
-use crate::parse::consume_declaration;
-use crate::parse_type::consume_declaration_name;
+use crate::parse::consume_item;
+use crate::parse_type::consume_item_name;
 use crate::parse_utils::{
     consume_ident, consume_inner_attributes, consume_stuff_until, parse_ident, parse_punct,
     TokenIter,
@@ -16,7 +16,7 @@ pub(crate) fn parse_mod(
 ) -> Module {
     let tk_unsafe = consume_ident(tokens, "unsafe");
     let tk_mod = parse_ident(tokens, "mod", "module declaration");
-    let module_name = consume_declaration_name(tokens);
+    let module_name = consume_item_name(tokens);
 
     let (group, tk_semicolon) = match tokens.next().unwrap() {
         TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => (Some(group), None),
@@ -41,7 +41,7 @@ pub(crate) fn parse_mod(
             if tokens.peek().is_none() {
                 break;
             }
-            let item = consume_declaration(&mut tokens)
+            let item = consume_item(&mut tokens)
                 .unwrap_or_else(|e| panic!("declaration in mod: {}", e));
             mod_members.push(item);
         }
