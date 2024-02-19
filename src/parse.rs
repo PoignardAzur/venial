@@ -9,8 +9,7 @@ use crate::parse_type::{
     parse_named_fields, parse_tuple_fields,
 };
 use crate::parse_utils::{consume_outer_attributes, consume_punct, consume_vis_marker};
-use crate::types::{Enum, Fields, Item, Struct, Union};
-use crate::types_edition::GroupSpan;
+use crate::types::{Enum, Fields, GroupSpan, Item, Struct, Union};
 use proc_macro2::token_stream::IntoIter;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
 use std::iter::Peekable;

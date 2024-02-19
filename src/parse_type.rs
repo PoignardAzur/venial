@@ -3,16 +3,13 @@ use crate::parse_utils::{
     consume_colon2, consume_comma, consume_ident, consume_outer_attributes, consume_punct,
     consume_stuff_until, consume_vis_marker, parse_any_ident, parse_punct,
 };
-use crate::punctuated::Punctuated;
 use crate::types::{
     EnumVariant, EnumVariantValue, Fields, GenericArg, GenericArgList, GenericBound, GenericParam,
-    GenericParamList, NamedField, NamedFields, TupleField, TupleFields, TypeExpr, WhereClause,
-    WhereClausePredicate,
+    GenericParamList, GroupSpan, Lifetime, NamedField, NamedFields, Punctuated, TupleField,
+    TupleFields, TypeExpr, WhereClause, WhereClausePredicate,
 };
-use crate::types_edition::GroupSpan;
 use proc_macro2::{Delimiter, Group, Ident, Punct, TokenStream, TokenTree};
 use std::iter::Peekable;
-use std::vec::IntoIter;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
 
@@ -99,8 +96,8 @@ fn parse_generic_arg(tokens: Vec<TokenTree>) -> GenericArg {
     // Note: method not called if tokens is empty
     let mut tokens = tokens.into_iter().peekable();
 
-    if let Some((tk_lifetime, ident)) = consume_lifetime(&mut tokens) {
-        return GenericArg::Lifetime { tk_lifetime, ident };
+    if let Some(lifetime) = consume_lifetime(&mut tokens, true) {
+        return GenericArg::Lifetime { lifetime };
     }
 
     // Then, try parsing Item = ...
@@ -129,9 +126,12 @@ fn parse_generic_arg(tokens: Vec<TokenTree>) -> GenericArg {
     }
 }
 
-fn consume_lifetime(tokens: &mut Peekable<IntoIter<TokenTree>>) -> Option<(Punct, Ident)> {
+pub(crate) fn consume_lifetime(
+    tokens: &mut Peekable<impl Iterator<Item = TokenTree>>,
+    expect_end: bool,
+) -> Option<Lifetime> {
     // Try parsing 'lifetime
-    let tk_lifetime = match tokens.peek() {
+    let tk_apostrophe = match tokens.peek() {
         Some(TokenTree::Punct(punct)) if punct.as_char() == '\'' => {
             let apostrophe = punct.clone();
             tokens.next(); // consume '
@@ -142,13 +142,18 @@ fn consume_lifetime(tokens: &mut Peekable<IntoIter<TokenTree>>) -> Option<(Punct
 
     // after the ', there must be a single identifier
     match tokens.next() {
-        Some(TokenTree::Ident(ident)) => {
-            assert!(
-                tokens.next().is_none(),
-                "cannot parse lifetime generic argument"
-            );
+        Some(TokenTree::Ident(name)) => {
+            if expect_end {
+                assert!(
+                    tokens.next().is_none(),
+                    "cannot parse lifetime generic argument"
+                );
+            }
 
-            return Some((tk_lifetime, ident));
+            Some(Lifetime {
+                tk_apostrophe,
+                name,
+            })
         }
         Some(other) => {
             panic!(

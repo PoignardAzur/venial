@@ -5,13 +5,15 @@ expression: generic_args
 GenericArgList {
     args: [
         Lifetime {
-            tk_lifetime: Punct {
-                char: '\'',
-                spacing: Joint,
+            lifetime: Lifetime {
+                tk_apostrophe: Punct {
+                    char: '\'',
+                    spacing: Joint,
+                },
+                name: Ident(
+                    a,
+                ),
             },
-            ident: Ident(
-                a,
-            ),
         },
         TypeOrConst {
             expr: [

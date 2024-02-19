@@ -3,7 +3,7 @@
 use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::{ToTokens, TokenStreamExt as _};
 
-use crate::Punctuated;
+pub use crate::Punctuated;
 
 /// The declaration of a Rust item.
 ///
@@ -425,9 +425,13 @@ pub enum FnParam {
 #[derive(Clone, Debug)]
 pub struct FnReceiverParam {
     pub attributes: Vec<Attribute>,
+    /// `&` token.
     pub tk_ref: Option<Punct>,
-    // TODO ref lifetime (update doc)
+    /// `'lifetime` tokens.
+    pub lifetime: Option<Lifetime>,
+    /// `mut` keyword.
     pub tk_mut: Option<Ident>,
+    /// `self` keyword; required.
     pub tk_self: Ident,
 }
 
@@ -595,7 +599,7 @@ pub struct GenericArgList {
 #[derive(Clone, Debug)]
 pub enum GenericArg {
     /// E.g. `Ref<'a>`.
-    Lifetime { tk_lifetime: Punct, ident: Ident },
+    Lifetime { lifetime: Lifetime },
     /// E.g. `Iterator<Item = path::to::Type>`.
     Binding {
         /// For the above example, this would be `Item`.
@@ -619,6 +623,15 @@ pub enum GenericArg {
 /// the underlying [GenericParamList]; this is just a wrapper that is processed
 /// differently when passed to quote macros.
 pub struct InlineGenericArgs<'a>(pub(crate) &'a GenericParamList);
+
+/// Lifetime declaration.
+///
+/// Handles the tokens `'lifetime` in various contexts.
+#[derive(Clone, Debug)]
+pub struct Lifetime {
+    pub tk_apostrophe: Punct,
+    pub name: Ident,
+}
 
 /// All the stuff that comes after the `where` keyword.
 #[derive(Clone)]
@@ -1363,6 +1376,7 @@ impl ToTokens for FnReceiverParam {
             attribute.to_tokens(tokens);
         }
         self.tk_ref.to_tokens(tokens);
+        self.lifetime.to_tokens(tokens);
         self.tk_mut.to_tokens(tokens);
         self.tk_self.to_tokens(tokens);
     }
@@ -1507,9 +1521,8 @@ impl ToTokens for GenericArgList {
 impl ToTokens for GenericArg {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            GenericArg::Lifetime { tk_lifetime, ident } => {
-                tk_lifetime.to_tokens(tokens);
-                ident.to_tokens(tokens);
+            GenericArg::Lifetime { lifetime } => {
+                lifetime.to_tokens(tokens);
             }
             GenericArg::Binding {
                 ident,
@@ -1540,6 +1553,13 @@ impl ToTokens for InlineGenericArgs<'_> {
         }
 
         tokens.append(Punct::new('>', Spacing::Alone));
+    }
+}
+
+impl ToTokens for Lifetime {
+    fn to_tokens(&self, tokens: &mut TokenStream) {
+        tokens.append(self.tk_apostrophe.clone());
+        tokens.append(self.name.clone());
     }
 }
 

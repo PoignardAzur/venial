@@ -264,6 +264,7 @@ Impl(
                                         spacing: Alone,
                                     },
                                 ),
+                                lifetime: None,
                                 tk_mut: Some(
                                     Ident(
                                         mut,

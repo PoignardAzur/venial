@@ -1,11 +1,10 @@
 use crate::parse_utils::{consume_path, tokens_from_slice};
-pub use crate::types::{
-    Attribute, AttributeValue, Enum, EnumVariant, EnumVariantValue, Fields, Function, GenericBound,
-    GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, Item, NamedField, Struct,
-    TupleField, TypeExpr, Union, VisMarker, WhereClause, WhereClausePredicate,
+use crate::types::{
+    Attribute, AttributeValue, Constant, Enum, EnumVariant, EnumVariantValue, Fields, FnQualifiers,
+    Function, GenericArg, GenericArgList, GenericBound, GenericParam, GenericParamList, GroupSpan,
+    Impl, InlineGenericArgs, Item, Lifetime, Module, NamedField, Path, Punctuated, Struct, Trait,
+    TupleField, TypeAlias, TypeExpr, Union, VisMarker, WhereClause, WhereClausePredicate,
 };
-use crate::types::{FnQualifiers, GenericArg, GenericArgList, Impl, Module, Path};
-use crate::{Constant, Punctuated, Trait, TypeAlias};
 use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::spanned::Spanned;
 
@@ -678,8 +677,10 @@ impl<'a> InlineGenericArgs<'a> {
                         let arg = match &param.tk_prefix {
                             Some(TokenTree::Punct(punct)) if punct.as_char() == '\'' => {
                                 GenericArg::Lifetime {
-                                    tk_lifetime: punct.clone(),
-                                    ident: name,
+                                    lifetime: Lifetime {
+                                        tk_apostrophe: punct.clone(),
+                                        name,
+                                    },
                                 }
                             }
                             Some(TokenTree::Ident(ident)) if ident == "const" => {

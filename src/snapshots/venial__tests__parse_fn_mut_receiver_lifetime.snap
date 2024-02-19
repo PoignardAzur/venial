@@ -1,0 +1,76 @@
+---
+source: src/tests.rs
+expression: func
+---
+Function(
+    Function {
+        attributes: [],
+        vis_marker: None,
+        qualifiers: FnQualifiers {
+            tk_default: None,
+            tk_const: None,
+            tk_async: None,
+            tk_unsafe: None,
+            tk_extern: None,
+            extern_abi: None,
+        },
+        tk_fn_keyword: Ident(
+            fn,
+        ),
+        name: Ident(
+            prototype,
+        ),
+        generic_params: Some(
+            [
+                GenericParam {
+                    tk_prefix: "'",
+                    name: "a",
+                    bound: None,
+                },
+            ],
+        ),
+        tk_params_parens: (),
+        params: [
+            Receiver(
+                FnReceiverParam {
+                    attributes: [],
+                    tk_ref: Some(
+                        Punct {
+                            char: '&',
+                            spacing: Alone,
+                        },
+                    ),
+                    lifetime: Some(
+                        Lifetime {
+                            tk_apostrophe: Punct {
+                                char: '\'',
+                                spacing: Joint,
+                            },
+                            name: Ident(
+                                a,
+                            ),
+                        },
+                    ),
+                    tk_mut: Some(
+                        Ident(
+                            mut,
+                        ),
+                    ),
+                    tk_self: Ident(
+                        self,
+                    ),
+                },
+            ),
+        ],
+        where_clause: None,
+        tk_return_arrow: None,
+        return_ty: None,
+        tk_semicolon: Some(
+            Punct {
+                char: ';',
+                spacing: Alone,
+            },
+        ),
+        body: None,
+    },
+)
