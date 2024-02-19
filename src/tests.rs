@@ -1,4 +1,4 @@
-use crate::{parse_declaration, Item, GenericParam, Struct, TypeExpr, WhereClauseItem};
+use crate::{parse_item, Item, GenericParam, Struct, TypeExpr, WhereClauseItem};
 
 use crate::parse_type::consume_generic_args;
 use crate::types::GenericArgList;
@@ -18,7 +18,7 @@ macro_rules! assert_quote_snapshot {
 
 fn parse_declaration_checked(tokens: TokenStream) -> Item {
     let initial_tokens = tokens.clone();
-    let declaration = parse_declaration(tokens).unwrap();
+    let declaration = parse_item(tokens).unwrap();
 
     similar_asserts::assert_str_eq!(quote!(#declaration), initial_tokens);
 
@@ -570,19 +570,19 @@ fn parse_inline_generic_args() {
 
 #[test]
 fn parse_complex_enum_variant() {
-    let enum_type_1 = parse_declaration(quote!(
+    let enum_type_1 = parse_item(quote!(
         enum Hello {
             A = 1,
             B(Foo, Bar) = 1 + 2 + 3,
         }
     ));
-    let enum_type_2 = parse_declaration(quote!(
+    let enum_type_2 = parse_item(quote!(
         enum Hello {
             A = 1,
             B { foo: Foo, bar: Bar } = foo(bar),
         }
     ));
-    let enum_type_3 = parse_declaration(quote!(
+    let enum_type_3 = parse_item(quote!(
         enum Hello {
             A = 1,
             B(Foo, Bar) = [1 + 2 + 3],
@@ -599,7 +599,7 @@ fn parse_complex_enum_variant() {
 #[test]
 #[should_panic]
 fn parse_enum_with_macro() {
-    let _ = parse_declaration(quote!(
+    let _ = parse_item(quote!(
         enum Hello {
             A = 1,
             macroified! { B = 2 },
@@ -679,7 +679,7 @@ fn parse_macro_in_where_clause() {
 
 #[test]
 fn parse_fn() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         fn hello(a: i32, b: f32) -> String {}
     ))
     .unwrap();
@@ -689,7 +689,7 @@ fn parse_fn() {
 
 #[test]
 fn parse_empty_fn() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         fn test_me() {}
     ))
     .unwrap();
@@ -699,7 +699,7 @@ fn parse_empty_fn() {
 
 #[test]
 fn parse_generic_fn() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         fn generic<T, B>(a: T) -> B {}
     ))
     .unwrap();
@@ -709,7 +709,7 @@ fn parse_generic_fn() {
 
 #[test]
 fn parse_where_fn() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         fn where_clause<T>() -> T
         where
             T: Debug,
@@ -717,7 +717,7 @@ fn parse_where_fn() {
         }
     ))
     .unwrap();
-    let func_2 = parse_declaration(quote!(
+    let func_2 = parse_item(quote!(
         fn where_clause<T>()
         where
             T: Debug,
@@ -732,7 +732,7 @@ fn parse_where_fn() {
 
 #[test]
 fn parse_attr_fn() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         #[my_attr]
         fn my_attr_fn(a: i32) {}
     ))
@@ -743,7 +743,7 @@ fn parse_attr_fn() {
 
 #[test]
 fn parse_visi_fn() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         pub fn visibility(b: f32) {}
     ))
     .unwrap();
@@ -753,7 +753,7 @@ fn parse_visi_fn() {
 
 #[test]
 fn parse_default_fn() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         pub default fn default_fn(b: f32) {}
     ))
     .unwrap();
@@ -763,7 +763,7 @@ fn parse_default_fn() {
 
 #[test]
 fn parse_const_fn() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         pub const fn const_fn(b: f32) {}
     ))
     .unwrap();
@@ -773,7 +773,7 @@ fn parse_const_fn() {
 
 #[test]
 fn parse_async_fn() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         pub async fn async_fn(b: f32) {}
     ))
     .unwrap();
@@ -783,7 +783,7 @@ fn parse_async_fn() {
 
 #[test]
 fn parse_unsafe_fn() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         pub unsafe fn unsafe_fn(b: f32) {}
     ))
     .unwrap();
@@ -793,7 +793,7 @@ fn parse_unsafe_fn() {
 
 #[test]
 fn parse_extern_abi_fn() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         pub extern "C" fn extern_fn(b: f32) {}
     ))
     .unwrap();
@@ -804,7 +804,7 @@ fn parse_extern_abi_fn() {
 #[test]
 fn parse_extern_fn() {
     #[rustfmt::skip] // would add "C"
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         pub extern fn extern_fn(b: f32) {}
     ))
     .unwrap();
@@ -814,7 +814,7 @@ fn parse_extern_fn() {
 
 #[test]
 fn parse_all_kw_fn() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         pub default const async unsafe extern "C" fn all_kw(b: f32) {}
     ))
     .unwrap();
@@ -824,7 +824,7 @@ fn parse_all_kw_fn() {
 
 #[test]
 fn parse_param_attr_fn() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         pub async fn visibility(#[my_attr] b: f32) {}
     ))
     .unwrap();
@@ -834,7 +834,7 @@ fn parse_param_attr_fn() {
 
 #[test]
 fn parse_fn_body() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         fn hello_world(a: i32, b: f32) -> String {
             println!("hello world")
         }
@@ -846,7 +846,7 @@ fn parse_fn_body() {
 
 #[test]
 fn parse_fn_prototype() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         fn prototype(a: i32, b: f32) -> String;
     ))
     .unwrap();
@@ -856,7 +856,7 @@ fn parse_fn_prototype() {
 
 #[test]
 fn parse_fn_mut_param() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         fn prototype(a: i32, mut b: f32) -> String;
     ))
     .unwrap();
@@ -866,7 +866,7 @@ fn parse_fn_mut_param() {
 
 #[test]
 fn parse_fn_lifetimes() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         fn prototype<'a>(a: &'a mut i32) -> &'a String;
     ))
     .unwrap();
@@ -878,7 +878,7 @@ fn parse_fn_lifetimes() {
 #[test]
 #[should_panic]
 fn parse_fn_pattern_arg() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         fn foobar((a, b): (i32, i32)) {}
     ))
     .unwrap();
@@ -890,7 +890,7 @@ fn parse_fn_pattern_arg() {
 #[test]
 #[should_panic]
 fn parse_fn_c_variadics() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         fn foobar(a: i32, ...) {}
     ))
     .unwrap();
@@ -902,7 +902,7 @@ fn parse_fn_c_variadics() {
 #[test]
 #[should_panic]
 fn parse_fn_no_pattern() {
-    let func = parse_declaration(quote!(
+    let func = parse_item(quote!(
         fn foobar(i32) {}
     ))
     .unwrap();
@@ -912,16 +912,16 @@ fn parse_fn_no_pattern() {
 
 #[test]
 fn parse_fn_self_param() {
-    let func_self = parse_declaration(quote!(
+    let func_self = parse_item(quote!(
         fn foobar(self) {}
     ));
-    let func_ref_self = parse_declaration(quote!(
+    let func_ref_self = parse_item(quote!(
         fn foobar(&self) {}
     ));
-    let func_mut_self = parse_declaration(quote!(
+    let func_mut_self = parse_item(quote!(
         fn foobar(mut self) {}
     ));
-    let func_ref_mut_self = parse_declaration(quote!(
+    let func_ref_mut_self = parse_item(quote!(
         fn foobar(&mut self) {}
     ));
 
@@ -936,7 +936,7 @@ fn parse_fn_self_param() {
 // ============
 
 fn parse_struct_declaration(tokens: TokenStream) -> Struct {
-    match parse_declaration(tokens).unwrap() {
+    match parse_item(tokens).unwrap() {
         Item::Struct(struct_decl) => struct_decl,
         _ => panic!("not a struct"),
     }

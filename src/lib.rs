@@ -31,10 +31,10 @@
 //! ## Example
 //!
 //! ```rust
-//! use venial::{parse_declaration, Item};
+//! use venial::{parse_item, Item};
 //! use quote::quote;
 //!
-//! let enum_type = parse_declaration(quote!(
+//! let enum_type = parse_item(quote!(
 //!     enum Shape {
 //!         Square(Square),
 //!         Circle(Circle),
@@ -118,6 +118,6 @@ mod types;
 mod types_edition;
 
 pub use error::Error;
-pub use parse::{consume_declaration, parse_declaration};
+pub use parse::{consume_item, parse_item};
 pub use punctuated::Punctuated;
 pub use types::*;

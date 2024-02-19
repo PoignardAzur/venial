@@ -5,17 +5,17 @@ use crate::parse_impl::{
 };
 use crate::parse_mod::{parse_mod, parse_use_declaration};
 use crate::parse_type::{
-    consume_declaration_name, consume_generic_params, consume_where_clause, parse_enum_variants,
+    consume_generic_params, consume_item_name, consume_where_clause, parse_enum_variants,
     parse_named_fields, parse_tuple_fields,
 };
 use crate::parse_utils::{consume_outer_attributes, consume_punct, consume_vis_marker};
-use crate::types::{Item, Enum, Struct, Fields, Union};
+use crate::types::{Enum, Fields, Item, Struct, Union};
 use crate::types_edition::GroupSpan;
 use proc_macro2::token_stream::IntoIter;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
 use std::iter::Peekable;
 
-/// Parses the token stream of a type declaration.
+/// Parses the token stream of an item declaration.
 ///
 /// For instance, if you're implementing a derive macro, you can pass the
 /// token stream as-is.
@@ -32,9 +32,9 @@ use std::iter::Peekable;
 /// ## Example
 ///
 /// ```
-/// # use venial::{parse_declaration, Item};
+/// # use venial::{parse_item, Item};
 /// # use quote::quote;
-/// let struct_type = parse_declaration(quote!(
+/// let struct_type = parse_item(quote!(
 ///     struct Hello {
 ///         foo: Foo,
 ///         bar: Bar,
@@ -45,7 +45,7 @@ use std::iter::Peekable;
 ///
 /// ## Errors
 ///
-/// Venial doesn't support enum discriminants with multiple non-grouped tokens. Eg:
+/// Venial doesn't support enum discriminants with multiple non-grouped tokens. E.g.:
 ///
 /// ```rust
 /// # #[cfg(FALSE)]
@@ -57,9 +57,9 @@ use std::iter::Peekable;
 ///     E = (FOO + BAR),  // Ok
 /// }
 /// ```
-pub fn parse_declaration(tokens: TokenStream) -> Result<Item, Error> {
+pub fn parse_item(tokens: TokenStream) -> Result<Item, Error> {
     let mut tokens = tokens.into_iter().peekable();
-    let declaration = consume_declaration(&mut tokens);
+    let declaration = consume_item(&mut tokens);
 
     if tokens.peek().is_some() {
         panic!(
@@ -71,9 +71,9 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Item, Error> {
     declaration
 }
 
-/// Consume a type declaration from a token stream.
+/// Consume an item declaration from a token stream.
 ///
-/// This is the same as [parse_declaration], except it doesn't panic if there are
+/// This is the same as [parse_item], except it doesn't panic if there are
 /// leftover tokens.
 ///
 /// ## Panics
@@ -84,7 +84,7 @@ pub fn parse_declaration(tokens: TokenStream) -> Result<Item, Error> {
 /// ## Errors
 ///
 /// Venial doesn't support enum discriminants with multiple non-grouped tokens.
-pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Item, Error> {
+pub fn consume_item(tokens: &mut Peekable<IntoIter>) -> Result<Item, Error> {
     let attributes = consume_outer_attributes(tokens);
     let vis_marker = consume_vis_marker(tokens);
 
@@ -93,7 +93,7 @@ pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Item, Erro
             // struct keyword
             tokens.next().unwrap();
 
-            let struct_name = consume_declaration_name(tokens);
+            let struct_name = consume_item_name(tokens);
             let generic_params = consume_generic_params(tokens);
             let mut where_clause = consume_where_clause(tokens);
 
@@ -139,7 +139,7 @@ pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Item, Erro
             // enum keyword
             tokens.next().unwrap();
 
-            let enum_name = consume_declaration_name(tokens);
+            let enum_name = consume_item_name(tokens);
             let generic_params = consume_generic_params(tokens);
             let where_clause = consume_where_clause(tokens);
 
@@ -165,7 +165,7 @@ pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Item, Erro
             // union keyword
             tokens.next().unwrap();
 
-            let union_name = consume_declaration_name(tokens);
+            let union_name = consume_item_name(tokens);
             let generic_params = consume_generic_params(tokens);
             let where_clause = consume_where_clause(tokens);
 
