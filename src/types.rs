@@ -71,6 +71,8 @@ pub enum Item {
 
 /// Declaration of a struct.
 ///
+/// See also <https://doc.rust-lang.org/reference/items/structs.html>.
+///
 /// **Example input:**
 ///
 /// ```no_run
@@ -113,6 +115,8 @@ pub struct NamedStructFields {
 }
 
 /// Declaration of an enum.
+///
+/// See also <https://doc.rust-lang.org/reference/items/enumerations.html>.
 ///
 /// **Example input:**
 ///
@@ -181,7 +185,9 @@ pub struct Module {
     pub members: Vec<Item>,
 }
 
-/// Declaration of an union.
+/// Declaration of a union.
+///
+/// See also <https://doc.rust-lang.org/reference/items/unions.html>.
 ///
 /// **Example input:**
 ///
@@ -202,7 +208,9 @@ pub struct Union {
     pub fields: NamedStructFields,
 }
 
-/// Declaration of an trait
+/// Declaration of a trait.
+///
+/// See also <https://doc.rust-lang.org/reference/items/traits.html>.
 ///
 /// **Example input:**
 ///
@@ -238,6 +246,8 @@ pub enum TraitMember {
 }
 
 /// Declaration of an `impl` block.
+///
+/// See also <https://doc.rust-lang.org/reference/items/implementations.html>.
 ///
 /// **Example input:**
 ///
@@ -281,6 +291,9 @@ pub enum ImplMember {
 
 /// Constant or static declaration.
 ///
+/// See also <https://doc.rust-lang.org/reference/items/constant-items.html>
+/// and <https://doc.rust-lang.org/reference/items/static-items.html>.
+///
 /// **Example inputs:**
 ///
 /// ```no_run
@@ -312,6 +325,8 @@ pub struct Constant {
 /// Type definition.
 /// Handles both associated types (in `impl` blocks) or type aliases (globally).
 ///
+/// See also <https://doc.rust-lang.org/reference/items/type-aliases.html>.
+///
 /// **Example input:**
 ///
 /// ```no_run
@@ -330,6 +345,8 @@ pub struct TyDefinition {
 }
 
 /// Declaration of a function.
+///
+/// See also <https://doc.rust-lang.org/reference/items/functions.html>.
 ///
 /// **Example input:**
 ///
@@ -661,6 +678,8 @@ pub struct PathSegment {
 /// Type definition.
 /// Handles both associated types (in `impl` blocks) or type aliases (globally).
 ///
+/// See also <https://doc.rust-lang.org/reference/items/use-declarations.html>.
+///
 /// **Example input:**
 ///
 /// ```no_run
@@ -696,6 +715,9 @@ pub struct EnumVariantValue {
 }
 
 /// A macro invocation or `macro_rules!` declaration.
+///
+/// See also <https://doc.rust-lang.org/reference/macros.html> and
+/// <https://doc.rust-lang.org/reference/macros-by-example.html>.
 ///
 /// **Example input:**
 ///
