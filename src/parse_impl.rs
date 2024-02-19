@@ -205,14 +205,14 @@ pub(crate) fn parse_impl_body(
             vis_marker,
             "impl",
         ) {
-            Item::Function(function) => ImplMember::Method(function),
+            Item::Function(function) => ImplMember::AssocFunction(function),
             Item::Constant(const_) if const_.tk_const_or_static == "const" => {
                 // `const` can appear in impl/trait blocks.
-                ImplMember::Constant(const_)
+                ImplMember::AssocConstant(const_)
             }
             Item::Constant(static_) if allow_static => {
                 // `static` can appear in `extern "abi" {}` blocks.
-                ImplMember::Constant(static_)
+                ImplMember::AssocConstant(static_)
             }
             Item::TypeAlias(ty_def) => ImplMember::AssocType(ty_def),
             Item::Macro(macro_) => ImplMember::Macro(macro_),
@@ -319,8 +319,8 @@ pub(crate) fn parse_trait(
     let body_items = body_items
         .into_iter()
         .map(|item| match item {
-            ImplMember::Method(function) => TraitMember::Method(function),
-            ImplMember::Constant(constant) => TraitMember::Constant(constant),
+            ImplMember::AssocFunction(function) => TraitMember::AssocFunction(function),
+            ImplMember::AssocConstant(constant) => TraitMember::AssocConstant(constant),
             ImplMember::AssocType(assoc_ty) => TraitMember::AssocType(assoc_ty),
             ImplMember::Macro(macro_) => TraitMember::Macro(macro_),
         })

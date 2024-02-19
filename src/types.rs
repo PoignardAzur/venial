@@ -102,19 +102,21 @@ pub enum StructFields {
     Named(NamedStructFields),
 }
 
+/// Fields in a tuple-style [`Struct`].
 #[derive(Clone)]
 pub struct TupleStructFields {
     pub fields: Punctuated<TupleField>,
     pub tk_parens: GroupSpan,
 }
 
+/// Fields in a nominal [`Struct`].
 #[derive(Clone)]
 pub struct NamedStructFields {
     pub fields: Punctuated<NamedField>,
     pub tk_braces: GroupSpan,
 }
 
-/// Declaration of an enum.
+/// Declaration of an `enum`.
 ///
 /// See also <https://doc.rust-lang.org/reference/items/enumerations.html>.
 ///
@@ -235,12 +237,14 @@ pub struct Trait {
     pub body_items: Vec<TraitMember>,
 }
 
-/// The group representing a `trait` block.
+/// Associated items in a trait.
+///
+/// See also <https://doc.rust-lang.org/reference/items/associated-items.html>.
 #[derive(Clone, Debug)]
 #[non_exhaustive]
 pub enum TraitMember {
-    Method(Function),
-    Constant(Constant),
+    AssocFunction(Function),
+    AssocConstant(Constant),
     AssocType(TypeAlias),
     Macro(Macro),
 }
@@ -280,11 +284,13 @@ pub struct Impl {
 }
 
 /// The group representing an `impl` block.
+///
+/// See also <https://doc.rust-lang.org/reference/items/associated-items.html>.
 #[derive(Clone, Debug)]
 #[non_exhaustive]
 pub enum ImplMember {
-    Method(Function),
-    Constant(Constant),
+    AssocFunction(Function),
+    AssocConstant(Constant),
     AssocType(TypeAlias),
     Macro(Macro),
 }
@@ -387,7 +393,7 @@ pub struct FnQualifiers {
     pub extern_abi: Option<Literal>,
 }
 
-/// A parameter of a [`Function`]
+/// A parameter of a [`Function`].
 ///
 /// Function parameters can either be receivers (`self` variations) or typed parameters (`name: type` form).
 ///
@@ -403,7 +409,7 @@ pub enum FnParam {
     Typed(FnTypedParam),
 }
 
-/// A [`Function`] parameter which refers to `self` in some way.
+/// [`Function`] parameter which refers to `self` in some way.
 ///
 /// Possible parameters captures by this are `self`, `mut self`, `&self` or `&mut self`.
 /// Reference lifetimes are not yet supported.
@@ -418,7 +424,7 @@ pub struct FnReceiverParam {
     pub tk_self: Ident,
 }
 
-/// A parameter of a [`Function`]
+/// [`Function`] parameter with explicit type.
 ///
 /// In the following code, the function parameters captured are `a: i32` and `mut b: f32`
 ///
@@ -614,7 +620,7 @@ pub struct WhereClause {
     pub items: Punctuated<WhereClauseItem>,
 }
 
-/// An item in a where clause
+/// Item in a where clause.
 ///
 /// This is the `T: Clone` in the following code:
 ///
@@ -1274,8 +1280,8 @@ impl ToTokens for Impl {
 impl ToTokens for ImplMember {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            ImplMember::Method(function) => function.to_tokens(tokens),
-            ImplMember::Constant(constant) => constant.to_tokens(tokens),
+            ImplMember::AssocFunction(function) => function.to_tokens(tokens),
+            ImplMember::AssocConstant(constant) => constant.to_tokens(tokens),
             ImplMember::AssocType(assoc_ty) => assoc_ty.to_tokens(tokens),
             ImplMember::Macro(macro_) => macro_.to_tokens(tokens),
         }
@@ -1285,8 +1291,8 @@ impl ToTokens for ImplMember {
 impl ToTokens for TraitMember {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            TraitMember::Method(function) => function.to_tokens(tokens),
-            TraitMember::Constant(constant) => constant.to_tokens(tokens),
+            TraitMember::AssocFunction(function) => function.to_tokens(tokens),
+            TraitMember::AssocConstant(constant) => constant.to_tokens(tokens),
             TraitMember::AssocType(assoc_ty) => assoc_ty.to_tokens(tokens),
             TraitMember::Macro(macro_) => macro_.to_tokens(tokens),
         }
