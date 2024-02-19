@@ -77,7 +77,7 @@ Impl(
         tk_braces: {},
         inner_attributes: [],
         body_items: [
-            Constant(
+            AssocConstant(
                 Constant {
                     attributes: [
                         Attribute {

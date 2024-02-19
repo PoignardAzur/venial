@@ -76,7 +76,7 @@ ExternBlock(
                     ),
                 },
             ),
-            Method(
+            AssocFunction(
                 Function {
                     attributes: [],
                     vis_marker: None,
@@ -109,7 +109,7 @@ ExternBlock(
                     body: None,
                 },
             ),
-            Constant(
+            AssocConstant(
                 Constant {
                     attributes: [],
                     vis_marker: None,

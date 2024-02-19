@@ -90,28 +90,28 @@ pub struct Struct {
     pub name: Ident,
     pub generic_params: Option<GenericParamList>,
     pub where_clause: Option<WhereClause>,
-    pub fields: StructFields,
+    pub fields: Fields,
     pub tk_semicolon: Option<Punct>,
 }
 
 /// Fields of a [`Struct`] or an [`EnumVariant`].
 #[derive(Clone, Debug)]
-pub enum StructFields {
+pub enum Fields {
     Unit,
-    Tuple(TupleStructFields),
-    Named(NamedStructFields),
+    Tuple(TupleFields),
+    Named(NamedFields),
 }
 
 /// Fields in a tuple-style [`Struct`].
 #[derive(Clone)]
-pub struct TupleStructFields {
+pub struct TupleFields {
     pub fields: Punctuated<TupleField>,
     pub tk_parens: GroupSpan,
 }
 
 /// Fields in a nominal [`Struct`].
 #[derive(Clone)]
-pub struct NamedStructFields {
+pub struct NamedFields {
     pub fields: Punctuated<NamedField>,
     pub tk_braces: GroupSpan,
 }
@@ -142,13 +142,13 @@ pub struct Enum {
 /// The individual variant of an [`Enum`].
 ///
 /// The variant can either be a c-like variant, hold one or multiple types,
-/// or hold named fields depending on the value of `contents`.
+/// or hold named fields depending on the value of `fields`.
 #[derive(Clone, Debug)]
 pub struct EnumVariant {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
     pub name: Ident,
-    pub contents: StructFields,
+    pub fields: Fields,
 
     /// The value of the variant, normally for c-like enums.
     pub value: Option<EnumVariantValue>,
@@ -207,7 +207,7 @@ pub struct Union {
     pub name: Ident,
     pub generic_params: Option<GenericParamList>,
     pub where_clause: Option<WhereClause>,
-    pub fields: NamedStructFields,
+    pub fields: NamedFields,
 }
 
 /// Declaration of a trait.
@@ -831,9 +831,10 @@ pub struct ExternCrate {
     pub tk_semicolon: Punct,
 }
 
-/// Information about a [`Group`]. This can be used to recreate the group
-/// from its inner token sequence, or to create a new group with a
-/// modified token sequence but the original group's span information.
+/// Span information about a [`Group`].
+///
+/// This can be used to recreate the group from its inner token sequence, or to create
+/// a new group with a modified token sequence but the original group's span information.
 #[derive(Clone)]
 pub struct GroupSpan {
     pub delimiter: Delimiter,
@@ -866,13 +867,13 @@ impl<'a> std::fmt::Debug for TokenRef<'a> {
     }
 }
 
-impl std::fmt::Debug for TupleStructFields {
+impl std::fmt::Debug for TupleFields {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.fields.fmt(f)
     }
 }
 
-impl std::fmt::Debug for NamedStructFields {
+impl std::fmt::Debug for NamedFields {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         self.fields.fmt(f)
     }
@@ -1093,7 +1094,7 @@ impl ToTokens for Struct {
         self.name.to_tokens(tokens);
         self.generic_params.to_tokens(tokens);
 
-        if matches!(&self.fields, StructFields::Named(_)) {
+        if matches!(&self.fields, Fields::Named(_)) {
             self.where_clause.to_tokens(tokens);
             self.fields.to_tokens(tokens);
         } else {
@@ -1104,17 +1105,17 @@ impl ToTokens for Struct {
     }
 }
 
-impl ToTokens for StructFields {
+impl ToTokens for Fields {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         match self {
-            StructFields::Unit => (),
-            StructFields::Tuple(fields) => fields.to_tokens(tokens),
-            StructFields::Named(fields) => fields.to_tokens(tokens),
+            Fields::Unit => (),
+            Fields::Tuple(fields) => fields.to_tokens(tokens),
+            Fields::Named(fields) => fields.to_tokens(tokens),
         }
     }
 }
 
-impl ToTokens for TupleStructFields {
+impl ToTokens for TupleFields {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.tk_parens.quote_with(tokens, |tokens| {
             self.fields.to_tokens(tokens);
@@ -1122,7 +1123,7 @@ impl ToTokens for TupleStructFields {
     }
 }
 
-impl ToTokens for NamedStructFields {
+impl ToTokens for NamedFields {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         self.tk_braces.quote_with(tokens, |tokens| {
             self.fields.to_tokens(tokens);
@@ -1153,7 +1154,7 @@ impl ToTokens for EnumVariant {
         }
         self.vis_marker.to_tokens(tokens);
         self.name.to_tokens(tokens);
-        self.contents.to_tokens(tokens);
+        self.fields.to_tokens(tokens);
         self.value.to_tokens(tokens);
     }
 }

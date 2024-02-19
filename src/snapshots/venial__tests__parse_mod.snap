@@ -242,7 +242,7 @@ Module(
                             name: Ident(
                                 Variant,
                             ),
-                            contents: Unit,
+                            fields: Unit,
                             value: None,
                         },
                     ],

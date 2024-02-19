@@ -9,7 +9,7 @@ use crate::parse_type::{
     parse_named_fields, parse_tuple_fields,
 };
 use crate::parse_utils::{consume_outer_attributes, consume_punct, consume_vis_marker};
-use crate::types::{Item, Enum, Struct, StructFields, Union};
+use crate::types::{Item, Enum, Struct, Fields, Union};
 use crate::types_edition::GroupSpan;
 use proc_macro2::token_stream::IntoIter;
 use proc_macro2::{Delimiter, TokenStream, TokenTree};
@@ -101,23 +101,23 @@ pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Item, Erro
                 .peek()
                 .expect("cannot parse struct: missing body or semicolon")
             {
-                TokenTree::Punct(punct) if punct.as_char() == ';' => StructFields::Unit,
+                TokenTree::Punct(punct) if punct.as_char() == ';' => Fields::Unit,
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Parenthesis => {
                     let group = group.clone();
                     // Consume group
                     tokens.next();
-                    StructFields::Tuple(parse_tuple_fields(group))
+                    Fields::Tuple(parse_tuple_fields(group))
                 }
                 TokenTree::Group(group) if group.delimiter() == Delimiter::Brace => {
                     let group = group.clone();
                     // Consume group
                     tokens.next();
-                    StructFields::Named(parse_named_fields(group))
+                    Fields::Named(parse_named_fields(group))
                 }
                 token => panic!("cannot parse struct: unexpected token {:?}", token),
             };
 
-            if matches!(struct_fields, StructFields::Tuple(_)) {
+            if matches!(struct_fields, Fields::Tuple(_)) {
                 assert!(where_clause.is_none());
                 where_clause = consume_where_clause(tokens);
             }

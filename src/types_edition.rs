@@ -2,7 +2,7 @@ use crate::parse_utils::{consume_path, tokens_from_slice};
 pub use crate::types::{
     Attribute, AttributeValue, Item, Enum, EnumVariant, EnumVariantValue, Function,
     GenericBound, GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, NamedField, Struct,
-    StructFields, TupleField, TypeExpr, Union, VisMarker, WhereClause, WhereClauseItem,
+    Fields, TupleField, TypeExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
 use crate::types::{FnQualifiers, GenericArg, GenericArgList, Impl, Module, Path};
 use crate::{Constant, Punctuated, Trait, TypeAlias};
@@ -265,12 +265,12 @@ impl Struct {
     /// ```
     pub fn field_names(&self) -> impl IntoIterator<Item = String> {
         match &self.fields {
-            StructFields::Unit => Vec::new(),
-            StructFields::Tuple(tuple_fields) => {
+            Fields::Unit => Vec::new(),
+            Fields::Tuple(tuple_fields) => {
                 let range = 0..tuple_fields.fields.len();
                 range.map(|i| i.to_string()).collect()
             }
-            StructFields::Named(named_fields) => named_fields
+            Fields::Named(named_fields) => named_fields
                 .fields
                 .items()
                 .map(|field| field.name.to_string())
@@ -284,12 +284,12 @@ impl Struct {
     /// If the struct is a tuple struct, span-less integer literals will be returned.
     pub fn field_tokens(&self) -> impl IntoIterator<Item = TokenTree> {
         match &self.fields {
-            StructFields::Unit => Vec::new(),
-            StructFields::Tuple(tuple_fields) => {
+            Fields::Unit => Vec::new(),
+            Fields::Tuple(tuple_fields) => {
                 let range = 0..tuple_fields.fields.len();
                 range.map(|i| Literal::usize_unsuffixed(i).into()).collect()
             }
-            StructFields::Named(named_fields) => named_fields
+            Fields::Named(named_fields) => named_fields
                 .fields
                 .items()
                 .map(|field| field.name.clone().into())
@@ -300,11 +300,11 @@ impl Struct {
     /// Returns a collection of references to the struct's field types.
     pub fn field_types(&self) -> impl IntoIterator<Item = &TypeExpr> {
         match &self.fields {
-            StructFields::Unit => Vec::new(),
-            StructFields::Tuple(tuple_fields) => {
+            Fields::Unit => Vec::new(),
+            Fields::Tuple(tuple_fields) => {
                 tuple_fields.fields.items().map(|field| &field.ty).collect()
             }
-            StructFields::Named(named_fields) => {
+            Fields::Named(named_fields) => {
                 named_fields.fields.items().map(|field| &field.ty).collect()
             }
         }
@@ -493,17 +493,17 @@ impl AttributeValue {
 impl EnumVariant {
     /// Returns true if the variant doesn't store a type.
     pub fn is_empty_variant(&self) -> bool {
-        matches!(self.contents, StructFields::Unit)
+        matches!(self.fields, Fields::Unit)
     }
 
     /// Returns Some if the variant is a wrapper around a single type.
     /// Returns None otherwise.
     pub fn get_single_type(&self) -> Option<&TupleField> {
-        match &self.contents {
-            StructFields::Tuple(fields) if fields.fields.len() == 1 => Some(&fields.fields[0].0),
-            StructFields::Tuple(_fields) => None,
-            StructFields::Unit => None,
-            StructFields::Named(_) => None,
+        match &self.fields {
+            Fields::Tuple(fields) if fields.fields.len() == 1 => Some(&fields.fields[0].0),
+            Fields::Tuple(_fields) => None,
+            Fields::Unit => None,
+            Fields::Named(_) => None,
         }
     }
 }
@@ -797,7 +797,7 @@ implement_span!(GenericParamList);
 implement_span!(NamedField);
 implement_span!(Struct);
 
-implement_span!(StructFields);
+implement_span!(Fields);
 implement_span!(TupleField);
 implement_span!(TypeExpr);
 implement_span!(Union);
