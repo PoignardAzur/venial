@@ -31,7 +31,7 @@
 //! ## Example
 //!
 //! ```rust
-//! use venial::{parse_declaration, Declaration};
+//! use venial::{parse_declaration, Item};
 //! use quote::quote;
 //!
 //! let enum_type = parse_declaration(quote!(
@@ -43,7 +43,7 @@
 //! ));
 //!
 //! let enum_type = match enum_type {
-//!     Ok(Declaration::Enum(enum_type)) => enum_type,
+//!     Ok(Item::Enum(enum_type)) => enum_type,
 //!     _ => unreachable!(),
 //! };
 //!

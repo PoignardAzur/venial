@@ -1,6 +1,6 @@
 use crate::parse_utils::{consume_path, tokens_from_slice};
 pub use crate::types::{
-    Attribute, AttributeValue, Declaration, Enum, EnumVariant, EnumVariantValue, Function,
+    Attribute, AttributeValue, Item, Enum, EnumVariant, EnumVariantValue, Function,
     GenericBound, GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, NamedField, Struct,
     StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
@@ -9,25 +9,25 @@ use crate::{Constant, Punctuated, Trait, TyDefinition};
 use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::spanned::Spanned;
 
-impl Declaration {
+impl Item {
     /// Returns the [`Vec<Attribute>`] of the declaration.
     ///
     /// This method is provided for convenience, but it's more idiomatic to match on Declaration and use the same method in the matching variant.
     pub fn attributes(&self) -> &Vec<Attribute> {
         match self {
-            Declaration::Struct(struct_decl) => &struct_decl.attributes,
-            Declaration::Enum(enum_decl) => &enum_decl.attributes,
-            Declaration::Union(union_decl) => &union_decl.attributes,
-            Declaration::Module(mod_decl) => &mod_decl.attributes,
-            Declaration::Trait(trait_decl) => &trait_decl.attributes,
-            Declaration::Impl(impl_decl) => &impl_decl.attributes,
-            Declaration::TyDefinition(ty_decl) => &ty_decl.attributes,
-            Declaration::Function(function_decl) => &function_decl.attributes,
-            Declaration::Constant(const_decl) => &const_decl.attributes,
-            Declaration::Use(use_decl) => &use_decl.attributes,
-            Declaration::Macro(macro_decl) => &macro_decl.attributes,
-            Declaration::ExternBlock(block_decl) => &block_decl.attributes,
-            Declaration::ExternCrate(crate_decl) => &crate_decl.attributes,
+            Item::Struct(struct_decl) => &struct_decl.attributes,
+            Item::Enum(enum_decl) => &enum_decl.attributes,
+            Item::Union(union_decl) => &union_decl.attributes,
+            Item::Module(mod_decl) => &mod_decl.attributes,
+            Item::Trait(trait_decl) => &trait_decl.attributes,
+            Item::Impl(impl_decl) => &impl_decl.attributes,
+            Item::TyDefinition(ty_decl) => &ty_decl.attributes,
+            Item::Function(function_decl) => &function_decl.attributes,
+            Item::Constant(const_decl) => &const_decl.attributes,
+            Item::Use(use_decl) => &use_decl.attributes,
+            Item::Macro(macro_decl) => &macro_decl.attributes,
+            Item::ExternBlock(block_decl) => &block_decl.attributes,
+            Item::ExternCrate(crate_decl) => &crate_decl.attributes,
         }
     }
 
@@ -36,19 +36,19 @@ impl Declaration {
     /// This method is provided for convenience, but it's more idiomatic to match on Declaration and use the same method in the matching variant.
     pub fn attributes_mut(&mut self) -> &mut Vec<Attribute> {
         match self {
-            Declaration::Struct(struct_decl) => &mut struct_decl.attributes,
-            Declaration::Enum(enum_decl) => &mut enum_decl.attributes,
-            Declaration::Union(union_decl) => &mut union_decl.attributes,
-            Declaration::Module(mod_decl) => &mut mod_decl.attributes,
-            Declaration::Trait(trait_decl) => &mut trait_decl.attributes,
-            Declaration::Impl(impl_decl) => &mut impl_decl.attributes,
-            Declaration::TyDefinition(ty_decl) => &mut ty_decl.attributes,
-            Declaration::Function(function_decl) => &mut function_decl.attributes,
-            Declaration::Constant(const_decl) => &mut const_decl.attributes,
-            Declaration::Use(use_decl) => &mut use_decl.attributes,
-            Declaration::Macro(macro_decl) => &mut macro_decl.attributes,
-            Declaration::ExternBlock(block_decl) => &mut block_decl.attributes,
-            Declaration::ExternCrate(crate_decl) => &mut crate_decl.attributes,
+            Item::Struct(struct_decl) => &mut struct_decl.attributes,
+            Item::Enum(enum_decl) => &mut enum_decl.attributes,
+            Item::Union(union_decl) => &mut union_decl.attributes,
+            Item::Module(mod_decl) => &mut mod_decl.attributes,
+            Item::Trait(trait_decl) => &mut trait_decl.attributes,
+            Item::Impl(impl_decl) => &mut impl_decl.attributes,
+            Item::TyDefinition(ty_decl) => &mut ty_decl.attributes,
+            Item::Function(function_decl) => &mut function_decl.attributes,
+            Item::Constant(const_decl) => &mut const_decl.attributes,
+            Item::Use(use_decl) => &mut use_decl.attributes,
+            Item::Macro(macro_decl) => &mut macro_decl.attributes,
+            Item::ExternBlock(block_decl) => &mut block_decl.attributes,
+            Item::ExternCrate(crate_decl) => &mut crate_decl.attributes,
         }
     }
 
@@ -62,19 +62,19 @@ impl Declaration {
     /// This method is provided for convenience, but it's more idiomatic to match on Declaration and use the same method in the matching variant.
     pub fn generic_params(&self) -> Option<&GenericParamList> {
         match self {
-            Declaration::Struct(struct_decl) => struct_decl.generic_params.as_ref(),
-            Declaration::Enum(enum_decl) => enum_decl.generic_params.as_ref(),
-            Declaration::Union(union_decl) => union_decl.generic_params.as_ref(),
-            Declaration::Module(_) => None,
-            Declaration::Trait(trait_decl) => trait_decl.generic_params.as_ref(),
-            Declaration::Impl(impl_decl) => impl_decl.impl_generic_params.as_ref(),
-            Declaration::TyDefinition(_) => None,
-            Declaration::Function(function_decl) => function_decl.generic_params.as_ref(),
-            Declaration::Constant(_) => None,
-            Declaration::Use(_) => None,
-            Declaration::Macro(_) => None,
-            Declaration::ExternBlock(_) => None,
-            Declaration::ExternCrate(_) => None,
+            Item::Struct(struct_decl) => struct_decl.generic_params.as_ref(),
+            Item::Enum(enum_decl) => enum_decl.generic_params.as_ref(),
+            Item::Union(union_decl) => union_decl.generic_params.as_ref(),
+            Item::Module(_) => None,
+            Item::Trait(trait_decl) => trait_decl.generic_params.as_ref(),
+            Item::Impl(impl_decl) => impl_decl.impl_generic_params.as_ref(),
+            Item::TyDefinition(_) => None,
+            Item::Function(function_decl) => function_decl.generic_params.as_ref(),
+            Item::Constant(_) => None,
+            Item::Use(_) => None,
+            Item::Macro(_) => None,
+            Item::ExternBlock(_) => None,
+            Item::ExternCrate(_) => None,
         }
     }
 
@@ -88,19 +88,19 @@ impl Declaration {
     /// This method is provided for convenience, but it's more idiomatic to match on Declaration and use the same method in the matching variant.
     pub fn generic_params_mut(&mut self) -> Option<&mut GenericParamList> {
         match self {
-            Declaration::Struct(struct_decl) => struct_decl.generic_params.as_mut(),
-            Declaration::Enum(enum_decl) => enum_decl.generic_params.as_mut(),
-            Declaration::Union(union_decl) => union_decl.generic_params.as_mut(),
-            Declaration::Module(_) => None,
-            Declaration::Trait(trait_decl) => trait_decl.generic_params.as_mut(),
-            Declaration::Impl(impl_decl) => impl_decl.impl_generic_params.as_mut(),
-            Declaration::TyDefinition(_) => None,
-            Declaration::Function(function_decl) => function_decl.generic_params.as_mut(),
-            Declaration::Constant(_) => None,
-            Declaration::Use(_) => None,
-            Declaration::Macro(_) => None,
-            Declaration::ExternBlock(_) => None,
-            Declaration::ExternCrate(_) => None,
+            Item::Struct(struct_decl) => struct_decl.generic_params.as_mut(),
+            Item::Enum(enum_decl) => enum_decl.generic_params.as_mut(),
+            Item::Union(union_decl) => union_decl.generic_params.as_mut(),
+            Item::Module(_) => None,
+            Item::Trait(trait_decl) => trait_decl.generic_params.as_mut(),
+            Item::Impl(impl_decl) => impl_decl.impl_generic_params.as_mut(),
+            Item::TyDefinition(_) => None,
+            Item::Function(function_decl) => function_decl.generic_params.as_mut(),
+            Item::Constant(_) => None,
+            Item::Use(_) => None,
+            Item::Macro(_) => None,
+            Item::ExternBlock(_) => None,
+            Item::ExternCrate(_) => None,
         }
     }
 
@@ -119,26 +119,26 @@ impl Declaration {
     /// ```
     pub fn name(&self) -> Option<Ident> {
         match self {
-            Declaration::Struct(struct_decl) => Some(struct_decl.name.clone()),
-            Declaration::Enum(enum_decl) => Some(enum_decl.name.clone()),
-            Declaration::Union(union_decl) => Some(union_decl.name.clone()),
-            Declaration::Module(mod_decl) => Some(mod_decl.name.clone()),
-            Declaration::Trait(trait_decl) => Some(trait_decl.name.clone()),
-            Declaration::Impl(_) => None,
-            Declaration::TyDefinition(ty_decl) => Some(ty_decl.name.clone()),
-            Declaration::Function(function_decl) => Some(function_decl.name.clone()),
-            Declaration::Constant(const_decl) => Some(const_decl.name.clone()),
-            Declaration::Use(_) => None,
-            Declaration::Macro(macro_) => Some(macro_.name.clone()),
-            Declaration::ExternBlock(_) => None,
-            Declaration::ExternCrate(crate_) => Some(crate_.name.clone()),
+            Item::Struct(struct_decl) => Some(struct_decl.name.clone()),
+            Item::Enum(enum_decl) => Some(enum_decl.name.clone()),
+            Item::Union(union_decl) => Some(union_decl.name.clone()),
+            Item::Module(mod_decl) => Some(mod_decl.name.clone()),
+            Item::Trait(trait_decl) => Some(trait_decl.name.clone()),
+            Item::Impl(_) => None,
+            Item::TyDefinition(ty_decl) => Some(ty_decl.name.clone()),
+            Item::Function(function_decl) => Some(function_decl.name.clone()),
+            Item::Constant(const_decl) => Some(const_decl.name.clone()),
+            Item::Use(_) => None,
+            Item::Macro(macro_) => Some(macro_.name.clone()),
+            Item::ExternBlock(_) => None,
+            Item::ExternCrate(crate_) => Some(crate_.name.clone()),
         }
     }
 
     /// Returns the [`Struct`] variant of the enum if possible.
     pub fn as_struct(&self) -> Option<&Struct> {
         match self {
-            Declaration::Struct(struct_decl) => Some(struct_decl),
+            Item::Struct(struct_decl) => Some(struct_decl),
             _ => None,
         }
     }
@@ -146,7 +146,7 @@ impl Declaration {
     /// Returns the [`Enum`] variant of the enum if possible.
     pub fn as_enum(&self) -> Option<&Enum> {
         match self {
-            Declaration::Enum(enum_decl) => Some(enum_decl),
+            Item::Enum(enum_decl) => Some(enum_decl),
             _ => None,
         }
     }
@@ -154,7 +154,7 @@ impl Declaration {
     /// Returns the [`Union`] variant of the enum if possible.
     pub fn as_union(&self) -> Option<&Union> {
         match self {
-            Declaration::Union(union_decl) => Some(union_decl),
+            Item::Union(union_decl) => Some(union_decl),
             _ => None,
         }
     }
@@ -162,7 +162,7 @@ impl Declaration {
     /// Returns the [`Module`] variant of the enum if possible.
     pub fn as_module(&self) -> Option<&Module> {
         match self {
-            Declaration::Module(mod_decl) => Some(mod_decl),
+            Item::Module(mod_decl) => Some(mod_decl),
             _ => None,
         }
     }
@@ -170,7 +170,7 @@ impl Declaration {
     /// Returns the [`Trait`] variant of the enum if possible.
     pub fn as_trait(&self) -> Option<&Trait> {
         match self {
-            Declaration::Trait(trait_decl) => Some(trait_decl),
+            Item::Trait(trait_decl) => Some(trait_decl),
             _ => None,
         }
     }
@@ -178,7 +178,7 @@ impl Declaration {
     /// Returns the [`Impl`] variant of the enum if possible.
     pub fn as_impl(&self) -> Option<&Impl> {
         match self {
-            Declaration::Impl(impl_decl) => Some(impl_decl),
+            Item::Impl(impl_decl) => Some(impl_decl),
             _ => None,
         }
     }
@@ -186,7 +186,7 @@ impl Declaration {
     /// Returns the [`TyDefinition`] variant of the enum if possible.
     pub fn as_ty_definition(&self) -> Option<&TyDefinition> {
         match self {
-            Declaration::TyDefinition(ty_decl) => Some(ty_decl),
+            Item::TyDefinition(ty_decl) => Some(ty_decl),
             _ => None,
         }
     }
@@ -194,7 +194,7 @@ impl Declaration {
     /// Returns the [`Function`] variant of the enum if possible.
     pub fn as_function(&self) -> Option<&Function> {
         match self {
-            Declaration::Function(function_decl) => Some(function_decl),
+            Item::Function(function_decl) => Some(function_decl),
             _ => None,
         }
     }
@@ -202,7 +202,7 @@ impl Declaration {
     /// Returns the [`Constant`] variant of the enum if possible.
     pub fn as_constant(&self) -> Option<&Constant> {
         match self {
-            Declaration::Constant(const_decl) => Some(const_decl),
+            Item::Constant(const_decl) => Some(const_decl),
             _ => None,
         }
     }
@@ -223,7 +223,7 @@ impl Declaration {
     /// Venial doesn't have an "all-in-one" method. You would instead write:
     ///
     /// ```no_run
-    /// # let input: venial::Declaration = None.unwrap();
+    /// # let input: venial::Item = None.unwrap();
     /// let impl_generics = input.generic_params().unwrap();
     /// let ty_generics = input.generic_params().unwrap().as_inline_args();
     /// ```
@@ -785,7 +785,7 @@ macro_rules! implement_span {
 
 implement_span!(Attribute);
 implement_span!(AttributeValue);
-implement_span!(Declaration);
+implement_span!(Item);
 implement_span!(Enum);
 implement_span!(EnumVariant);
 implement_span!(EnumVariantValue);
