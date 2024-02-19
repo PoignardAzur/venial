@@ -70,7 +70,7 @@ Impl(
             },
         ],
         body_items: [
-            AssocTy(
+            AssocType(
                 TypeAlias {
                     attributes: [
                         Attribute {

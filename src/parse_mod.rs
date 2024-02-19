@@ -4,7 +4,7 @@ use crate::parse_utils::{
     consume_ident, consume_inner_attributes, consume_stuff_until, parse_ident, parse_punct,
     TokenIter,
 };
-use crate::{Attribute, GroupSpan, Module, TyExpr, UseDeclaration, VisMarker};
+use crate::{Attribute, GroupSpan, Module, TypeExpr, UseDeclaration, VisMarker};
 use proc_macro2::token_stream::IntoIter;
 use proc_macro2::{Delimiter, TokenTree};
 use std::iter::Peekable;
@@ -87,7 +87,7 @@ pub(crate) fn parse_use_declaration(
         attributes,
         vis_marker,
         tk_use,
-        import_tree: TyExpr {
+        import_tree: TypeExpr {
             tokens: import_tree,
         },
         tk_semicolon,

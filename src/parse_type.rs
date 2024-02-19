@@ -7,7 +7,7 @@ use crate::punctuated::Punctuated;
 use crate::types::{
     EnumVariant, EnumVariantValue, GenericArg, GenericArgList, GenericBound, GenericParam,
     GenericParamList, NamedField, NamedStructFields, StructFields, TupleField, TupleStructFields,
-    TyExpr, WhereClause, WhereClauseItem,
+    TypeExpr, WhereClause, WhereClauseItem,
 };
 use crate::types_edition::GroupSpan;
 use proc_macro2::{Delimiter, Group, Ident, Punct, TokenStream, TokenTree};
@@ -140,7 +140,7 @@ fn parse_generic_arg(tokens: Vec<TokenTree>) -> GenericArg {
                 return GenericArg::Binding {
                     ident,
                     tk_equals: punct,
-                    ty: TyExpr { tokens: remaining },
+                    ty: TypeExpr { tokens: remaining },
                 };
             }
         }
@@ -149,8 +149,8 @@ fn parse_generic_arg(tokens: Vec<TokenTree>) -> GenericArg {
     // Last, all the rest is just tokens
     let remaining: Vec<TokenTree> = before_ident.collect();
 
-    GenericArg::TyOrConst {
-        expr: TyExpr { tokens: remaining },
+    GenericArg::TypeOrConst {
+        expr: TypeExpr { tokens: remaining },
     }
 }
 
@@ -327,7 +327,7 @@ pub(crate) fn parse_tuple_fields(token_group: Group) -> TupleStructFields {
             TupleField {
                 attributes,
                 vis_marker,
-                ty: TyExpr { tokens: ty_tokens },
+                ty: TypeExpr { tokens: ty_tokens },
             },
             comma,
         );
@@ -363,7 +363,7 @@ pub(crate) fn parse_named_fields(token_group: Group) -> NamedStructFields {
                 vis_marker,
                 name: field_name,
                 tk_colon: colon,
-                ty: TyExpr { tokens: ty_tokens },
+                ty: TypeExpr { tokens: ty_tokens },
             },
             comma,
         );

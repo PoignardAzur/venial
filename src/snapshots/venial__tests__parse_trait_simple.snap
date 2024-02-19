@@ -218,7 +218,7 @@ Trait(
                     },
                 },
             ),
-            AssocTy(
+            AssocType(
                 TypeAlias {
                     attributes: [],
                     vis_marker: None,
@@ -241,7 +241,7 @@ Trait(
                     },
                 },
             ),
-            AssocTy(
+            AssocType(
                 TypeAlias {
                     attributes: [],
                     vis_marker: None,

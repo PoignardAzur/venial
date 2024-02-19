@@ -8,7 +8,7 @@ use crate::parse_utils::{
 };
 use crate::types::{Constant, ImplMember, TypeAlias, ValueExpr};
 use crate::types_edition::GroupSpan;
-use crate::{Attribute, Item, Impl, Trait, TraitMember, TyExpr, VisMarker};
+use crate::{Attribute, Item, Impl, Trait, TraitMember, TypeExpr, VisMarker};
 use proc_macro2::{Delimiter, Group, TokenTree};
 use quote::ToTokens;
 use std::iter::Peekable;
@@ -67,7 +67,7 @@ pub(crate) fn parse_const_or_static(
         tk_mut,
         name,
         tk_colon,
-        ty: TyExpr { tokens: ty_tokens },
+        ty: TypeExpr { tokens: ty_tokens },
         tk_equals,
         initializer,
         tk_semicolon,
@@ -98,7 +98,7 @@ pub(crate) fn consume_ty_definition(
             |tt| matches!(tt, TokenTree::Punct(punct) if punct.as_char() == ';'),
             true,
         );
-        Some(TyExpr { tokens: ty_tokens })
+        Some(TypeExpr { tokens: ty_tokens })
     } else {
         None
     };
@@ -214,7 +214,7 @@ pub(crate) fn parse_impl_body(
                 // `static` can appear in `extern "abi" {}` blocks.
                 ImplMember::Constant(static_)
             }
-            Item::TypeAlias(ty_def) => ImplMember::AssocTy(ty_def),
+            Item::TypeAlias(ty_def) => ImplMember::AssocType(ty_def),
             Item::Macro(macro_) => ImplMember::Macro(macro_),
             _ => panic!("unsupported impl item `{:?}`", tokens.peek()),
         };
@@ -253,16 +253,16 @@ pub(crate) fn parse_impl(tokens: &mut TokenIter, attributes: Vec<Attribute>) -> 
 
         (
             Some(tk_for),
-            Some(TyExpr {
+            Some(TypeExpr {
                 tokens: trait_or_self_ty,
             }),
-            TyExpr { tokens: self_ty },
+            TypeExpr { tokens: self_ty },
         )
     } else {
         (
             None,
             None,
-            TyExpr {
+            TypeExpr {
                 tokens: trait_or_self_ty,
             },
         )
@@ -321,7 +321,7 @@ pub(crate) fn parse_trait(
         .map(|item| match item {
             ImplMember::Method(function) => TraitMember::Method(function),
             ImplMember::Constant(constant) => TraitMember::Constant(constant),
-            ImplMember::AssocTy(assoc_ty) => TraitMember::AssocTy(assoc_ty),
+            ImplMember::AssocType(assoc_ty) => TraitMember::AssocType(assoc_ty),
             ImplMember::Macro(macro_) => TraitMember::Macro(macro_),
         })
         .collect();

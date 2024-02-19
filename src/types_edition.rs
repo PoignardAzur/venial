@@ -2,7 +2,7 @@ use crate::parse_utils::{consume_path, tokens_from_slice};
 pub use crate::types::{
     Attribute, AttributeValue, Item, Enum, EnumVariant, EnumVariantValue, Function,
     GenericBound, GenericParam, GenericParamList, GroupSpan, InlineGenericArgs, NamedField, Struct,
-    StructFields, TupleField, TyExpr, Union, VisMarker, WhereClause, WhereClauseItem,
+    StructFields, TupleField, TypeExpr, Union, VisMarker, WhereClause, WhereClauseItem,
 };
 use crate::types::{FnQualifiers, GenericArg, GenericArgList, Impl, Module, Path};
 use crate::{Constant, Punctuated, Trait, TypeAlias};
@@ -298,7 +298,7 @@ impl Struct {
     }
 
     /// Returns a collection of references to the struct's field types.
-    pub fn field_types(&self) -> impl IntoIterator<Item = &TyExpr> {
+    pub fn field_types(&self) -> impl IntoIterator<Item = &TypeExpr> {
         match &self.fields {
             StructFields::Unit => Vec::new(),
             StructFields::Tuple(tuple_fields) => {
@@ -683,15 +683,15 @@ impl<'a> InlineGenericArgs<'a> {
                                 }
                             }
                             Some(TokenTree::Ident(ident)) if ident == "const" => {
-                                GenericArg::TyOrConst {
-                                    expr: TyExpr {
+                                GenericArg::TypeOrConst {
+                                    expr: TypeExpr {
                                         tokens: vec![TokenTree::Ident(name)],
                                     },
                                 }
                             }
                             Some(_) => panic!("unexpected tk_prefix, must be ' or const"),
-                            None => GenericArg::TyOrConst {
-                                expr: TyExpr {
+                            None => GenericArg::TypeOrConst {
+                                expr: TypeExpr {
                                     tokens: vec![TokenTree::Ident(name)],
                                 },
                             },
@@ -761,7 +761,7 @@ impl WhereClauseItem {
     }
 }
 
-impl TyExpr {
+impl TypeExpr {
     /// Tries to parse this type as a [`Path`] such as `path::to::Type<'a, other::Type>`.
     ///
     /// If it does not match a path, `None` is returned.
@@ -799,7 +799,7 @@ implement_span!(Struct);
 
 implement_span!(StructFields);
 implement_span!(TupleField);
-implement_span!(TyExpr);
+implement_span!(TypeExpr);
 implement_span!(Union);
 implement_span!(VisMarker);
 implement_span!(WhereClause);
