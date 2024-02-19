@@ -12,6 +12,7 @@ use crate::types::{
 use crate::types_edition::GroupSpan;
 use proc_macro2::{Delimiter, Group, Ident, Punct, TokenStream, TokenTree};
 use std::iter::Peekable;
+use std::vec::IntoIter;
 
 type TokenIter = Peekable<proc_macro2::token_stream::IntoIter>;
 
@@ -98,33 +99,8 @@ fn parse_generic_arg(tokens: Vec<TokenTree>) -> GenericArg {
     // Note: method not called if tokens is empty
     let mut tokens = tokens.into_iter().peekable();
 
-    // Try parsing 'lifetime
-    if let TokenTree::Punct(punct) = tokens.peek().unwrap() {
-        if punct.as_char() == '\'' {
-            let tk_lifetime = punct.clone();
-            tokens.next(); // consume '
-
-            // after the ', there must be a single identifier
-            match tokens.next() {
-                Some(TokenTree::Ident(ident)) => {
-                    assert!(
-                        tokens.next().is_none(),
-                        "cannot parse lifetime generic argument"
-                    );
-
-                    return GenericArg::Lifetime { tk_lifetime, ident };
-                }
-                Some(other) => {
-                    panic!(
-                        "expected identifier after ' lifetime symbol, got {:?}",
-                        other
-                    );
-                }
-                None => {
-                    panic!("expected identifier after ' lifetime symbol, but ran out of tokens")
-                }
-            }
-        }
+    if let Some((tk_lifetime, ident)) = consume_lifetime(&mut tokens) {
+        return GenericArg::Lifetime { tk_lifetime, ident };
     }
 
     // Then, try parsing Item = ...
@@ -150,6 +126,39 @@ fn parse_generic_arg(tokens: Vec<TokenTree>) -> GenericArg {
 
     GenericArg::TypeOrConst {
         expr: TypeExpr { tokens: remaining },
+    }
+}
+
+fn consume_lifetime(tokens: &mut Peekable<IntoIter<TokenTree>>) -> Option<(Punct, Ident)> {
+    // Try parsing 'lifetime
+    let tk_lifetime = match tokens.peek() {
+        Some(TokenTree::Punct(punct)) if punct.as_char() == '\'' => {
+            let apostrophe = punct.clone();
+            tokens.next(); // consume '
+            apostrophe
+        }
+        _ => return None,
+    };
+
+    // after the ', there must be a single identifier
+    match tokens.next() {
+        Some(TokenTree::Ident(ident)) => {
+            assert!(
+                tokens.next().is_none(),
+                "cannot parse lifetime generic argument"
+            );
+
+            return Some((tk_lifetime, ident));
+        }
+        Some(other) => {
+            panic!(
+                "expected identifier after ' lifetime symbol, got {:?}",
+                other
+            );
+        }
+        None => {
+            panic!("expected identifier after ' lifetime symbol, but ran out of tokens")
+        }
     }
 }
 
