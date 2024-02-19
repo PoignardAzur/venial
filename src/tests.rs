@@ -1,4 +1,4 @@
-use crate::{parse_declaration, Item, GenericParam, Struct, TyExpr, WhereClauseItem};
+use crate::{parse_declaration, Item, GenericParam, Struct, TypeExpr, WhereClauseItem};
 
 use crate::parse_type::consume_generic_args;
 use crate::types::GenericArgList;
@@ -1259,7 +1259,7 @@ fn parse_constant_expressionless() {
 #[test]
 fn interpret_ty_expr_simple_as_path() {
     let tokens = quote!(::path::to::Type);
-    let ty_expr = TyExpr {
+    let ty_expr = TypeExpr {
         tokens: tokens.clone().into_iter().collect(),
     };
 
@@ -1272,7 +1272,7 @@ fn interpret_ty_expr_simple_as_path() {
 fn interpret_ty_expr_generic_as_path() {
     #[rustfmt::skip] // would remove trailing ::<>
     let tokens = quote!(path::to::Type<'a, other::Arg, 36>::Turbofish::<>);
-    let ty_expr = TyExpr {
+    let ty_expr = TypeExpr {
         tokens: tokens.clone().into_iter().collect(),
     };
 
@@ -1284,7 +1284,7 @@ fn interpret_ty_expr_generic_as_path() {
 #[test]
 fn interpret_ty_expr_invalid_as_path() {
     let tokens = quote!(());
-    let ty_expr = TyExpr {
+    let ty_expr = TypeExpr {
         tokens: tokens.into_iter().collect(),
     };
 

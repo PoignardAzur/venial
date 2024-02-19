@@ -7,7 +7,7 @@ use crate::parse_utils::{
 };
 use crate::punctuated::Punctuated;
 use crate::types::{
-    FnParam, FnQualifiers, FnReceiverParam, FnTypedParam, Function, GroupSpan, TyExpr,
+    FnParam, FnQualifiers, FnReceiverParam, FnTypedParam, Function, GroupSpan, TypeExpr,
 };
 use crate::{Attribute, Macro, VisMarker};
 use proc_macro2::{Delimiter, Ident, Punct, TokenStream, TokenTree};
@@ -100,7 +100,7 @@ fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
                 tk_mut,
                 name: param_name,
                 tk_colon,
-                ty: TyExpr { tokens: ty_tokens },
+                ty: TypeExpr { tokens: ty_tokens },
             })
         };
 
@@ -112,7 +112,7 @@ fn parse_fn_params(tokens: TokenStream) -> Punctuated<FnParam> {
     fields
 }
 
-fn consume_fn_return(tokens: &mut TokenIter) -> Option<([Punct; 2], TyExpr)> {
+fn consume_fn_return(tokens: &mut TokenIter) -> Option<([Punct; 2], TypeExpr)> {
     let dash = consume_punct(tokens, '-')?;
 
     let tip = match tokens.next() {
@@ -122,7 +122,7 @@ fn consume_fn_return(tokens: &mut TokenIter) -> Option<([Punct; 2], TyExpr)> {
 
     Some((
         [dash, tip],
-        TyExpr {
+        TypeExpr {
             tokens: consume_stuff_until(
                 tokens,
                 |token| match token {

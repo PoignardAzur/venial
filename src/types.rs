@@ -241,7 +241,7 @@ pub struct Trait {
 pub enum TraitMember {
     Method(Function),
     Constant(Constant),
-    AssocTy(TypeAlias),
+    AssocType(TypeAlias),
     Macro(Macro),
 }
 
@@ -270,9 +270,9 @@ pub struct Impl {
     pub tk_unsafe: Option<Ident>,
     pub tk_impl: Ident,
     pub impl_generic_params: Option<GenericParamList>,
-    pub trait_ty: Option<TyExpr>,
+    pub trait_ty: Option<TypeExpr>,
     pub tk_for: Option<Ident>,
-    pub self_ty: TyExpr,
+    pub self_ty: TypeExpr,
     pub where_clause: Option<WhereClause>,
     pub tk_braces: GroupSpan,
     pub inner_attributes: Vec<Attribute>,
@@ -285,7 +285,7 @@ pub struct Impl {
 pub enum ImplMember {
     Method(Function),
     Constant(Constant),
-    AssocTy(TypeAlias),
+    AssocType(TypeAlias),
     Macro(Macro),
 }
 
@@ -314,7 +314,7 @@ pub struct Constant {
     pub tk_mut: Option<Ident>,
     pub name: Ident,
     pub tk_colon: Punct,
-    pub ty: TyExpr,
+    pub ty: TypeExpr,
     /// The '=' sign is optional; constants without initializer are syntactically valid.
     pub tk_equals: Option<Punct>,
     /// The initializer value is optional; constants without initializer are syntactically valid.
@@ -340,7 +340,7 @@ pub struct TypeAlias {
     pub name: Ident,
     pub bound: Option<GenericBound>,
     pub tk_equals: Option<Punct>,
-    pub initializer_ty: Option<TyExpr>,
+    pub initializer_ty: Option<TypeExpr>,
     pub tk_semicolon: Punct,
 }
 
@@ -368,7 +368,7 @@ pub struct Function {
     pub params: Punctuated<FnParam>,
     pub where_clause: Option<WhereClause>,
     pub tk_return_arrow: Option<[Punct; 2]>,
-    pub return_ty: Option<TyExpr>,
+    pub return_ty: Option<TypeExpr>,
     pub tk_semicolon: Option<Punct>,
     pub body: Option<Group>,
 }
@@ -431,7 +431,7 @@ pub struct FnTypedParam {
     pub tk_mut: Option<Ident>,
     pub name: Ident,
     pub tk_colon: Punct,
-    pub ty: TyExpr,
+    pub ty: TypeExpr,
 }
 
 /// A field of a tuple [`Struct`] or tuple-like [`EnumVariant`].
@@ -441,7 +441,7 @@ pub struct FnTypedParam {
 pub struct TupleField {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
-    pub ty: TyExpr,
+    pub ty: TypeExpr,
 }
 
 /// A field of a [`Struct`] or struct-like [`EnumVariant`].
@@ -460,7 +460,7 @@ pub struct NamedField {
     pub vis_marker: Option<VisMarker>,
     pub name: Ident,
     pub tk_colon: Punct,
-    pub ty: TyExpr,
+    pub ty: TypeExpr,
 }
 
 // --- Token groups ---
@@ -590,11 +590,11 @@ pub enum GenericArg {
         tk_equals: Punct,
         /// For the above example, this would be `path::to::Type`.
         /// Note that it may also capture constants, e.g. `MyArray<32>` this would be `32`.
-        ty: TyExpr,
+        ty: TypeExpr,
     },
     /// E.g. `Rc<path::to::Type>` or `MyArray<32>`.  
     /// Since expressions are not parsed, the two cannot be differentiated.
-    TyOrConst { expr: TyExpr },
+    TypeOrConst { expr: TypeExpr },
 }
 
 /// Generic arguments deduced from a type's [GenericParamList].
@@ -638,7 +638,7 @@ pub struct WhereClauseItem {
 /// # };
 /// ```
 #[derive(Clone)]
-pub struct TyExpr {
+pub struct TypeExpr {
     pub tokens: Vec<TokenTree>,
 }
 
@@ -691,7 +691,7 @@ pub struct UseDeclaration {
     /// The `use` keyword
     pub tk_use: Ident,
     /// Un-tokenized import paths between `use` and the finishing `;`
-    pub import_tree: TyExpr,
+    pub import_tree: TypeExpr,
     /// Semicolon ending the use statement
     pub tk_semicolon: Punct,
 }
@@ -1022,7 +1022,7 @@ impl std::fmt::Debug for WhereClauseItem {
     }
 }
 
-impl std::fmt::Debug for TyExpr {
+impl std::fmt::Debug for TypeExpr {
     fn fmt(&self, f: &mut std::fmt::Formatter<'_>) -> std::fmt::Result {
         format_debug_tokens(f, &self.tokens)
     }
@@ -1276,7 +1276,7 @@ impl ToTokens for ImplMember {
         match self {
             ImplMember::Method(function) => function.to_tokens(tokens),
             ImplMember::Constant(constant) => constant.to_tokens(tokens),
-            ImplMember::AssocTy(assoc_ty) => assoc_ty.to_tokens(tokens),
+            ImplMember::AssocType(assoc_ty) => assoc_ty.to_tokens(tokens),
             ImplMember::Macro(macro_) => macro_.to_tokens(tokens),
         }
     }
@@ -1287,7 +1287,7 @@ impl ToTokens for TraitMember {
         match self {
             TraitMember::Method(function) => function.to_tokens(tokens),
             TraitMember::Constant(constant) => constant.to_tokens(tokens),
-            TraitMember::AssocTy(assoc_ty) => assoc_ty.to_tokens(tokens),
+            TraitMember::AssocType(assoc_ty) => assoc_ty.to_tokens(tokens),
             TraitMember::Macro(macro_) => macro_.to_tokens(tokens),
         }
     }
@@ -1506,7 +1506,7 @@ impl ToTokens for GenericArg {
                 tk_equals.to_tokens(tokens);
                 ty.to_tokens(tokens);
             }
-            GenericArg::TyOrConst { expr } => {
+            GenericArg::TypeOrConst { expr } => {
                 expr.to_tokens(tokens);
             }
         }
@@ -1545,7 +1545,7 @@ impl ToTokens for WhereClauseItem {
     }
 }
 
-impl ToTokens for TyExpr {
+impl ToTokens for TypeExpr {
     fn to_tokens(&self, tokens: &mut TokenStream) {
         for token in &self.tokens {
             tokens.append(token.clone());

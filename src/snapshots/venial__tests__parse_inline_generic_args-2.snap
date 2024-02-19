@@ -13,17 +13,17 @@ GenericArgList {
                 a,
             ),
         },
-        TyOrConst {
+        TypeOrConst {
             expr: [
                 T,
             ],
         },
-        TyOrConst {
+        TypeOrConst {
             expr: [
                 U,
             ],
         },
-        TyOrConst {
+        TypeOrConst {
             expr: [
                 N,
             ],
