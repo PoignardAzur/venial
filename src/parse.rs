@@ -205,7 +205,7 @@ pub fn consume_declaration(tokens: &mut Peekable<IntoIter>) -> Result<Item, Erro
         Some(TokenTree::Ident(keyword)) if keyword == "use" => {
             let use_decl = parse_use_declaration(tokens, attributes, vis_marker);
 
-            Item::Use(use_decl)
+            Item::UseDeclaration(use_decl)
         }
         // Note: fn qualifiers appear always in this order in Rust: default const async unsafe extern fn
         Some(TokenTree::Ident(keyword))

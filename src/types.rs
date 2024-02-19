@@ -57,7 +57,7 @@ pub enum Item {
     Constant(Constant),
 
     /// `use` statement.
-    Use(UseDeclaration),
+    UseDeclaration(UseDeclaration),
 
     /// Macro invocation.
     Macro(Macro),
@@ -675,8 +675,7 @@ pub struct PathSegment {
     pub generic_args: Option<GenericArgList>,
 }
 
-/// Type definition.
-/// Handles both associated types (in `impl` blocks) or type aliases (globally).
+/// A `use` declaration for a path.
 ///
 /// See also <https://doc.rust-lang.org/reference/items/use-declarations.html>.
 ///
@@ -1070,7 +1069,7 @@ impl ToTokens for Item {
             Item::TypeAlias(ty_decl) => ty_decl.to_tokens(tokens),
             Item::Function(function_decl) => function_decl.to_tokens(tokens),
             Item::Constant(const_decl) => const_decl.to_tokens(tokens),
-            Item::Use(use_decl) => use_decl.to_tokens(tokens),
+            Item::UseDeclaration(use_decl) => use_decl.to_tokens(tokens),
             Item::Macro(macro_decl) => macro_decl.to_tokens(tokens),
             Item::ExternBlock(block_decl) => block_decl.to_tokens(tokens),
             Item::ExternCrate(crate_decl) => crate_decl.to_tokens(tokens),
