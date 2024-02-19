@@ -314,18 +314,25 @@ pub enum ImplMember {
 pub struct Constant {
     pub attributes: Vec<Attribute>,
     pub vis_marker: Option<VisMarker>,
-    /// Either `const` or `static` keyword
+    /// Either `const` or `static` keyword.
     pub tk_const_or_static: Ident,
-    /// `mut` keyword in `static mut`, absent for `const` or immutable `static`
+    /// `mut` keyword in `static mut`, absent for `const` or immutable `static`.
     pub tk_mut: Option<Ident>,
     pub name: Ident,
     pub tk_colon: Punct,
     pub ty: TypeExpr,
-    /// The '=' sign is optional; constants without initializer are syntactically valid.
+    /// The `=` sign is optional; constants without initializer are syntactically valid.
     pub tk_equals: Option<Punct>,
     /// The initializer value is optional; constants without initializer are syntactically valid.
     pub initializer: Option<ValueExpr>,
     pub tk_semicolon: Punct,
+}
+
+impl Constant {
+    /// True if this is a `static`, false if `const`.
+    pub fn is_static(&self) -> bool {
+        self.tk_const_or_static == "static"
+    }
 }
 
 /// Type definition.
