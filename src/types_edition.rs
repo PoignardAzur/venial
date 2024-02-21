@@ -1,9 +1,10 @@
 use crate::parse_utils::{consume_path, tokens_from_slice};
 use crate::types::{
-    Attribute, AttributeValue, Constant, Enum, EnumVariant, EnumVariantValue, Fields, FnQualifiers,
-    Function, GenericArg, GenericArgList, GenericBound, GenericParam, GenericParamList, GroupSpan,
-    Impl, InlineGenericArgs, Item, Lifetime, Module, NamedField, Path, Punctuated, Struct, Trait,
-    TupleField, TypeAlias, TypeExpr, Union, VisMarker, WhereClause, WhereClausePredicate,
+    Attribute, AttributeValue, Constant, Enum, EnumVariant, EnumVariantValue, ExternBlock,
+    ExternCrate, Fields, FnQualifiers, Function, GenericArg, GenericArgList, GenericBound,
+    GenericParam, GenericParamList, GroupSpan, Impl, InlineGenericArgs, Item, Lifetime, Macro,
+    Module, NamedField, Path, Punctuated, Struct, Trait, TupleField, TypeAlias, TypeExpr, Union,
+    UseDeclaration, VisMarker, WhereClause, WhereClausePredicate,
 };
 use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::spanned::Spanned;
@@ -183,7 +184,7 @@ impl Item {
     }
 
     /// Returns the [`TypeAlias`] variant of the enum if possible.
-    pub fn as_ty_definition(&self) -> Option<&TypeAlias> {
+    pub fn as_type_alias(&self) -> Option<&TypeAlias> {
         match self {
             Item::TypeAlias(ty_decl) => Some(ty_decl),
             _ => None,
@@ -202,6 +203,38 @@ impl Item {
     pub fn as_constant(&self) -> Option<&Constant> {
         match self {
             Item::Constant(const_decl) => Some(const_decl),
+            _ => None,
+        }
+    }
+
+    /// Returns the [`UseDeclaration`] variant of the enum if possible.
+    pub fn as_use_declaration(&self) -> Option<&UseDeclaration> {
+        match self {
+            Item::UseDeclaration(use_decl) => Some(use_decl),
+            _ => None,
+        }
+    }
+
+    /// Returns the [`Macro`] variant of the enum if possible.
+    pub fn as_macro(&self) -> Option<&Macro> {
+        match self {
+            Item::Macro(macro_decl) => Some(macro_decl),
+            _ => None,
+        }
+    }
+
+    /// Returns the [`ExternBlock`] variant of the enum if possible.
+    pub fn as_extern_block(&self) -> Option<&ExternBlock> {
+        match self {
+            Item::ExternBlock(block_decl) => Some(block_decl),
+            _ => None,
+        }
+    }
+
+    /// Returns the [`ExternCrate`] variant of the enum if possible.
+    pub fn as_extern_crate(&self) -> Option<&ExternCrate> {
+        match self {
+            Item::ExternCrate(crate_decl) => Some(crate_decl),
             _ => None,
         }
     }
