@@ -4,7 +4,7 @@
 
 ## Lightweight parsing for Rust proc macros
 
-Venial is a WIP parser for Rust [proc macros](https://doc.rust-lang.org/reference/procedural-macros.html).
+Venial is a small parser for Rust [proc macros](https://doc.rust-lang.org/reference/procedural-macros.html).
 
 When writing proc macros that need to parse Rust code (such as attribute and derive macros), the most common solution is to use the [syn](https://docs.rs/syn/latest/syn/index.html) crate. Syn can parse arbitrary valid Rust code, and even Rust-based DSLs, and return versatile data structures that can be inspected and mutated in powerful ways.
 
@@ -106,9 +106,9 @@ I'm not showing codegen builds, release mode builds, 16-threads builds and the l
 
 ### So... Is it worth it?
 
-That's a fairly complicated question to answer. At the time I'm writing this section my answer is "Probably, but I'm less enthusiastic than when I started the project".
+That's a fairly complicated question to answer. Two years after starting the project, my answer is now "Only for niche use-cases".
 
-If you take the most optimistic interpretation, this is great! On a single-threaded machine, switching shaves three seconds off, a whole third of the build time!
+If you take the most optimistic interpretation, these results are great! On a single-threaded machine, switching shaves three seconds off, a whole third of the build time!
 
 In reality, there are a lot of complicating factors:
 
@@ -135,5 +135,3 @@ Some possible improvements:
 - Fixing the function declaration parser.
 - Finding and fixing any eventual bugs.
 - Porting other projects from syn to venial and comparing compile times.
-- Parsing traits.
-- Parsing all possible declarations.

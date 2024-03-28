@@ -12,7 +12,7 @@ macro_rules! assert_quote_snapshot {
     ($item:expr) => {{
         use quote::ToTokens;
         let tokens = ($item).to_token_stream();
-        ::insta::assert_display_snapshot!(tokens);
+        ::insta::assert_snapshot!(tokens.to_string());
     }};
 }
 
@@ -20,7 +20,7 @@ fn parse_declaration_checked(tokens: TokenStream) -> Item {
     let initial_tokens = tokens.clone();
     let declaration = parse_item(tokens).unwrap();
 
-    similar_asserts::assert_str_eq!(quote!(#declaration), initial_tokens);
+    similar_asserts::assert_eq!(quote!(#declaration).to_string(), initial_tokens.to_string());
 
     declaration
 }
@@ -31,7 +31,10 @@ fn parse_generic_args_checked(tokens: TokenStream) -> GenericArgList {
     let mut token_iter = tokens.into_iter().peekable();
     let generic_args = consume_generic_args(&mut token_iter).unwrap();
 
-    similar_asserts::assert_str_eq!(quote!(#generic_args), initial_tokens);
+    similar_asserts::assert_eq!(
+        quote!(#generic_args).to_string(),
+        initial_tokens.to_string()
+    );
 
     generic_args
 }
@@ -1286,7 +1289,7 @@ fn interpret_ty_expr_simple_as_path() {
 
     let path = ty_expr.as_path().expect("as_path()");
     assert_debug_snapshot!(path);
-    similar_asserts::assert_str_eq!(quote!(#ty_expr), tokens);
+    similar_asserts::assert_eq!(quote!(#ty_expr).to_string(), tokens.to_string());
 }
 
 #[test]
@@ -1299,7 +1302,7 @@ fn interpret_ty_expr_generic_as_path() {
 
     let path = ty_expr.as_path().expect("as_path()");
     assert_debug_snapshot!(path);
-    similar_asserts::assert_str_eq!(quote!(#ty_expr), tokens);
+    similar_asserts::assert_eq!(quote!(#ty_expr).to_string(), tokens.to_string());
 }
 
 #[test]
