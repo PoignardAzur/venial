@@ -686,7 +686,7 @@ impl GenericParam {
     }
 }
 
-impl<'a> InlineGenericArgs<'a> {
+impl InlineGenericArgs<'_> {
     /// Returns an owned argument list from this.
     ///
     /// # Panics
