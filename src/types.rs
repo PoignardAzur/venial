@@ -788,7 +788,7 @@ pub struct Macro {
 ///
 /// ```no_run
 /// # macro_rules! some_macro { () => {} };
-/// extern "stdcall" {
+/// extern "cdecl" {
 ///    #![allow(unused_variables)]
 ///
 ///    some_macro!();
