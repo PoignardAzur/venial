@@ -3,7 +3,7 @@ use crate::{parse_item, GenericParam, Item, Struct, TypeExpr, WhereClausePredica
 use crate::parse_type::consume_generic_args;
 use crate::types::GenericArgList;
 use insta::assert_debug_snapshot;
-use proc_macro2::TokenStream;
+use proc_macro2::{Delimiter, TokenStream};
 use quote::quote;
 
 // TODO - check test coverage
@@ -1314,6 +1314,31 @@ fn interpret_ty_expr_invalid_as_path() {
 
     let invalid = ty_expr.as_path();
     assert!(invalid.is_none())
+}
+
+#[test]
+fn interpret_ty_expr_from_declarative_macro() {
+    // Simulates a declarative macro which takes a `ty` placeholder generates an item with a proc-macro attribute.
+    // On a token level, this emits a group with `Delimiter::None`.
+    //
+    // Example:
+    // macro_rules! declarative_macro {
+    //     ($Type:ty) => {
+    //         #[proc_macro]
+    //         impl Trait for $Type;
+    //     };
+    // }
+
+    let ty = quote!(path::to::Type);
+    let ty_group = proc_macro2::Group::new(Delimiter::None, ty);
+    let tokens = quote!(impl Trait for #ty_group {});
+
+    let Ok(Item::Impl(impl_decl)) = parse_item(tokens) else {
+        panic!("failed to parse item");
+    };
+
+    let path = impl_decl.self_ty.as_path().expect("as_path()");
+    assert_debug_snapshot!(path);
 }
 
 // ================

@@ -6,7 +6,7 @@ use crate::types::{
     Module, NamedField, Path, Punctuated, Struct, Trait, TupleField, TypeAlias, TypeExpr, Union,
     UseDeclaration, VisMarker, WhereClause, WhereClausePredicate,
 };
-use proc_macro2::{Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
+use proc_macro2::{Delimiter, Group, Ident, Literal, Punct, Spacing, Span, TokenStream, TokenTree};
 use quote::spanned::Spanned;
 
 impl Item {
@@ -800,9 +800,23 @@ impl TypeExpr {
     ///
     /// If it does not match a path, `None` is returned.
     pub fn as_path(&self) -> Option<Path> {
-        let tokens = tokens_from_slice(&self.tokens);
+        let tokens = if let Some(path) = self.unwrap_invisible_group() {
+            tokens_from_slice(&path)
+        } else {
+            tokens_from_slice(&self.tokens)
+        };
 
         consume_path(tokens)
+    }
+
+    /// If the type has a top-level `Group` token without separator, extract the contents. Otherwise return `None`.
+    fn unwrap_invisible_group(&self) -> Option<Vec<TokenTree>> {
+        match self.tokens.as_slice() {
+            [TokenTree::Group(group)] if group.delimiter() == Delimiter::None => {
+                Some(group.stream().into_iter().collect())
+            }
+            _ => None,
+        }
     }
 }
 
