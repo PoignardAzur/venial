@@ -311,7 +311,10 @@ pub(crate) fn consume_enum_discriminant(
     match tokens.peek() {
         None => (),
         Some(TokenTree::Punct(punct)) if punct.as_char() == ',' => (),
-        Some(_token) => return Err(Error::new("Complex values for enum variants are not supported unless they are between parentheses.")),
+        Some(_token) => {
+            let span = value_token.span();
+            return Err(Error::new_at_span(span,"Complex values for enum variants are not supported unless they are between parentheses."));
+        }
     }
 
     Ok(Some(EnumVariantValue {
