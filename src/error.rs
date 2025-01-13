@@ -33,7 +33,10 @@ use std::fmt::{Debug, Display};
 ///     let parse_res = match input {
 ///         Err(error) => Err(error),
 ///         Ok(Item::Struct(struct_decl)) => parse_my_struct(struct_decl),
-///         Ok(_) => Err(Error::new("Error in my_derive macro: only structs are accepted")),
+///         Ok(item) => Err(Error::new_at_span(
+///             item.span(),
+///             "Error in my_derive macro: only structs are accepted"
+///         )),
 ///     };
 ///
 ///     parse_res
